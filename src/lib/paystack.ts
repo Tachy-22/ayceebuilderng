@@ -3,7 +3,7 @@ export function getPaystackConfig(email: string, amount: number) {
   return {
     email,
     amount,
-    publicKey: "pk_test_9426c6bc564571909c4705b1f66b776496f38015",
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY as string,
     metadata: {
       custom_fields: [
         {

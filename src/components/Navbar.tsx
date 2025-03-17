@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
 import {
   Menu,
   Search,
@@ -21,12 +20,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
+  const pathname = usePathname();
   const { getItemCount } = useCart();
   const { wishlistItems } = useWishlist();
 
@@ -49,7 +50,7 @@ const Navbar = () => {
   useEffect(() => {
     // Close mobile menu when route changes
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +60,6 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
     { name: "Categories", path: "/categories" },
     { name: "Vendors", path: "/vendors" },
@@ -79,8 +79,18 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <span className="text-xl font-bold text-primary">Ayceebuilder</span>
+          <Link href="/" className="flex items-center">
+            {/* <span className="text-xl font-bold text-primary">Ayceebuilder</span> */}
+            <img
+              src="aycee-logo.png"
+              alt="Ayceebuilder"
+              className="h-[2rem] lg:flex hidden"
+            />
+            <img
+              src="aycee-icon.png"
+              alt="Ayceebuilder"
+              className="h-[2rem] lg:hidden flex"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -88,9 +98,9 @@ const Navbar = () => {
             {navLinks.map((link) => (
               <Link
                 key={link.path}
-                to={link.path}
+                href={link.path}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === link.path
+                  pathname === link.path
                     ? "text-primary"
                     : "text-foreground hover:text-primary"
                 }`}
@@ -129,7 +139,7 @@ const Navbar = () => {
             </DropdownMenu>
 
             {/* Wishlist */}
-            <Link to="/wishlist">
+            <Link href="/wishlist">
               <Button
                 variant="ghost"
                 size="icon"
@@ -148,7 +158,7 @@ const Navbar = () => {
             </Link>
 
             {/* Cart */}
-            <Link to="/cart">
+            <Link href="/cart">
               <Button
                 variant="ghost"
                 size="icon"
@@ -167,7 +177,7 @@ const Navbar = () => {
             </Link>
 
             {/* Account */}
-            <Link to="/auth">
+            <Link href="/auth">
               <Button
                 variant="ghost"
                 size="icon"
@@ -206,9 +216,9 @@ const Navbar = () => {
                     {navLinks.map((link) => (
                       <Link
                         key={link.path}
-                        to={link.path}
+                        href={link.path}
                         className={`px-4 py-3 rounded-md text-sm font-medium transition-colors ${
-                          location.pathname === link.path
+                          pathname === link.path
                             ? "bg-secondary/10 text-primary"
                             : "hover:bg-secondary/5"
                         }`}
@@ -219,7 +229,7 @@ const Navbar = () => {
                   </nav>
                   <div className="mt-auto py-4 border-t">
                     <Link
-                      to="/auth"
+                      href="/auth"
                       className="flex items-center px-4 py-3 rounded-md text-sm font-medium hover:bg-secondary/50"
                     >
                       <User size={18} className="mr-2" />

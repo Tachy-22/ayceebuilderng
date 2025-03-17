@@ -1,5 +1,5 @@
+"use client"
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -31,6 +31,7 @@ import {
   bestSellerProducts,
   products,
 } from "@/data/products";
+import Link from "next/link";
 
 // Animation variants
 const fadeIn = {
@@ -56,7 +57,7 @@ const staggerContainer = {
   },
 };
 
-const Index = () => {
+const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -69,7 +70,7 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="pt-24 lg:pt-32 overflow-hidden relative w-full ">
-        <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center justify-between ">
+        <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-6 items-center justify-between ">
           <motion.div
             className=" lg:w-1/2"
             initial={{ opacity: 0, x: -50 }}
@@ -77,7 +78,7 @@ const Index = () => {
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
             <Badge variant="outline" className="mb-4 py-1.5">
-              Nigeria's Premier Construction Marketplace
+              Nigeria&apos;s Premier Construction Marketplace
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
               Building Nigeria, <br />
@@ -85,16 +86,16 @@ const Index = () => {
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
               Premium construction supplies delivered to your doorstep. From
-              cement to steel, we've got you covered.
+              cement to steel, we&apos;ve got you covered.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/products">
+              <Link href="/products">
                 <Button size="lg" className="w-full sm:w-auto">
                   Shop Now
                   <ArrowRight size={16} className="ml-2" />
                 </Button>
               </Link>
-              <Link to="/categories">
+              <Link href="/categories">
                 <Button
                   size="lg"
                   variant="outline"
@@ -161,13 +162,13 @@ const Index = () => {
                 project specifications.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to="/building-quotation">
+                <Link href="/building-quotation">
                   <Button size="lg">
                     Try Building Quotation Tool
                     <Building size={16} className="ml-2" />
                   </Button>
                 </Link>
-                <Link to="/products">
+                <Link href="/products">
                   <Button size="lg" variant="outline">
                     Shop Products
                   </Button>
@@ -207,66 +208,7 @@ const Index = () => {
             </motion.div>
           </motion.div>
         </div>
-      </section>
-
-      {/* Free Delivery Estimator Banner */}
-      {/* <section className="py-10 bg-secondary/30 mt-0">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
-            <motion.div className="lg:col-span-3" variants={fadeIn}>
-              <Badge className="mb-2">DELIVERY</Badge>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Integrated Delivery Cost Calculator</h2>
-              <p className="text-lg mb-6">
-                Our delivery calculator is now integrated into the checkout process! Get accurate delivery estimates based on your location and order details.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link to="/cart">
-                  <Button size="lg">
-                    Check it in Cart
-                    <Truck size={16} className="ml-2" />
-                  </Button>
-                </Link>
-                <Link to="/delivery-estimator">
-                  <Button size="lg" variant="outline">
-                    Advanced Estimator
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-            <motion.div className="lg:col-span-2" variants={fadeIn}>
-              <div className="bg-white p-6 rounded-xl shadow-lg border">
-                <div className="flex items-center gap-3 mb-4">
-                  <MapPin className="text-primary" size={24} />
-                  <div>
-                    <h3 className="font-medium">Smart Location Detection</h3>
-                    <p className="text-sm text-muted-foreground">Automatically finds the nearest depot</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 mb-4">
-                  <Calculator className="text-primary" size={24} />
-                  <div>
-                    <h3 className="font-medium">Accurate Estimates</h3>
-                    <p className="text-sm text-muted-foreground">Based on real-time logistics data</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Truck className="text-primary" size={24} />
-                  <div>
-                    <h3 className="font-medium">Multiple Vehicle Options</h3>
-                    <p className="text-sm text-muted-foreground">Choose the right transportation for your materials</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section> */}
+      </section> 
 
       {/* Features Section */}
       <section className="py-16 md:py-24">
@@ -365,7 +307,7 @@ const Index = () => {
             {categories.slice(0, 5).map((category, index) => (
               <motion.div key={category.id} variants={fadeIn}>
                 <Link
-                  to={`/categories/${category.id}`}
+                  href={`/categories/${category.id}`}
                   className="bg-white rounded-xl p-4 text-center transition-all duration-300 hover:shadow-md hover-lift border block"
                 >
                   <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -386,7 +328,7 @@ const Index = () => {
             transition={{ delay: 0.4, duration: 0.5 }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            <Link to="/categories">
+            <Link href="/categories">
               <Button variant="outline">
                 View All Categories
                 <ChevronRight size={16} className="ml-1" />
@@ -414,7 +356,7 @@ const Index = () => {
               </p>
             </div>
             <Link
-              to="/products"
+              href="/products"
               className="text-primary font-medium hover:underline mt-4 md:mt-0 inline-flex items-center"
             >
               View All Products
@@ -494,7 +436,7 @@ const Index = () => {
               Why Choose Ayceebuilder?
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              We're committed to providing the best construction materials
+              We&apos;re committed to providing the best construction materials
               shopping experience in Nigeria
             </p>
           </motion.div>
@@ -569,8 +511,8 @@ const Index = () => {
             <div>
               <h2 className="text-3xl font-bold mb-4">Project Showcase</h2>
               <p className="text-muted-foreground max-w-xl">
-                See how our materials have been used in some of Nigeria's most
-                impressive construction projects
+                See how our materials have been used in some of Nigeria&apos;s
+                most impressive construction projects
               </p>
             </div>
             {/* <Button variant="outline" className="mt-4 md:mt-0">
@@ -777,7 +719,7 @@ const Index = () => {
             transition={{ delay: 0.4, duration: 0.5 }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            <Link to="/market-insights">
+            <Link href="/market-insights">
               <Button>
                 View All Market Insights
                 <ArrowRight size={16} className="ml-2" />
@@ -834,7 +776,7 @@ const Index = () => {
                   <p className="text-sm text-white/70">Active Customers</p>
                 </motion.div>
               </motion.div>
-              <Link to="/vendors/register">
+              <Link href="/vendors/register">
                 <Button
                   size="lg"
                   variant="secondary"
@@ -863,8 +805,8 @@ const Index = () => {
           >
             <h2 className="text-3xl font-bold mb-4">What Our Customers Say</h2>
             <p className="text-muted-foreground">
-              Don't just take our word for it — hear from some of our satisfied
-              customers.
+              Don&apos;t just take our word for it — hear from some of our
+              satisfied customers.
             </p>
           </motion.div>
 
@@ -892,8 +834,9 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-muted-foreground mb-4">
-                "Ayceebuilder has simplified my material procurement process.
-                The quality is consistent, and I save a lot of time."
+                &quot;Ayceebuilder has simplified my material procurement
+                process. The quality is consistent, and I save a lot of
+                time.&quot;
               </p>
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -925,9 +868,9 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-muted-foreground mb-4">
-                "The variety of products available on Ayceebuilder is
+                &quot;The variety of products available on Ayceebuilder is
                 impressive. I can find everything I need for my projects in one
-                place."
+                place.&quot;
               </p>
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -959,8 +902,8 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-muted-foreground mb-4">
-                "As a first-time homebuilder, the guidance I received from
-                Ayceebuilder vendors was invaluable. Great service!"
+                &quot;As a first-time homebuilder, the guidance I received from
+                Ayceebuilder vendors was invaluable. Great service!&quot;
               </p>
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -983,4 +926,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Home;

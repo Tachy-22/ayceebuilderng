@@ -1,5 +1,6 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
 import { User, Key, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,9 +18,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "@/hooks/use-toast";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const Auth = () => {
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const initialTab =
     searchParams.get("tab") === "register" ? "register" : "login";
 
@@ -117,7 +120,7 @@ const Auth = () => {
                         <div className="flex justify-between items-center">
                           <Label htmlFor="login-password">Password</Label>
                           <Link
-                            to="/auth/reset-password"
+                            href="/auth/reset-password"
                             className="text-xs text-primary hover:underline"
                           >
                             Forgot password?
@@ -238,7 +241,7 @@ const Auth = () => {
                       </div>
 
                       <p className="text-center text-sm text-muted-foreground">
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <Button
                           variant="link"
                           className="p-0 h-auto"
@@ -346,14 +349,14 @@ const Auth = () => {
                         >
                           I agree to the{" "}
                           <Link
-                            to="/terms"
+                            href="/terms"
                             className="text-primary hover:underline"
                           >
                             Terms of Service
                           </Link>{" "}
                           and{" "}
                           <Link
-                            to="/privacy"
+                            href="/privacy"
                             className="text-primary hover:underline"
                           >
                             Privacy Policy

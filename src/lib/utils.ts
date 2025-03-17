@@ -34,7 +34,9 @@ export const calculateRoofArea = (length: number, width: number, roofType: strin
   return length * width;
 };
 
-export const calculateCementBags = (area: number, thickness: number, usage: string) => {
+type CementUsage = "plastering" | "bricklaying" | "flooring" | "foundation";
+
+export const calculateCementBags = (area: number, thickness: number, usage: CementUsage) => {
   // Cement usage in bags per square meter at 1cm thickness
   const cementPerSqMeterPerCm = {
     "plastering": 0.07,
@@ -46,7 +48,9 @@ export const calculateCementBags = (area: number, thickness: number, usage: stri
   return Math.ceil(area * (thickness / 100) * cementPerSqMeterPerCm[usage]);
 };
 
-export const calculateBricks = (wallArea: number, brickType: string) => {
+export type BrickType = "standard" | "hollow" | "face";
+
+export const calculateBricks = (wallArea: number, brickType: BrickType) => {
   // Bricks per square meter (including typical mortar thickness)
   const bricksPerSqMeter = {
     "standard": 50, // standard brick
@@ -63,7 +67,9 @@ export const calculatePaint = (wallArea: number, coats: number) => {
   return Math.ceil((wallArea * coats) / areaCoveredPerLiter);
 };
 
-export const calculateTiles = (floorArea: number, tileSize: string) => {
+export type TileSize = "small" | "medium" | "large";
+
+export const calculateTiles = (floorArea: number, tileSize: TileSize) => {
   // Tiles per square meter based on size (including grout)
   const tilesPerSqMeter = {
     "small": 16,  // 25×25cm

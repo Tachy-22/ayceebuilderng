@@ -1,5 +1,4 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
   title: string;
@@ -23,7 +22,7 @@ const SEO: React.FC<SEOProps> = ({
   const fullOgImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
   
   return (
-    <Helmet>
+    <>
       {/* Basic Meta Tags */}
       <title>{title} | Ayceebuilder</title>
       <meta name="description" content={description} />
@@ -49,7 +48,7 @@ const SEO: React.FC<SEOProps> = ({
       {/* Other Meta Tags */}
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow" />
-    </Helmet>
+    </>
   );
 };
 

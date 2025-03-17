@@ -1,12 +1,11 @@
-
 import React from "react";
-import { Link } from "react-router-dom";
 import { Heart, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import Link from "next/link";
 
 export interface ProductCardProps {
   product: Product;
@@ -14,7 +13,11 @@ export interface ProductCardProps {
   style?: React.CSSProperties;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, className, style }) => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  className,
+  style,
+}) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const wishlisted = isInWishlist(product.id);
@@ -28,7 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className, style }) 
   const toggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (wishlisted) {
       removeFromWishlist(product.id);
     } else {
@@ -38,7 +41,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className, style }) 
 
   return (
     <Link
-      to={`/products/${product.id}`}
+      href={`/products/${product.id}`}
       className={`group !relative border rounded-xl bg-white overflow-hidden transition-all hover:shadow-md ${className}`}
       style={style}
     >

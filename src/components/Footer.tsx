@@ -1,10 +1,9 @@
-
 import React from "react";
-import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
+//import { cn } from "@/lib/utils";
 import { Instagram, Twitter, Facebook, Globe, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 const footerLinks = [
   {
@@ -13,7 +12,6 @@ const footerLinks = [
       { name: "All Products", href: "/products" },
       { name: "Categories", href: "/categories" },
       { name: "Vendors", href: "/vendors" },
-    
     ],
   },
   // {
@@ -52,13 +50,19 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Brand and newsletter */}
           <div className="lg:col-span-2">
-            <Link to="/" className="inline-block mb-4">
-              <h2 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+            <Link href="/" className="inline-block mb-4">
+              {/* <h2 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
                 Ayceebuilder
-              </h2>
+              </h2> */}
+              <img
+                src="aycee-logo.png"
+                alt="Ayceebuilder"
+                className="h-[2rem]"
+              />
             </Link>
             <p className="text-white/60 mb-6 max-w-md">
-              Your one-stop shop for all construction materials. Quality products at competitive prices.
+              Your one-stop shop for all construction materials. Quality
+              products at competitive prices.
             </p>
             <h3 className="font-medium mb-3">Subscribe to our newsletter</h3>
             <div className="flex gap-2">
@@ -67,18 +71,28 @@ const Footer = () => {
                 placeholder="Your email address"
                 className="max-w-xs"
               />
-              <Button>
-                Subscribe
-              </Button>
+              <Button>Subscribe</Button>
             </div>
             <div className="flex space-x-4 mt-8">
-              <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-10 w-10 text-white"
+              >
                 <Instagram size={20} />
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-10 w-10 text-white"
+              >
                 <Twitter size={20} />
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-10 w-10 text-white"
+              >
                 <Facebook size={20} />
               </Button>
             </div>
@@ -92,7 +106,7 @@ const Footer = () => {
                 {group.links.map((link) => (
                   <li key={link.name}>
                     <Link
-                      to={link.href}
+                      href={link.href}
                       className="text-white/70 hover:text-white transition-colors"
                     >
                       {link.name}
@@ -113,15 +127,20 @@ const Footer = () => {
               </div>
               <div className="flex items-center">
                 <Mail size={16} className="mr-2 text-white/50" />
-                <span className="text-sm text-white/50">support@ayceebuilder.ng</span>
+                <span className="text-sm text-white/50">
+                  support@ayceebuilder.ng
+                </span>
               </div>
               <div className="flex items-center">
                 <Phone size={16} className="mr-2 text-white/50" />
-                <span className="text-sm text-white/50">+234 (0) 123 456 7890</span>
+                <span className="text-sm text-white/50">
+                  +234 (0) 123 456 7890
+                </span>
               </div>
             </div>
             <p className="text-sm text-white/50">
-              © {new Date().getFullYear()} Ayceebuilder Nigeria. All rights reserved.
+              © {new Date().getFullYear()} Ayceebuilder Nigeria. All rights
+              reserved.
             </p>
           </div>
         </div>

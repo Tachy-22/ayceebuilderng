@@ -1,7 +1,19 @@
+"use client";
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import dynamic from "next/dynamic";
+
 import { motion } from "framer-motion";
-import { Trash2, Plus, Minus, AlertCircle, ArrowRight, ShoppingBag, Calculator, MapPin, Truck } from "lucide-react";
+import {
+  Trash2,
+  Plus,
+  Minus,
+  AlertCircle,
+  ArrowRight,
+  ShoppingBag,
+  Calculator,
+  MapPin,
+  Truck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,8 +27,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
-import { PaystackButton } from "react-paystack";
 import { getPaystackConfig } from "@/lib/paystack";
+import Link from "next/link";
+
+// Dynamically import PaystackButton with SSR disabled:
+const PaystackButton = dynamic(
+  async () => {
+    const { PaystackButton } = await import("react-paystack");
+    return PaystackButton;
+  },
+  { ssr: false }
+);
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
@@ -27,39 +48,40 @@ const Cart = () => {
   const [deliveryLocation, setDeliveryLocation] = useState("lagos");
   const [deliveryDistance, setDeliveryDistance] = useState(10);
   const [deliveryWeight, setDeliveryWeight] = useState(500);
-  
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
   }, []);
-  
+
   // Calculate delivery cost based on location, distance, and weight
   const calculateDeliveryCost = () => {
     // Base delivery cost
     let baseCost = 1000;
-    
+
     // Adjust based on location
     if (deliveryLocation === "abuja") baseCost += 500;
     if (deliveryLocation === "other") baseCost += 1000;
-    
+
     // Adjust based on distance (₦50 per km)
     const distanceCost = deliveryDistance * 50;
-    
+
     // Adjust based on weight (₦1 per kg)
     const weightCost = deliveryWeight * 1;
-    
+
     return baseCost + distanceCost + weightCost;
   };
-  
+
   // Calculate cart totals
   const subtotal = cartItems.reduce((sum, item) => {
     const price = item.product.discountPrice || item.product.price;
-    return sum + (price * item.quantity);
+    return sum + price * item.quantity;
   }, 0);
-  
+
   const tax = subtotal * 0.075; // 7.5% VAT
   const deliveryCost = calculateDeliveryCost();
   const total = subtotal + tax + deliveryCost - discountAmount;
-  
+
   const applyPromoCode = () => {
     if (promoCode.toUpperCase() === "WELCOME10") {
       const discount = subtotal * 0.1; // 10% discount
@@ -67,7 +89,7 @@ const Cart = () => {
       setPromoApplied(true);
       toast({
         title: "Promo code applied",
-        description: "10% discount has been applied to your order"
+        description: "10% discount has been applied to your order",
       });
     } else {
       setPromoApplied(false);
@@ -75,14 +97,47 @@ const Cart = () => {
       toast({
         variant: "destructive",
         title: "Invalid promo code",
-        description: "The promo code you entered is invalid or expired"
+        description: "The promo code you entered is invalid or expired",
       });
     }
   };
 
-  const handlePaystackSuccess = (reference: string) => {
-    // ...handle success...
+  const handlePaystackSuccess = async (reference: string) => {
+    try {
+      const res = await fetch("/api/paystack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reference,
+          user: {
+            email: "entekumejeffrey3@gmail.com",
+            name: "Test User Name (Entekume Jeffrey)",
+            address: "123 Main St, Lagos",
+          },
+          items: cartItems.map((item) => ({
+            productName: item.product.name,
+            unitPrice: item.product.discountPrice || item.product.price,
+            quantity: item.quantity,
+          })),
+          totalAmount: total,
+          location: deliveryLocation,
+          transportFare: deliveryCost,
+          distance: deliveryDistance,
+          weight: deliveryWeight,
+        }),
+      });
+
+      if (res.ok) {
+        console.log({res})
+        clearCart();
+        setPaymentConfirmed(true);
+      }
+      // ...existing code...
+    } catch (error) {
+      console.error("Error sending payment data:", error);
+    }
   };
+
   const handlePaystackClose = () => {
     // ...handle close...
   };
@@ -92,22 +147,22 @@ const Cart = () => {
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
-  
+
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { 
+    visible: {
       y: 0,
       opacity: 1,
-      transition: { type: "spring", stiffness: 100 }
-    }
+      transition: { type: "spring", stiffness: 100 },
+    },
   };
 
   return (
@@ -124,7 +179,7 @@ const Cart = () => {
             >
               <h1 className="text-3xl font-bold mb-2">Your Cart</h1>
               <div className="flex items-center text-sm text-muted-foreground">
-                <Link to="/" className="hover:text-foreground">
+                <Link href="/" className="hover:text-foreground">
                   Home
                 </Link>
                 <span className="mx-2">/</span>
@@ -142,7 +197,19 @@ const Cart = () => {
           initial="hidden"
           animate="visible"
         >
-          {cartItems.length > 0 ? (
+          {paymentConfirmed ? (
+            <div className="text-center py-16">
+              <h2 className="text-2xl font-bold mb-3">
+                Payment confirmed, Order processing
+              </h2>
+              <p className="text-muted-foreground mb-8">
+                Continue shopping for more items
+              </p>
+              <Link href="/products">
+                <Button size="lg">Shop Now</Button>
+              </Link>
+            </div>
+          ) : cartItems.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Cart Items */}
               <motion.div variants={itemVariants} className="lg:col-span-2">
@@ -177,7 +244,7 @@ const Cart = () => {
                               </div>
                               <div>
                                 <Link
-                                  to={`/products/${item.product.id}`}
+                                  href={`/products/${item.product.id}`}
                                   className="font-medium hover:text-primary"
                                 >
                                   {item.product.name}
@@ -276,7 +343,7 @@ const Cart = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-4 justify-between mt-6">
-                  <Link to="/products">
+                  <Link href="/products">
                     <Button variant="outline">
                       <ArrowRight size={16} className="mr-2 rotate-180" />
                       Continue Shopping
@@ -421,7 +488,7 @@ const Cart = () => {
                   </div>
 
                   <div className="pt-2">
-                    <Link to="/building-quotation">
+                    <Link href="/building-quotation">
                       <Button variant="outline" className="w-full mb-3">
                         <Calculator size={16} className="mr-2" />
                         Building Quotation Tool
@@ -453,11 +520,11 @@ const Cart = () => {
               </div>
               <h2 className="text-2xl font-bold mb-3">Your cart is empty</h2>
               <p className="text-muted-foreground max-w-md mx-auto mb-8">
-                Looks like you haven't added any products to your cart yet.
+                Looks like you haven&apos;t added any products to your cart yet.
                 Browse our collection and find quality construction materials
                 for your project.
               </p>
-              <Link to="/products">
+              <Link href="/products">
                 <Button size="lg">Start Shopping</Button>
               </Link>
             </motion.div>

@@ -1,6 +1,5 @@
-
+"use client"
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trash2, Heart, ArrowRight, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
+import Link from "next/link";
+import { Product } from "@/data/products";
 
 const Wishlist = () => {
   const { wishlistItems, removeFromWishlist, clearWishlist } = useWishlist();
@@ -39,7 +40,7 @@ const Wishlist = () => {
     }
   };
 
-  const handleMoveToCart = (product) => {
+  const handleMoveToCart = (product:Product) => {
     addToCart(product, 1);
     removeFromWishlist(product.id);
   };
@@ -47,7 +48,7 @@ const Wishlist = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <main className="flex-grow pt-20">
         <div className="bg-secondary/5 py-6">
           <div className="container mx-auto px-4">
@@ -58,16 +59,20 @@ const Wishlist = () => {
             >
               <h1 className="text-3xl font-bold mb-2">Your Wishlist</h1>
               <div className="flex items-center text-sm text-muted-foreground">
-                <Link to="/" className="hover:text-foreground">Home</Link>
+                <Link href="/" className="hover:text-foreground">
+                  Home
+                </Link>
                 <span className="mx-2">/</span>
                 <span>Wishlist</span>
               </div>
             </motion.div>
           </div>
         </div>
-        
+
         <motion.div
-          className={`container mx-auto px-4 py-10 transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`container mx-auto px-4 py-10 transition-opacity duration-500 ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          }`}
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -76,22 +81,27 @@ const Wishlist = () => {
             <div className="space-y-8">
               <div className="flex justify-between items-center">
                 <p className="text-muted-foreground">
-                  {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} in your wishlist
+                  {wishlistItems.length}{" "}
+                  {wishlistItems.length === 1 ? "item" : "items"} in your
+                  wishlist
                 </p>
                 <Button variant="outline" onClick={clearWishlist}>
                   <Trash2 size={16} className="mr-2" />
                   Clear Wishlist
                 </Button>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {wishlistItems.map((product) => (
-                  <motion.div 
-                    key={product.id} 
+                  <motion.div
+                    key={product.id}
                     className="border rounded-xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-all"
                     variants={itemVariants}
                   >
-                    <Link to={`/products/${product.id}`} className="block relative">
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="block relative"
+                    >
                       <div className="aspect-[4/3] overflow-hidden bg-secondary/20">
                         <img
                           src={product.image}
@@ -99,16 +109,21 @@ const Wishlist = () => {
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                         />
                       </div>
-                      
+
                       {product.discountPrice && (
                         <div className="absolute top-3 left-3 bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                          {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                          {Math.round(
+                            ((product.price - product.discountPrice) /
+                              product.price) *
+                              100
+                          )}
+                          % OFF
                         </div>
                       )}
                     </Link>
-                    
+
                     <div className="p-4">
-                      <Link to={`/products/${product.id}`} className="block">
+                      <Link href={`/products/${product.id}`} className="block">
                         <h3 className="font-medium line-clamp-1 hover:text-primary transition-colors">
                           {product.name}
                         </h3>
@@ -116,7 +131,7 @@ const Wishlist = () => {
                           {product.category}
                         </p>
                       </Link>
-                      
+
                       <div className="flex items-baseline mb-4">
                         {product.discountPrice ? (
                           <>
@@ -133,9 +148,9 @@ const Wishlist = () => {
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="space-y-2">
-                        <Button 
+                        <Button
                           className="w-full"
                           onClick={() => handleMoveToCart(product)}
                           disabled={!product.inStock}
@@ -143,9 +158,9 @@ const Wishlist = () => {
                           <ShoppingBag size={16} className="mr-2" />
                           Add to Cart
                         </Button>
-                        
-                        <Button 
-                          variant="outline" 
+
+                        <Button
+                          variant="outline"
                           className="w-full text-red-500 hover:text-red-600"
                           onClick={() => removeFromWishlist(product.id)}
                         >
@@ -159,29 +174,27 @@ const Wishlist = () => {
               </div>
             </div>
           ) : (
-            <motion.div 
-              className="text-center py-16"
-              variants={itemVariants}
-            >
+            <motion.div className="text-center py-16" variants={itemVariants}>
               <div className="flex justify-center mb-4">
                 <div className="w-20 h-20 rounded-full bg-secondary/30 flex items-center justify-center">
                   <Heart size={32} className="text-muted-foreground" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold mb-3">Your wishlist is empty</h2>
+              <h2 className="text-2xl font-bold mb-3">
+                Your wishlist is empty
+              </h2>
               <p className="text-muted-foreground max-w-md mx-auto mb-8">
-                You haven't added any products to your wishlist yet. Browse our collection and save items for later.
+                You haven&apos;t added any products to your wishlist yet. Browse
+                our collection and save items for later.
               </p>
-              <Link to="/products">
-                <Button size="lg">
-                  Start Shopping
-                </Button>
+              <Link href="/products">
+                <Button size="lg">Start Shopping</Button>
               </Link>
             </motion.div>
           )}
         </motion.div>
       </main>
-      
+
       <Footer />
     </div>
   );
