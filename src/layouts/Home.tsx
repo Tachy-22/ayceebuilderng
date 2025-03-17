@@ -72,7 +72,7 @@ const Home = () => {
       <section className="pt-24 lg:pt-32 overflow-hidden relative w-full ">
         <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-6 items-center justify-between ">
           <motion.div
-            className=" lg:w-1/2"
+            className=" w-fit lg:w-1/2"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
