@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 160 64% 45%;
+    /* Darker mint for better contrast */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 13% 0%;
+    /* Darker grey for better contrast */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 160 10% 95%;
+    --muted-foreground: 220 10% 36%;
+
+    --accent: 160 40% 95%;
+    --accent-foreground: 160 70% 25%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 5% 90%;
+    --input: 220 5% 90%;
+    --ring: 160 64% 45%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-sm;
+  }
+
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-lg border border-white/10 shadow-sm;
+  }
+
+  .smooth-gradient {
+    @apply bg-gradient-to-b from-white to-secondary/50;
+  }
+
+  .btn-hover {
+    @apply transition-all duration-300 hover:brightness-105 active:brightness-90;
+  }
+
+  .subtle-shadow {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02),
+      0 4px 16px -8px rgba(0, 0, 0, 0.07);
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 lg:py-20;
+  }
+
+  .card-hover {
+    @apply transition-all duration-500 hover:bg-secondary/40;
+  }
+}
+
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
