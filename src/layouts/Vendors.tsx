@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { MapPin, Star, ExternalLink, ArrowRight } from "lucide-react";
+import { MapPin, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
@@ -238,10 +238,10 @@ const Vendors = () => {
                       </div>
                     </div>
 
-                    <Button variant="outline" className="w-full mt-4">
+                    {/* <Button variant="outline" className="w-full mt-4">
                       View Vendor Profile{" "}
                       <ExternalLink size={14} className="ml-1" />
-                    </Button>
+                    </Button> */}
                   </div>
                 </Link>
               ))}

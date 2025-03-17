@@ -72,7 +72,7 @@ const Home = () => {
       <section className="pt-24 lg:pt-32 overflow-hidden relative w-full ">
         <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-6 items-center justify-between ">
           <motion.div
-            className=" w-fit lg:w-1/2"
+            className="  w-full lg:w-1/2"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
@@ -105,7 +105,7 @@ const Home = () => {
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center mt-10 space-x-8">
+            <div className="flex items-center mt-10 justify-between md:justify-start gap-4">
               <div className="flex items-center">
                 <span className="font-medium mr-2">20K+</span>
                 <span className="text-sm text-muted-foreground">Products</span>
@@ -121,7 +121,7 @@ const Home = () => {
             </div>
           </motion.div>
           <motion.div
-            className="lg:w-1/2 w-full mt-10 lg:mt-0"
+            className="lg:w-1/2 w-full mt-10 lg:mt-0 relative"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}

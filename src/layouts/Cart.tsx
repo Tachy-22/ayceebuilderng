@@ -13,6 +13,7 @@ import {
   Calculator,
   MapPin,
   Truck,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { getPaystackConfig } from "@/lib/paystack";
 import Link from "next/link";
+import { Label } from "@/components/ui/label";
 
 // Dynamically import PaystackButton with SSR disabled:
 const PaystackButton = dynamic(
@@ -49,9 +51,36 @@ const Cart = () => {
   const [deliveryDistance, setDeliveryDistance] = useState(10);
   const [deliveryWeight, setDeliveryWeight] = useState(500);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [savedUsers, setSavedUsers] = useState<
+    | {
+        name: string;
+        email: string;
+        address: string;
+      }[]
+    | []
+  >([]);
+  const [selectedUser, setSelectedUser] = useState<{
+    name: string;
+    email: string;
+    address: string;
+  } | null>(null);
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [newUserDetails, setNewUserDetails] = useState<{
+    name: string;
+    email: string;
+    address: string;
+  }>({
+    name: "",
+    email: "",
+    address: "",
+  });
 
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
+    const existingUsers = localStorage.getItem("savedUsers");
+    if (existingUsers) {
+      setSavedUsers(JSON.parse(existingUsers));
+    }
   }, []);
 
   // Calculate delivery cost based on location, distance, and weight
@@ -104,15 +133,16 @@ const Cart = () => {
 
   const handlePaystackSuccess = async (reference: string) => {
     try {
+    if (selectedUser) {
       const res = await fetch("/api/paystack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           reference,
           user: {
-            email: "entekumejeffrey3@gmail.com",
-            name: "Test User Name (Entekume Jeffrey)",
-            address: "123 Main St, Lagos",
+            email: selectedUser.email,
+            name: selectedUser.name,
+            address: selectedUser.address,
           },
           items: cartItems.map((item) => ({
             productName: item.product.name,
@@ -128,10 +158,11 @@ const Cart = () => {
       });
 
       if (res.ok) {
-        console.log({res})
+        console.log({ res });
         clearCart();
         setPaymentConfirmed(true);
       }
+    }
       // ...existing code...
     } catch (error) {
       console.error("Error sending payment data:", error);
@@ -140,6 +171,31 @@ const Cart = () => {
 
   const handlePaystackClose = () => {
     // ...handle close...
+  };
+
+  const handleSaveNewUser = () => {
+    if (
+      !newUserDetails.name.trim() ||
+      !newUserDetails.email.trim() ||
+      !newUserDetails.address.trim()
+    ) {
+      toast({
+        variant: "destructive",
+        title: "Invalid details",
+        description: "Please fill out all user fields.",
+      });
+      return;
+    }
+    const updatedUsers = [...savedUsers, newUserDetails];
+    setSavedUsers(updatedUsers);
+    localStorage.setItem("savedUsers", JSON.stringify(updatedUsers));
+    setShowUserForm(false);
+    setSelectedUser(newUserDetails);
+  };
+
+  const handleSelectUser = (user: any) => {
+    setSelectedUser(user);
+    setShowUserForm(false);
   };
 
   const config = getPaystackConfig("user@example.com", total * 100);
@@ -487,6 +543,104 @@ const Cart = () => {
                     )}
                   </div>
 
+                  <div className="space-y-4 p-4 border border-muted rounded-md bg-secondary/5">
+                    {savedUsers.length > 0 && !showUserForm ? (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          Select a saved user
+                        </Label>
+                        <Select
+                          onValueChange={(value) =>
+                            handleSelectUser(
+                              savedUsers.find((u) => u.email === value)
+                            )
+                          }
+                          defaultValue={selectedUser?.email || ""}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="-- Select User --" />
+                          </SelectTrigger>
+                          <SelectContent className="">
+                            {savedUsers.map((user, idx) => (
+                              <SelectItem key={idx} value={user.email}>
+                                {user.name} ({user.email})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          className="mt-2 w-full"
+                          onClick={() => {
+                            setSelectedUser(null);
+                            setShowUserForm(true);
+                          }}
+                        >
+                          Use new details
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        <div className="flex justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setShowUserForm(false);
+                              setNewUserDetails({ name: "", email: "", address: "" });
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <Label className="text-sm font-medium">
+                          Enter user details
+                        </Label>
+                        <div className="space-y-2">
+                          <Label className="text-black/80">Name</Label>
+                          <Input
+                            placeholder="Jane Doe"
+                            value={newUserDetails.name}
+                            onChange={(e) =>
+                              setNewUserDetails({
+                                ...newUserDetails,
+                                name: e.target.value,
+                              })
+                            }
+                          />
+                          <Label className="text-black/80">Email</Label>
+                          <Input
+                            placeholder="janedoe@gmail.com"
+                            value={newUserDetails.email}
+                            onChange={(e) =>
+                              setNewUserDetails({
+                                ...newUserDetails,
+                                email: e.target.value,
+                              })
+                            }
+                          />
+                          <Label className="text-black/80">Address</Label>
+                          <Input
+                            placeholder="No. 1 123 Street, City"
+                            value={newUserDetails.address}
+                            onChange={(e) =>
+                              setNewUserDetails({
+                                ...newUserDetails,
+                                address: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <Button
+                          className="mt-3 w-full"
+                          onClick={handleSaveNewUser}
+                        >
+                          Save User
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="pt-2">
                     <Link href="/building-quotation">
                       <Button variant="outline" className="w-full mb-3">
@@ -497,6 +651,7 @@ const Cart = () => {
 
                     <PaystackButton
                       text="Proceed to Checkout"
+                      disabled={!selectedUser}
                       className="w-full bg-primary text-white px-4 py-2 rounded-xl shadow hover:bg-primary/80 transition-all"
                       {...config}
                       onSuccess={handlePaystackSuccess}

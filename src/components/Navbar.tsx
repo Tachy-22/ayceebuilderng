@@ -177,7 +177,7 @@ const Navbar = () => {
             </Link>
 
             {/* Account */}
-            <Link href="/auth">
+            {/* <Link href="/auth">
               <Button
                 variant="ghost"
                 size="icon"
@@ -185,7 +185,7 @@ const Navbar = () => {
               >
                 <User size={20} />
               </Button>
-            </Link>
+            </Link> */}
 
             {/* Mobile Menu Trigger */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -227,7 +227,7 @@ const Navbar = () => {
                       </Link>
                     ))}
                   </nav>
-                  <div className="mt-auto py-4 border-t">
+                  {/* <div className="mt-auto py-4 border-t">
                     <Link
                       href="/auth"
                       className="flex items-center px-4 py-3 rounded-md text-sm font-medium hover:bg-secondary/50"
@@ -235,7 +235,7 @@ const Navbar = () => {
                       <User size={18} className="mr-2" />
                       Account
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
               </SheetContent>
             </Sheet>

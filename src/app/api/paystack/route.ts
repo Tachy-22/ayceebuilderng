@@ -8,8 +8,9 @@ import {
 
 export async function POST(request: Request) {
   try {
-    const { reference, user, items, totalAmount } = await request.json();
-    console.log({ reference, user, items, totalAmount });
+    const { reference, user, items, totalAmount, location, transportFare, distance, weight } =
+      await request.json();
+    console.log({ reference, user, items, totalAmount, location, transportFare, distance, weight });
     // 1. Verify payment from Paystack (basic illustration):
     const verifyRes = await fetch(
       `https://api.paystack.co/transaction/verify/${reference}`,
@@ -46,6 +47,10 @@ export async function POST(request: Request) {
       address: user.address,
       items,
       totalAmount,
+      location,
+      transportFare,
+      distance,
+      weight,
     });
 
     const newOrderEmailHTML = NewOrderEmail({
@@ -55,6 +60,10 @@ export async function POST(request: Request) {
       items,
       totalAmount,
       orderId: reference.reference,
+      location,
+      transportFare,
+      distance,
+      weight,
     });
 
     console.log(
@@ -66,14 +75,14 @@ export async function POST(request: Request) {
 
     // User email
     await sendEmail({
-      subject: `Order Confirmation - ${reference.reference}`,
+      subject: `AYCEEBUILDER Order Confirmation - ${reference.reference}`,
       content: orderConfirmationEmailHTML,
       recipients: user.email,
     });
 
     // Company email
     await sendEmail({
-      subject: `New Order - ${reference.reference}`,
+      subject: `AYCEEBUILDER New Order - ${reference.reference}`,
       content: newOrderEmailHTML,
       recipients: process.env.EMAIL_USER as string,
     });
