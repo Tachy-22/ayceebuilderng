@@ -72,16 +72,10 @@ const Home = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-
       {/* Hero Section */}
       <section className="pt-24 lg:pt-32 overflow-hidden relative w-full ">
         <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-6 items-center justify-between ">
-          <motion.div
-            className="  w-full lg:w-1/2"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-          >
+          <div className="  w-full lg:w-1/2">
             <Badge variant="outline" className="mb-4 py-1.5">
               Nigeria&apos;s Premier Construction Marketplace
             </Badge>
@@ -124,13 +118,8 @@ const Home = () => {
                 <span className="text-sm text-muted-foreground">Customers</span>
               </div>
             </div>
-          </motion.div>
-          <motion.div
-            className="lg:w-1/2 w-full mt-10 lg:mt-0 relative"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-          >
+          </div>
+          <div className="lg:w-1/2 w-full mt-10 lg:mt-0 relative">
             <div className="w-full  h-[400px] lg:h-[500px]">
               <div className=" w-full h-full rounded-xl overflow-hidden">
                 <img
@@ -142,7 +131,7 @@ const Home = () => {
               <div className="absolute -right-5 -bottom-5 w-64 h-64 bg-primary/5 rounded-full" />
               <div className="absolute -left-10 -top-10 w-32 h-32 bg-primary/5 rounded-full" />
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -782,7 +771,10 @@ const Home = () => {
                 </motion.div>
               </motion.div>
               <a href={whatsappURL} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" className="w-full bg-secondary hover:bg-secondary/90">
+                <Button
+                  variant="secondary"
+                  className="w-full bg-secondary hover:bg-secondary/90"
+                >
                   <span className="flex items-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -932,7 +924,6 @@ const Home = () => {
           </motion.div>
         </div>
       </section>
-
     </div>
   );
 };
