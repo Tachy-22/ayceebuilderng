@@ -85,8 +85,8 @@ const Home = () => {
               One Material at a Time
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Premium building supplies delivered to your doorstep. From
-              tiling to roofing, we&apos;ve got you covered.
+              Premium building supplies delivered to your doorstep. From tiling
+              to roofing, we&apos;ve got you covered.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/products" aria-label="Go to Products page">
@@ -155,7 +155,7 @@ const Home = () => {
             variants={staggerContainer}
           >
             <motion.div className="lg:col-span-3" variants={fadeIn}>
-              <Badge className="mb-2 text-black">FREE TOOL</Badge>
+              <Badge className="mb-2 text-[#004d40]">FREE TOOL</Badge>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
                 Building Material Quotation Tool
               </h2>
@@ -749,7 +749,7 @@ const Home = () => {
       <section className="py-16 md:py-24 bg-primary relative overflow-hidden">
         <div className="max-w-7xl w-full mx-auto px-4 relative z-10">
           <motion.div
-            className="max-w-2xl mx-auto text-center text-white"
+            className="max-w-2xl mx-auto text-center text-black/90"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7 }}
@@ -758,7 +758,7 @@ const Home = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Join Ayceebuilder as a Vendor
             </h2>
-            <p className="text-white/80 mb-8 text-lg">
+            <p className="text-[#004d40] mb-8 text-lg">
               Expand your business reach and sell your construction materials to
               thousands of customers across Nigeria.
             </p>
@@ -775,21 +775,21 @@ const Home = () => {
                   variants={fadeIn}
                 >
                   <h3 className="text-xl font-bold mb-1">500K+</h3>
-                  <p className="text-sm text-white/70">Monthly Visitors</p>
+                  <p className="text-sm text-[#004d40]">Monthly Visitors</p>
                 </motion.div>
                 <motion.div
                   className="bg-white/10 p-3 rounded-lg"
                   variants={fadeIn}
                 >
                   <h3 className="text-xl font-bold mb-1">₦50M+</h3>
-                  <p className="text-sm text-white/70">Monthly Sales</p>
+                  <p className="text-sm text-[#004d40]">Monthly Sales</p>
                 </motion.div>
                 <motion.div
                   className="bg-white/10 p-3 rounded-lg"
                   variants={fadeIn}
                 >
                   <h3 className="text-xl font-bold mb-1">15,000+</h3>
-                  <p className="text-sm text-white/70">Active Customers</p>
+                  <p className="text-sm text-[#004d40]">Active Customers</p>
                 </motion.div>
               </motion.div>
               <a
@@ -800,7 +800,7 @@ const Home = () => {
               >
                 <Button
                   variant="secondary"
-                  className="w-full bg-secondary hover:bg-secondary/90"
+                  className="w-full bg-[#004d40] hover:bg-[#004d40]/90"
                   aria-label="Become a Vendor"
                 >
                   <span className="flex items-center">
@@ -822,7 +822,7 @@ const Home = () => {
             </div>
           </motion.div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/20" />
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-10" />
       </section>
 
