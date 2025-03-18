@@ -49,7 +49,7 @@ const footerLinks = [
 const Footer = () => {
   return (
     <footer className="bg-secondary mt-16">
-      <div className="container mx-auto px-4 pt-16 pb-8">
+      <div className="max-w-7xl w-full mx-auto px-4 pt-16 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Brand and newsletter */}
           <div className="lg:col-span-2">

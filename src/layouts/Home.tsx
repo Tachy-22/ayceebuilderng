@@ -75,7 +75,7 @@ const Home = () => {
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
       <section className="pt-24 lg:pt-32 overflow-hidden relative w-full ">
-        <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-6 items-center justify-between ">
+        <div className="max-w-7xl w-full mx-auto px-4 flex flex-col lg:flex-row gap-6 items-center justify-between ">
           <div className="  w-full lg:w-1/2">
             <Badge variant="outline" className="mb-4 py-1.5">
               Nigeria&apos;s Premier Construction Marketplace
@@ -146,7 +146,7 @@ const Home = () => {
 
       {/* New Section: Building Quotation Tool */}
       <section className="py-10 bg-primary/10 mt-16">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center"
             initial="hidden"
@@ -155,7 +155,7 @@ const Home = () => {
             variants={staggerContainer}
           >
             <motion.div className="lg:col-span-3" variants={fadeIn}>
-              <Badge className="mb-2">FREE TOOL</Badge>
+              <Badge className="mb-2 text-black">FREE TOOL</Badge>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
                 Building Material Quotation Tool
               </h2>
@@ -222,7 +222,7 @@ const Home = () => {
 
       {/* Features Section */}
       <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
             initial="hidden"
@@ -292,7 +292,7 @@ const Home = () => {
 
       {/* Categories Section */}
       <section className="py-16 md:py-24 bg-gray-200/20">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="text-center max-w-xl mx-auto mb-12"
             initial={{ opacity: 0, y: 20 }}
@@ -350,7 +350,7 @@ const Home = () => {
 
       {/* Products Section */}
       <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="flex flex-col md:flex-row md:items-end justify-between mb-12"
             initial={{ opacity: 0, y: 20 }}
@@ -435,7 +435,7 @@ const Home = () => {
 
       {/* Customer Benefits */}
       <section className="py-16 md:py-24 bg-secondary/5">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -511,7 +511,7 @@ const Home = () => {
 
       {/* Project Showcase */}
       <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12"
             initial={{ opacity: 0, y: 20 }}
@@ -639,7 +639,7 @@ const Home = () => {
 
       {/* Market Insights */}
       <section className="py-16 md:py-24 bg-primary/5">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
@@ -747,7 +747,7 @@ const Home = () => {
 
       {/* CTA Banner */}
       <section className="py-16 md:py-24 bg-primary relative overflow-hidden">
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-7xl w-full mx-auto px-4 relative z-10">
           <motion.div
             className="max-w-2xl mx-auto text-center text-white"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -828,7 +828,7 @@ const Home = () => {
 
       {/* Testimonials */}
       <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="text-center max-w-xl mx-auto mb-12"
             initial={{ opacity: 0, y: 20 }}
@@ -860,7 +860,7 @@ const Home = () => {
                   <span className="font-medium text-white">AO</span>
                 </div>
                 <div>
-                  <h4 className="font-medium ">Adeyemi Oluwaseun</h4>
+                  <p className="font-medium ">Adeyemi Oluwaseun</p>
                   <p className="text-sm text-muted-foreground">
                     Contractor, Lagos
                   </p>
@@ -894,7 +894,7 @@ const Home = () => {
                   <span className="font-medium text-white">CM</span>
                 </div>
                 <div>
-                  <h4 className="font-medium">Chukwudi Madueke</h4>
+                  <p className="font-medium">Chukwudi Madueke</p>
                   <p className="text-sm text-muted-foreground">
                     Real Estate Developer, Abuja
                   </p>
@@ -928,7 +928,7 @@ const Home = () => {
                   <span className="font-medium text-white">FI</span>
                 </div>
                 <div>
-                  <h4 className="font-medium">Folake Ibrahim</h4>
+                  <p className="font-medium">Folake Ibrahim</p>
                   <p className="text-sm text-muted-foreground">
                     Homeowner, Port Harcourt
                   </p>
