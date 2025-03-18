@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   Menu,
@@ -23,6 +23,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -82,13 +83,17 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             {/* <span className="text-xl font-bold text-primary">Ayceebuilder</span> */}
-            <img
+            <Image
+              width={1383}
+              height={196}
               src="/aycee-logo.png"
               alt="Ayceebuilder logo"
               className="h-[2rem] lg:flex hidden"
               loading="lazy"
             />
-            <img
+            <Image
+              width={206}
+              height={196}
               src="/aycee-icon.png"
               alt="Ayceebuilder icon"
               className="h-[2rem] lg:hidden flex"
@@ -128,7 +133,11 @@ const Navbar = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[300px] p-3">
-                <form onSubmit={handleSearch} role="search" className="flex space-x-2">
+                <form
+                  onSubmit={handleSearch}
+                  role="search"
+                  className="flex space-x-2"
+                >
                   <Input
                     placeholder="Search products..."
                     value={searchQuery}

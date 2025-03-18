@@ -6,6 +6,7 @@ import { Instagram, Twitter, Facebook, Globe, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import Image from "next/image";
 
 const footerLinks = [
   {
@@ -52,14 +53,21 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Brand and newsletter */}
           <div className="lg:col-span-2">
-            <Link href="/" className="inline-block mb-4">
+            <Link
+              href="/"
+              aria-label="Go to Ayceebuilder homepage"
+              className="inline-block mb-4"
+            >
               {/* <h2 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
                 Ayceebuilder
               </h2> */}
-              <img
-                src="aycee-logo.png"
-                alt="Ayceebuilder"
-                className="h-[2rem]"
+              <Image
+                width={1383}
+                height={196}
+                src="/aycee-logo.png"
+                alt="Ayceebuilder logo"
+                className="h-[2rem] lg:flex hidden"
+                loading="lazy"
               />
             </Link>
             <p className="text-white/60 mb-6 max-w-md">
@@ -70,14 +78,18 @@ const Footer = () => {
             <div className="flex gap-2">
               <Input
                 type="email"
+                aria-label="Enter your email address"
                 placeholder="Your email address"
                 className="max-w-xs"
               />
-              <Button>Subscribe</Button>
+              <Button aria-label="Subscribe to our newsletter" name="subscribe">
+                Subscribe
+              </Button>
             </div>
             <div className="flex space-x-4 mt-8">
               <a
                 href="https://www.instagram.com/aycee_builder"
+                aria-label="Visit our Instagram"
                 className=""
                 target="_blank"
               >
@@ -91,7 +103,12 @@ const Footer = () => {
                 </Button>
               </a>
 
-              <a href="#" className="" target="_blank">
+              <a
+                href="#"
+                aria-label="Visit our Twitter"
+                className=""
+                target="_blank"
+              >
                 {" "}
                 <Button
                   variant="ghost"
@@ -104,6 +121,7 @@ const Footer = () => {
 
               <a
                 href="https://www.facebook.com/profile.php?id=100083060214875"
+                aria-label="Visit our Facebook"
                 className=""
                 target="_blank"
               >
@@ -128,6 +146,7 @@ const Footer = () => {
                   <li key={link.name}>
                     <Link
                       href={link.href}
+                      aria-label={`Go to ${link.name}`}
                       className="text-white/70 hover:text-white transition-colors"
                     >
                       {link.name}

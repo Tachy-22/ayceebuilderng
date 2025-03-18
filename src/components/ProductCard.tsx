@@ -44,6 +44,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       href={`/products/${product.id}`}
       className={`group !relative border rounded-xl bg-white overflow-hidden transition-all hover:shadow-md ${className}`}
       style={style}
+      aria-label={`View details for ${product.name}`}
     >
       <div className="absolute top-3 right-3 z-10">
         <Button
@@ -51,6 +52,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
           size="icon"
           className="h-8 w-8 rounded-full bg-white shadow-sm hover:text-primary"
           onClick={toggleWishlist}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          name={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
           <Heart
             size={16}
@@ -136,6 +139,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
           className="w-full gap-2"
           onClick={handleAddToCart}
           disabled={!product.inStock}
+          aria-label={`Add ${product.name} to cart`}
+          name={`Add ${product.name} to cart`}
         >
           <ShoppingBag size={16} />
           Add to Cart

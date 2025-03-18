@@ -32,6 +32,7 @@ import {
 } from "@/data/products";
 import Link from "next/link";
 import { whatsappNumber } from "@/lib/utils";
+import Image from "next/image";
 
 // Animation variants
 const fadeIn = {
@@ -122,7 +123,9 @@ const Home = () => {
           <div className="lg:w-1/2 w-full mt-10 lg:mt-0 relative">
             <div className="w-full  h-[400px] lg:h-[500px]">
               <div className=" w-full h-full rounded-xl overflow-hidden">
-                <img
+                <Image
+                  width={7495}
+                  height={4996}
                   src="/hero-img.webp"
                   alt="Construction materials"
                   className="w-full h-full object-cover"
