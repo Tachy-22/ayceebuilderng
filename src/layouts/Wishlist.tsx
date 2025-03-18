@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Trash2, Heart, ArrowRight, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
@@ -47,7 +46,6 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
 
       <main className="flex-grow pt-20">
         <div className="bg-secondary/5 py-6">
@@ -195,7 +193,6 @@ const Wishlist = () => {
         </motion.div>
       </main>
 
-      <Footer />
     </div>
   );
 };

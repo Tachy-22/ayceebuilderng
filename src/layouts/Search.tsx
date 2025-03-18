@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import ProductCard from "@/components/ProductCard";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -101,7 +100,6 @@ const Search = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
 
       <main className="flex-grow pt-20">
         <div className="bg-secondary/5 py-10">
@@ -394,7 +392,6 @@ const Search = () => {
         </div>
       )}
 
-      <Footer />
     </div>
   );
 };

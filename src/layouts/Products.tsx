@@ -12,8 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import ProductCard from "@/components/ProductCard";
 import { categories, products } from "@/data/products";
 import { useSearchParams } from "next/navigation";
@@ -125,7 +124,6 @@ const ProductsPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
 
       <main className="flex-grow pt-20">
         {/* Page Header */}
@@ -399,7 +397,6 @@ const ProductsPage = () => {
         </div>
       )}
 
-      <Footer />
     </div>
   );
 };

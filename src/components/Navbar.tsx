@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect } from "react";
 import {
   Menu,
@@ -82,13 +83,13 @@ const Navbar = () => {
           <Link href="/" className="flex items-center">
             {/* <span className="text-xl font-bold text-primary">Ayceebuilder</span> */}
             <img
-              src="aycee-logo.png"
+              src="/aycee-logo.png"
               alt="Ayceebuilder logo"
               className="h-[2rem] lg:flex hidden"
               loading="lazy"
             />
             <img
-              src="aycee-icon.png"
+              src="/aycee-icon.png"
               alt="Ayceebuilder icon"
               className="h-[2rem] lg:hidden flex"
               loading="lazy"

@@ -34,8 +34,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import { toast } from "@/hooks/use-toast";
 import {
   calculateWallArea,
@@ -319,7 +318,6 @@ const BuildingQuotation = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
 
       <main className="flex-grow pt-20">
         <div className="bg-secondary/5 py-6">
@@ -825,7 +823,6 @@ const BuildingQuotation = () => {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 };

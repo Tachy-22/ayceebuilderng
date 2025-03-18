@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import { MapPin, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import Link from "next/link";
 import { whatsappNumber } from "@/lib/utils";
 
@@ -133,7 +132,6 @@ const Vendors = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
 
       <main className="flex-grow pt-20">
         <div className="bg-secondary/5 py-10">
@@ -290,7 +288,6 @@ const Vendors = () => {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 };

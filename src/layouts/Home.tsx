@@ -22,8 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import ProductCard from "@/components/ProductCard";
 import {
   categories,
@@ -73,7 +72,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
 
       {/* Hero Section */}
       <section className="pt-24 lg:pt-32 overflow-hidden relative w-full ">
@@ -935,7 +933,6 @@ const Home = () => {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 };

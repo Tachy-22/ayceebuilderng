@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import { categories, products, Product } from "@/data/products";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -40,7 +39,6 @@ const Categories = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
 
       <main className="flex-grow pt-20">
         <div className="bg-secondary/5 py-10">
@@ -126,7 +124,6 @@ const Categories = () => {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 };

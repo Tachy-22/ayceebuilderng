@@ -11,8 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import { Product, products } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
@@ -42,7 +41,6 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="min-h-screen">
-        <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
           <h1 className="text-2xl font-bold mb-4">Product not found</h1>
           <p className="mb-6">
@@ -53,7 +51,6 @@ const ProductDetail = () => {
             <Button>Browse All Products</Button>
           </Link>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -84,8 +81,6 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       <main className="flex-grow pt-20">
         {/* Breadcrumbs */}
         <div className="container mx-auto px-4 py-4">
@@ -254,7 +249,6 @@ const ProductDetail = () => {
                   <div>
                     <span className="font-medium">Delivery:</span> Available
                     nationwide.
-                  
                   </div>
                 </div>
               </div>
@@ -445,8 +439,6 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
