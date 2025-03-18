@@ -88,7 +88,7 @@ const Navbar = () => {
               height={196}
               src="/aycee-logo.png"
               alt="Ayceebuilder logo"
-              className="h-[2rem] lg:flex hidden"
+              className="h-[2rem] w-fit lg:flex hidden"
               loading="lazy"
             />
             <Image
@@ -96,7 +96,7 @@ const Navbar = () => {
               height={196}
               src="/aycee-icon.png"
               alt="Ayceebuilder icon"
-              className="h-[2rem] lg:hidden flex"
+              className="h-[2rem] w-fit lg:hidden flex"
               loading="lazy"
             />
           </Link>

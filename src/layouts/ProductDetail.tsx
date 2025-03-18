@@ -116,7 +116,7 @@ const ProductDetail = () => {
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full h-auto object-cover aspect-[4/3]"
+                className="w-full h-full object-cover object-center "
               />
             </div>
 
