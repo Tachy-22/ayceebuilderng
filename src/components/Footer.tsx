@@ -56,7 +56,7 @@ const Footer = () => {
             <Link
               href="/"
               aria-label="Go to Ayceebuilder homepage"
-              className="inline-block mb-4"
+              className="inline-block mb-4 w-full"
             >
               {/* <h2 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
                 Ayceebuilder
@@ -66,15 +66,15 @@ const Footer = () => {
                 height={196}
                 src="/aycee-logo.png"
                 alt="Ayceebuilder logo"
-                className="h-[2rem] lg:flex hidden"
-                loading="lazy"
+                className="h-[2rem] w-fit flex "
+                priority
               />
             </Link>
             <p className="text-white/60 mb-6 max-w-md">
               Your one-stop shop for all construction materials. Quality
               products at competitive prices.
             </p>
-            <h3 className="font-medium mb-3">Subscribe to our newsletter</h3>
+            <h3 className="font-medium mb-3 text-white/50">Subscribe to our newsletter</h3>
             <div className="flex gap-2">
               <Input
                 type="email"
@@ -95,6 +95,7 @@ const Footer = () => {
               >
                 {" "}
                 <Button
+                  aria-label="Visit our Instagram"
                   variant="ghost"
                   size="icon"
                   className="rounded-full h-10 w-10 text-white"
@@ -111,6 +112,7 @@ const Footer = () => {
               >
                 {" "}
                 <Button
+                  aria-label="Visit our Twitter"
                   variant="ghost"
                   size="icon"
                   className="rounded-full h-10 w-10 text-white"
@@ -127,6 +129,7 @@ const Footer = () => {
               >
                 {" "}
                 <Button
+                  aria-label="Visit our Facebook"
                   variant="ghost"
                   size="icon"
                   className="rounded-full h-10 w-10 text-white"
