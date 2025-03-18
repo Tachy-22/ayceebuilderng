@@ -32,11 +32,13 @@ const ProductDetail = () => {
     // Find the product by ID
     const foundProduct = products.find((p) => p.id === id);
     if (foundProduct) {
+      console.log(foundProduct);
+
       setProduct(foundProduct);
       setTimeout(() => setIsLoaded(true), 100);
     }
   }, [id]);
-
+  
   if (!product) {
     return (
       <div className="min-h-screen">
@@ -273,9 +275,9 @@ const ProductDetail = () => {
                 <TabsTrigger value="specifications" className="text-base">
                   Specifications
                 </TabsTrigger>
-                <TabsTrigger value="reviews" className="text-base">
+                {/* <TabsTrigger value="reviews" className="text-base">
                   Reviews
-                </TabsTrigger>
+                </TabsTrigger> */}
               </TabsList>
 
               <TabsContent value="description" className="mt-6">
@@ -318,7 +320,7 @@ const ProductDetail = () => {
                       </div>
                       <div className="grid grid-cols-2 border-b pb-2">
                         <span className="text-muted-foreground">Weight</span>
-                        <span>25kg per unit</span>
+                        <span>{product.weight} kg per unit</span>
                       </div>
                       <div className="grid grid-cols-2 border-b pb-2">
                         <span className="text-muted-foreground">Color</span>
@@ -346,7 +348,7 @@ const ProductDetail = () => {
                         <span className="text-muted-foreground">
                           Package Weight
                         </span>
-                        <span>25.5kg</span>
+                        <span>{product.weight} kg</span>
                       </div>
                       <div className="grid grid-cols-2 border-b pb-2">
                         <span className="text-muted-foreground">
@@ -371,7 +373,7 @@ const ProductDetail = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="reviews" className="mt-6">
+              {/* <TabsContent value="reviews" className="mt-6">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -443,7 +445,7 @@ const ProductDetail = () => {
                     <Button variant="outline">Load More Reviews</Button>
                   </div>
                 </div>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </div>
         </div>

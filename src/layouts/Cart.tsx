@@ -111,6 +111,11 @@ const Cart = () => {
   const deliveryCost = calculateDeliveryCost();
   const total = subtotal + tax + deliveryCost - discountAmount;
 
+  const totalWeight = cartItems.reduce(
+    (sum, item) => sum + item.quantity * item.product.weight,
+    0
+  );
+
   const applyPromoCode = () => {
     if (promoCode.toUpperCase() === "WELCOME10") {
       const discount = subtotal * 0.1; // 10% discount
@@ -133,36 +138,36 @@ const Cart = () => {
 
   const handlePaystackSuccess = async (reference: string) => {
     try {
-    if (selectedUser) {
-      const res = await fetch("/api/paystack", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reference,
-          user: {
-            email: selectedUser.email,
-            name: selectedUser.name,
-            address: selectedUser.address,
-          },
-          items: cartItems.map((item) => ({
-            productName: item.product.name,
-            unitPrice: item.product.discountPrice || item.product.price,
-            quantity: item.quantity,
-          })),
-          totalAmount: total,
-          location: deliveryLocation,
-          transportFare: deliveryCost,
-          distance: deliveryDistance,
-          weight: deliveryWeight,
-        }),
-      });
+      if (selectedUser) {
+        const res = await fetch("/api/paystack", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reference,
+            user: {
+              email: selectedUser.email,
+              name: selectedUser.name,
+              address: selectedUser.address,
+            },
+            items: cartItems.map((item) => ({
+              productName: item.product.name,
+              unitPrice: item.product.discountPrice || item.product.price,
+              quantity: item.quantity,
+            })),
+            totalAmount: total,
+            location: deliveryLocation,
+            transportFare: deliveryCost,
+            distance: deliveryDistance,
+            weight: deliveryWeight,
+          }),
+        });
 
-      if (res.ok) {
-        console.log({ res });
-        clearCart();
-        setPaymentConfirmed(true);
+        if (res.ok) {
+          console.log({ res });
+          clearCart();
+          setPaymentConfirmed(true);
+        }
       }
-    }
       // ...existing code...
     } catch (error) {
       console.error("Error sending payment data:", error);
@@ -266,11 +271,14 @@ const Cart = () => {
               </Link>
             </div>
           ) : cartItems.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
               {/* Cart Items */}
-              <motion.div variants={itemVariants} className="lg:col-span-2">
-                <div className="bg-white rounded-xl border overflow-hidden">
-                  <div className="p-4 border-b bg-secondary/10">
+              <motion.div
+                variants={itemVariants}
+                className="lg:col-span-2 overflow-x-hidden"
+              >
+                <div className="overflow-x-auto bg-white rounded-xl border flex flex-col">
+                  <div className="p-4 border-b bg-secondary/10  min-w-[50rem]  ">
                     <div className="grid grid-cols-12 gap-4 text-sm font-medium">
                       <div className="col-span-6">Product</div>
                       <div className="col-span-2 text-center">Price</div>
@@ -279,7 +287,7 @@ const Cart = () => {
                     </div>
                   </div>
 
-                  <div className="divide-y">
+                  <div className="divide-y  min-w-[50rem]">
                     {cartItems.map((item) => (
                       <motion.div
                         key={item.id}
@@ -467,7 +475,7 @@ const Cart = () => {
                           </Select>
                         </div>
 
-                        <div>
+                        {/* <div>
                           <label className="text-sm text-muted-foreground mb-1 block">
                             Delivery Distance (km)
                           </label>
@@ -493,7 +501,7 @@ const Cart = () => {
                             }
                             min="1"
                           />
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 
@@ -511,6 +519,12 @@ const Cart = () => {
                       <span className="text-xl font-bold">
                         ₦{total.toLocaleString()}
                       </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">
+                        Total Weight
+                      </span>
+                      <span className="font-medium">{totalWeight} kg</span>
                     </div>
                   </div>
 
@@ -587,7 +601,11 @@ const Cart = () => {
                             size="icon"
                             onClick={() => {
                               setShowUserForm(false);
-                              setNewUserDetails({ name: "", email: "", address: "" });
+                              setNewUserDetails({
+                                name: "",
+                                email: "",
+                                address: "",
+                              });
                             }}
                           >
                             <X className="h-4 w-4" />

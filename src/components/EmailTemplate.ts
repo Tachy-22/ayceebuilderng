@@ -37,7 +37,9 @@ export function OrderConfirmationEmail({
       <div style="background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
         <p><strong>Email:</strong> ${userEmail}</p>
         <p><strong>Shipping Address:</strong> ${address}</p>
-       
+        <p><strong>Delivery Location:</strong> ${location || ""}</p>
+     
+        <p><strong>Weight:</strong> ${weight || 0} kg</p>
       </div>
 
       <table style="width: 100%; margin-top: 15px; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
@@ -110,7 +112,9 @@ export function NewOrderEmail({
         <p><strong>Customer:</strong> ${userName}</p>
         <p><strong>Email:</strong> ${userEmail}</p>
         <p><strong>Shipping Address:</strong> ${address}</p>
-      
+        <p><strong>Delivery Location:</strong> ${location || ""}</p>
+     
+        <p><strong>Weight:</strong> ${weight || 0} kg</p>
       </div>
 
       <table style="width: 100%; margin-top: 15px; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">

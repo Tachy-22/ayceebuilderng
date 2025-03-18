@@ -83,13 +83,15 @@ const Navbar = () => {
             {/* <span className="text-xl font-bold text-primary">Ayceebuilder</span> */}
             <img
               src="aycee-logo.png"
-              alt="Ayceebuilder"
+              alt="Ayceebuilder logo"
               className="h-[2rem] lg:flex hidden"
+              loading="lazy"
             />
             <img
               src="aycee-icon.png"
-              alt="Ayceebuilder"
+              alt="Ayceebuilder icon"
               className="h-[2rem] lg:hidden flex"
+              loading="lazy"
             />
           </Link>
 
@@ -119,12 +121,13 @@ const Navbar = () => {
                   variant="ghost"
                   size="icon"
                   className="text-muted-foreground"
+                  aria-label="Search"
                 >
                   <Search size={20} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[300px] p-3">
-                <form onSubmit={handleSearch} className="flex space-x-2">
+                <form onSubmit={handleSearch} role="search" className="flex space-x-2">
                   <Input
                     placeholder="Search products..."
                     value={searchQuery}
@@ -144,6 +147,7 @@ const Navbar = () => {
                 variant="ghost"
                 size="icon"
                 className="relative text-muted-foreground"
+                aria-label="Wishlist"
               >
                 <Heart size={20} />
                 {wishlistItemCount > 0 && (
@@ -163,6 +167,7 @@ const Navbar = () => {
                 variant="ghost"
                 size="icon"
                 className="relative text-muted-foreground"
+                aria-label="View cart"
               >
                 <ShoppingCart size={20} />
                 {cartItemCount > 0 && (
@@ -194,6 +199,7 @@ const Navbar = () => {
                   variant="ghost"
                   size="icon"
                   className="md:hidden text-muted-foreground"
+                  aria-label="Open mobile menu"
                 >
                   <Menu size={20} />
                 </Button>

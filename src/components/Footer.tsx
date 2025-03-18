@@ -33,14 +33,14 @@ const footerLinks = [
   //     // { name: "Order Status", href: "/orders" },
   //     // { name: "Payment Methods", href: "/payment" },
   //   ],
+  // // },
+  // {
+  //   title: "Legal",
+  //   links: [
+  //     { name: "Terms of Service", href: "#" },
+  //     { name: "Privacy Policy", href: "#" },
+  //   ],
   // },
-  {
-    title: "Legal",
-    links: [
-      { name: "Terms of Service", href: "#" },
-      { name: "Privacy Policy", href: "#" },
-    ],
-  },
 ];
 
 const Footer = () => {
@@ -74,27 +74,46 @@ const Footer = () => {
               <Button>Subscribe</Button>
             </div>
             <div className="flex space-x-4 mt-8">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-10 w-10 text-white"
+              <a
+                href="https://www.instagram.com/aycee_builder"
+                className=""
+                target="_blank"
               >
-                <Instagram size={20} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-10 w-10 text-white"
+                {" "}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full h-10 w-10 text-white"
+                >
+                  <Instagram size={20} />
+                </Button>
+              </a>
+
+              <a href="#" className="" target="_blank">
+                {" "}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full h-10 w-10 text-white"
+                >
+                  <Twitter size={20} />
+                </Button>
+              </a>
+
+              <a
+                href="https://www.facebook.com/profile.php?id=100083060214875"
+                className=""
+                target="_blank"
               >
-                <Twitter size={20} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-10 w-10 text-white"
-              >
-                <Facebook size={20} />
-              </Button>
+                {" "}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full h-10 w-10 text-white"
+                >
+                  <Facebook size={20} />
+                </Button>
+              </a>
             </div>
           </div>
 
@@ -127,14 +146,17 @@ const Footer = () => {
               </div>
               <div className="flex items-center">
                 <Mail size={16} className="mr-2 text-white/50" />
-                <span className="text-sm text-white/50">
-                  support@ayceebuilder.ng
-                </span>
+                <a
+                  href="mailto:ayceemarket505@gmail.com"
+                  className="text-sm text-white/50 hover:underline"
+                >
+                  ayceemarket505@gmail.com
+                </a>
               </div>
               <div className="flex items-center">
                 <Phone size={16} className="mr-2 text-white/50" />
                 <span className="text-sm text-white/50">
-                  +234 (0) 123 456 7890
+                  +234 (0) 703 952 0579
                 </span>
               </div>
             </div>

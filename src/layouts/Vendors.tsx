@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import { whatsappNumber } from "@/lib/utils";
 
 // Mock vendors data
 const vendors = [
@@ -124,7 +125,6 @@ const Vendors = () => {
     // Search is already handled by the useEffect
   };
 
-  const whatsappNumber = "+2348123456789"; // Replace with your actual WhatsApp number
   const whatsappMessage =
     "Hello, I'm interested in becoming a vendor on Ayceebuilder.";
   const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(

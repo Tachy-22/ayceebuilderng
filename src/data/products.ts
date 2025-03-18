@@ -20,6 +20,7 @@ export interface Product {
     rating: number;
     verified: boolean;
   };
+  weight: number;
 }
 
 export const categories = [
@@ -68,6 +69,7 @@ export const products: Product[] = [
       rating: 4.9,
       verified: true,
     },
+     weight: 50,
   },
   {
     id: "2",
@@ -100,6 +102,7 @@ export const products: Product[] = [
       rating: 4.5,
       verified: true,
     },
+    weight: 12,
   },
   {
     id: "3",
@@ -134,6 +137,7 @@ export const products: Product[] = [
       rating: 4.7,
       verified: true,
     },
+    weight: 20,
   },
   {
     id: "4",
@@ -169,6 +173,7 @@ export const products: Product[] = [
       rating: 4.8,
       verified: true,
     },
+    weight: 25,
   },
   {
     id: "5",
@@ -201,6 +206,7 @@ export const products: Product[] = [
       rating: 4.6,
       verified: true,
     },
+    weight: 30,
   },
   {
     id: "6",
@@ -234,6 +240,7 @@ export const products: Product[] = [
       rating: 4.4,
       verified: true,
     },
+    weight: 15,
   },
   {
     id: "7",
@@ -267,6 +274,7 @@ export const products: Product[] = [
       rating: 4.5,
       verified: true,
     },
+    weight: 5,
   },
   {
     id: "8",
@@ -299,6 +307,7 @@ export const products: Product[] = [
       rating: 4.3,
       verified: true,
     },
+    weight: 25,
   },
 ];
 
