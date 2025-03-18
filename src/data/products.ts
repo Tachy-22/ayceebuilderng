@@ -24,16 +24,12 @@ export interface Product {
 }
 
 export const categories = [
-  { id: 'cement', name: 'Cement & Concrete', icon: '📦', itemCount: 12 },
-  { id: 'steel', name: 'Steel & Metals', icon: '➗', itemCount: 15 },
-  { id: 'bricks', name: 'Bricks & Blocks', icon: '◼️', itemCount: 8 },
-  { id: 'tiles', name: 'Tiles & Flooring', icon: '🔲', itemCount: 20 },
-  { id: 'wood', name: 'Wood & Timber', icon: '📏', itemCount: 14 },
-  { id: 'roofing', name: 'Roofing Materials', icon: '🏠', itemCount: 9 },
-  { id: 'plumbing', name: 'Plumbing Supplies', icon: '💧', itemCount: 18 },
-  { id: 'electrical', name: 'Electrical Supplies', icon: '⚡', itemCount: 22 },
-  { id: 'paints', name: 'Paints & Finishes', icon: '🎨', itemCount: 16 },
-  { id: 'hardware', name: 'Hardware & Tools', icon: '🔧', itemCount: 25 },
+  { id: 'tiles', name: 'Tiles', icon: '🔲', itemCount: 20 },
+  { id: 'electrical', name: 'Electrical', icon: '⚡', itemCount: 22 },
+  { id: 'sanitary-ware', name: 'Sanitary Ware', icon: '🚰', itemCount: 12 },
+  { id: 'cladding', name: 'Cladding', icon: '🧱', itemCount: 14 },
+  { id: 'adhesive&admix', name: 'Adhesives & Admixtures', icon: '🧪', itemCount: 9 },
+  { id: 'plumbing', name: 'Plumbing', icon: '💧', itemCount: 18 },
 ];
 
 export const products: Product[] = [

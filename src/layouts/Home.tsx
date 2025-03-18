@@ -85,8 +85,8 @@ const Home = () => {
               One Material at a Time
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Premium construction supplies delivered to your doorstep. From
-              cement to steel, we&apos;ve got you covered.
+              Premium building supplies delivered to your doorstep. From
+              tiling to roofing, we&apos;ve got you covered.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/products" aria-label="Go to Products page">
