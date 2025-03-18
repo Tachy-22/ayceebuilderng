@@ -38,7 +38,7 @@ const ProductDetail = () => {
       setTimeout(() => setIsLoaded(true), 100);
     }
   }, [id]);
-  
+
   if (!product) {
     return (
       <div className="min-h-screen">
@@ -254,12 +254,7 @@ const ProductDetail = () => {
                   <div>
                     <span className="font-medium">Delivery:</span> Available
                     nationwide.
-                    <Link
-                      href="/delivery-estimator"
-                      className="text-primary ml-1"
-                    >
-                      Calculate delivery cost
-                    </Link>
+                  
                   </div>
                 </div>
               </div>
