@@ -80,7 +80,7 @@ const Home = () => {
             <Badge variant="outline" className="mb-4 py-1.5">
               Nigeria&apos;s Premier Construction Marketplace
             </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-grey-800">
               Building Nigeria, <br />
               One Material at a Time
             </h1>
@@ -156,7 +156,7 @@ const Home = () => {
           >
             <motion.div className="lg:col-span-3" variants={fadeIn}>
               <Badge className="mb-2 text-[#004d40]">FREE TOOL</Badge>
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4 text-grey-800">
                 Building Material Quotation Tool
               </h2>
               <p className="text-lg mb-6">
@@ -300,7 +300,9 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            <h2 className="text-3xl font-bold mb-4">Shop by Categories</h2>
+            <h2 className="text-3xl font-bold mb-4 text-grey-800">
+              Shop by Categories
+            </h2>
             <p className="text-muted-foreground">
               Browse our wide range of construction materials categorized for
               your convenience.
@@ -359,7 +361,9 @@ const Home = () => {
             viewport={{ once: true, margin: "-100px" }}
           >
             <div>
-              <h2 className="text-3xl font-bold mb-4">Featured Products</h2>
+              <h2 className="text-grey-800 text-3xl font-bold mb-4">
+                Featured Products
+              </h2>
               <p className="text-muted-foreground max-w-xl">
                 Explore our handpicked selection of high-quality construction
                 materials from trusted vendors.
@@ -443,7 +447,7 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-3xl font-bold mb-4 text-grey-800">
               Why Choose Ayceebuilder?
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -465,7 +469,7 @@ const Home = () => {
                   <div className="rounded-full w-12 h-12 bg-green-100 flex items-center justify-center mb-6">
                     <CheckCircle className="text-green-600" size={24} />
                   </div>
-                  <h3 className="text-xl font-bold mb-3">Quality Guaranteed</h3>
+                  <h3 className="text-xl font-bold mb-3 ">Quality Guaranteed</h3>
                   <p className="text-muted-foreground">
                     All our products undergo strict quality control. We only
                     partner with trusted manufacturers and vendors who meet our
@@ -520,7 +524,7 @@ const Home = () => {
             viewport={{ once: true, margin: "-100px" }}
           >
             <div>
-              <h2 className="text-3xl font-bold mb-4">Project Showcase</h2>
+              <h2 className="text-3xl text-grey-800 font-bold mb-4">Project Showcase</h2>
               <p className="text-muted-foreground max-w-xl">
                 See how our materials have been used in some of Nigeria&apos;s
                 most impressive construction projects
@@ -647,7 +651,7 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            <h2 className="text-3xl font-bold mb-4">Market Insights</h2>
+            <h2 className="text-3xl text-grey-800 font-bold mb-4">Market Insights</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Stay updated with the latest trends and prices in the construction
               materials market

@@ -36,7 +36,7 @@ export const products: Product[] = [
   {
     id: "1",
     name: "Dangote Cement (42.5R)",
-    category: "cement",
+    category: "adhesive&admix",
     price: 4500,
     image:
       "https://dangotecement.com/wp-content/uploads/2021/03/3X-425R-bag.png",
@@ -70,7 +70,7 @@ export const products: Product[] = [
   {
     id: "2",
     name: "Reinforcement Steel Rods (16mm)",
-    category: "steel",
+    category: "cladding",
     price: 7800,
     discountPrice: 7200,
     image:
@@ -138,7 +138,7 @@ export const products: Product[] = [
   {
     id: "4",
     name: "Berger Weather Proof Exterior Paint",
-    category: "paints",
+    category: "adhesive&admix",
     price: 12000,
     discountPrice: 10500,
     image:
@@ -174,7 +174,7 @@ export const products: Product[] = [
   {
     id: "5",
     name: "Premium Hardwood Planks",
-    category: "wood",
+    category: "cladding",
     price: 5600,
     image:
       "https://images.unsplash.com/photo-1520333789090-1afc82db536a?q=80&w=2000&auto=format&fit=crop",
@@ -207,7 +207,7 @@ export const products: Product[] = [
   {
     id: "6",
     name: "Waterproof Roofing Sheets",
-    category: "roofing",
+    category: "cladding",
     price: 3200,
     image: "https://surplus.lk/wp-content/uploads/2022/09/XL.jpg",
     rating: 4.7,
@@ -275,7 +275,7 @@ export const products: Product[] = [
   {
     id: "8",
     name: "Concrete Hollow Blocks (9 inches)",
-    category: "bricks",
+    category: "cladding",
     price: 350,
     image: "https://gwg.ng/wp-content/uploads/2024/07/Blocks.webp",
     rating: 4.4,
