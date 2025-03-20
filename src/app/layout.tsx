@@ -26,6 +26,14 @@ export const metadata: Metadata = {
     title: "Ayceebuilder Nigeria | Building Materials eCommerce",
     description: "Modern eCommerce platform for building materials in Nigeria.",
     url: "https://ayceebuilder.com",
+       images: [
+      {
+        url: '/og-image.png', // Update this path to your actual image
+        width: 1200,
+        height: 630,
+        alt: 'ayceebuilder',
+      }
+    ],
     siteName: "Ayceebuilder Nigeria",
     locale: "en_NG",
     type: "website",
