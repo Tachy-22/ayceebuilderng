@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import {
   ChevronRight,
@@ -7,36 +8,59 @@ import {
   ShoppingCart,
   Heart,
   Share2,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { Product, products } from "@/data/products";
+import { Product, ProductNew, mapNewProductToProduct } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useAppSelector } from "@/lib/redux/hooks";
 
-const ProductDetail = () => {
+interface ProductDetailProps {
+  mappedProducts?: Product[];
+  rawProduct?: ProductNew;
+}
+
+const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
   const { id } = useParams();
-  const [product, setProduct] = useState<Product | null>(null);
+  const { product } = useAppSelector((state) => state.productSlice);
   const [quantity, setQuantity] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
-    // Find the product by ID
-    const foundProduct = products.find((p) => p.id === id);
-    if (foundProduct) {
-      console.log(foundProduct);
+    // Reset image index when product changes
+    setCurrentImageIndex(0);
 
-      setProduct(foundProduct);
+    // First try to find the product in the mapped products
+    if (mappedProducts && mappedProducts.length > 0) {
+      const foundProduct = mappedProducts.find((p) => p.id === id);
+      if (foundProduct) {
+        setTimeout(() => setIsLoaded(true), 100);
+        return;
+      }
+    }
+
+    // If we have a raw product, map it
+    if (rawProduct) {
+      const mappedProduct = mapNewProductToProduct(rawProduct, 0);
+      setTimeout(() => setIsLoaded(true), 100);
+      return;
+    }
+
+    // If we have a product from redux
+    if (product) {
       setTimeout(() => setIsLoaded(true), 100);
     }
-  }, [id]);
+  }, [id, product, mappedProducts, rawProduct]);
 
   if (!product) {
     return (
@@ -56,7 +80,13 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = () => {
+    // Add product to cart
     addToCart(product, quantity);
+
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} added to cart`,
+    });
   };
 
   const handleAddToWishlist = () => {
@@ -75,15 +105,22 @@ const ProductDetail = () => {
     });
   };
 
+  // Change the displayed image
+  const changeImage = (index: number) => {
+    if (index >= 0 && index < product.images.length) {
+      setCurrentImageIndex(index);
+    }
+  };
+
   const hasDiscount =
     product.discountPrice && product.discountPrice < product.price;
   const wishlisted = isInWishlist(product.id);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen max-w-7xl mx-auto flex flex-col">
       <main className="flex-grow pt-20">
         {/* Breadcrumbs */}
-        <div className="container mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center text-sm text-muted-foreground">
             <Link href="/" className="hover:text-foreground">
               Home
@@ -94,7 +131,7 @@ const ProductDetail = () => {
             </Link>
             <ChevronRight size={14} className="mx-2" />
             <Link
-              href={`/categories/${product.category}`}
+              href={`/products?sheet=${product.category}&page=1&limit=12`}
               className="hover:text-foreground"
             >
               {product.category.charAt(0).toUpperCase() +
@@ -107,17 +144,44 @@ const ProductDetail = () => {
 
         <div
           className={`container mx-auto px-4 py-8 transition-opacity duration-500 ${
-            isLoaded ? "opacity-100" : "opacity-0"
+            product ? "opacity-100" : "opacity-0"
           }`}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {/* Product Image */}
-            <div className="bg-secondary/20 rounded-xl overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover object-center "
-              />
+            {/* Product Image Column */}
+            <div className="space-y-4">
+              {/* Main Product Image */}
+              <div className="bg-secondary/20 rounded-xl overflow-hidden max-h-[30rem]">
+                <img
+                  src={product.images[currentImageIndex] || product.image}
+                  alt={product.name}
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
+
+              {/* Image Thumbnails */}
+              {product.images.length > 1 && (
+                <div className="flex flex-wrap gap-2 justify-start">
+                  {product.images.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => changeImage(index)}
+                      className={`w-20 h-20 border-2 rounded overflow-hidden ${
+                        currentImageIndex === index
+                          ? "border-primary"
+                          : "border-transparent hover:border-gray-300"
+                      }`}
+                      aria-label={`View image ${index + 1}`}
+                    >
+                      <img
+                        src={img}
+                        alt={`${product.name} - view ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Product Info */}
@@ -171,6 +235,24 @@ const ProductDetail = () => {
                   </span>
                 )}
               </div>
+
+              {/* Features List - Quick view */}
+              {product.features && product.features.length > 0 && (
+                <div className="pt-4 border-t">
+                  <h3 className="font-medium mb-3">Key Features</h3>
+                  <ul className="grid grid-cols-1 gap-2">
+                    {product.features.slice(0, 4).map((feature, index) => (
+                      <li key={index} className="flex items-start">
+                        <Check
+                          size={16}
+                          className="text-green-600 mr-2 mt-1 flex-shrink-0"
+                        />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -264,29 +346,26 @@ const ProductDetail = () => {
                 <TabsTrigger value="specifications" className="text-base">
                   Specifications
                 </TabsTrigger>
-                {/* <TabsTrigger value="reviews" className="text-base">
-                  Reviews
-                </TabsTrigger> */}
+                {product.features && product.features.length > 0 && (
+                  <TabsTrigger value="features" className="text-base">
+                    Features
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="description" className="mt-6">
                 <div className="prose max-w-none">
                   <p>{product.description}</p>
-                  <p>
-                    This premium construction material is designed to meet the
-                    highest industry standards and is suitable for both
-                    professional and DIY construction projects. Built with
-                    durability in mind, it will withstand the test of time and
-                    environmental conditions.
-                  </p>
-                  <h3>Key Features</h3>
-                  <ul>
-                    <li>High-quality material composition</li>
-                    <li>Durability and long-lasting performance</li>
-                    <li>Easy to install and maintain</li>
-                    <li>Compatible with standard construction practices</li>
-                    <li>Environmentally friendly manufacturing process</li>
-                  </ul>
+                  {!product.description ||
+                  product.description === "No description available" ? (
+                    <p>
+                      This premium construction material is designed to meet the
+                      highest industry standards and is suitable for both
+                      professional and DIY construction projects. Built with
+                      durability in mind, it will withstand the test of time and
+                      environmental conditions.
+                    </p>
+                  ) : null}
                 </div>
               </TabsContent>
 
@@ -297,28 +376,24 @@ const ProductDetail = () => {
                       Technical Specifications
                     </h3>
                     <div className="space-y-2">
-                      <div className="grid grid-cols-2 border-b pb-2">
-                        <span className="text-muted-foreground">Material</span>
-                        <span>Premium-grade</span>
-                      </div>
-                      <div className="grid grid-cols-2 border-b pb-2">
-                        <span className="text-muted-foreground">
-                          Dimensions
-                        </span>
-                        <span>Standard</span>
-                      </div>
-                      <div className="grid grid-cols-2 border-b pb-2">
-                        <span className="text-muted-foreground">Weight</span>
-                        <span>{product.weight} kg per unit</span>
-                      </div>
-                      <div className="grid grid-cols-2 border-b pb-2">
-                        <span className="text-muted-foreground">Color</span>
-                        <span>Natural</span>
-                      </div>
-                      <div className="grid grid-cols-2 border-b pb-2">
-                        <span className="text-muted-foreground">Warranty</span>
-                        <span>2 years</span>
-                      </div>
+                      {Object.entries(product.specifications).map(
+                        ([key, value]) => (
+                          <div
+                            key={key}
+                            className="grid grid-cols-2 border-b pb-2"
+                          >
+                            <span className="text-muted-foreground capitalize">
+                              {key}
+                            </span>
+                            <span>{value as unknown as string}</span>
+                          </div>
+                        )
+                      )}
+                      {Object.keys(product.specifications).length === 0 && (
+                        <div className="text-muted-foreground">
+                          No specifications available
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -337,19 +412,7 @@ const ProductDetail = () => {
                         <span className="text-muted-foreground">
                           Package Weight
                         </span>
-                        <span>{product.weight} kg</span>
-                      </div>
-                      <div className="grid grid-cols-2 border-b pb-2">
-                        <span className="text-muted-foreground">
-                          Package Dimensions
-                        </span>
-                        <span>Standard</span>
-                      </div>
-                      <div className="grid grid-cols-2 border-b pb-2">
-                        <span className="text-muted-foreground">
-                          Certification
-                        </span>
-                        <span>ISO Certified</span>
+                        <span>{product.weight || "N/A"} Kg</span>
                       </div>
                       <div className="grid grid-cols-2 border-b pb-2">
                         <span className="text-muted-foreground">
@@ -362,79 +425,25 @@ const ProductDetail = () => {
                 </div>
               </TabsContent>
 
-              {/* <TabsContent value="reviews" className="mt-6">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-medium">Customer Reviews</h3>
-                      <div className="flex items-center mt-1">
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              size={18}
-                              className={
-                                star <= Math.round(product.rating)
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
-                              }
-                            />
-                          ))}
-                        </div>
-                        <span className="ml-2">{product.rating} out of 5</span>
-                        <span className="mx-2 text-muted-foreground">•</span>
-                        <span className="text-muted-foreground">
-                          {product.reviewCount} reviews
-                        </span>
-                      </div>
-                    </div>
-                    <Button>Write a Review</Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((review) => (
-                      <div key={review} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <div className="font-medium">Customer {review}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {new Date(
-                                2023,
-                                6 + review,
-                                10 + review
-                              ).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <div className="flex">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                size={14}
-                                className={
-                                  star <= 5 - (review % 2)
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "text-gray-300"
-                                }
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-sm">
-                          {review === 1
-                            ? "Excellent quality product. I've used it for multiple projects and it has never disappointed. Highly recommend!"
-                            : review === 2
-                            ? "Good product overall. Delivery was prompt and the material quality is as described. Would purchase again."
-                            : "Decent product for the price. Packaging could be improved but the material itself is good quality."}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="text-center">
-                    <Button variant="outline">Load More Reviews</Button>
-                  </div>
+              <TabsContent value="features" className="mt-6">
+                <div className="prose max-w-none">
+                  <ul className="space-y-3">
+                    {product.features && product.features.length > 0 ? (
+                      product.features.map((feature, index) => (
+                        <li key={index} className="flex items-start">
+                          <Check
+                            size={18}
+                            className="text-green-600 mr-2 mt-1 flex-shrink-0"
+                          />
+                          <span>{feature}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li>No additional features available.</li>
+                    )}
+                  </ul>
                 </div>
-              </TabsContent> */}
+              </TabsContent>
             </Tabs>
           </div>
         </div>

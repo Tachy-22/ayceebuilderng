@@ -63,11 +63,8 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Products", path: "/products" },
-    { name: "Categories", path: "/categories" },
-    { name: "Vendors", path: "/vendors" },
-    // { name: "Deals", path: "/deals" },
-    // { name: "Delivery Estimator", path: "/delivery-estimator" },
     { name: "Building Quotation", path: "/building-quotation" },
+    { name: "Vendors", path: "/vendors" },
   ];
 
   return (
@@ -78,7 +75,7 @@ const Navbar = () => {
           : "bg-white/80 backdrop-blur-md py-3"
       }`}
     >
-      <div className="max-w-7xl w-full mx-auto px-4">
+      <div className="max-w-[80rem]  w-full mx-auto px-4 ">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center">

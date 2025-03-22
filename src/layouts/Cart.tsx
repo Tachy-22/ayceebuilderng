@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import Head from "next/head";
 
 import { motion } from "framer-motion";
 import {
@@ -14,6 +15,9 @@ import {
   MapPin,
   Truck,
   X,
+  Search,
+  Loader2,
+  UserX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +34,13 @@ import { toast } from "@/hooks/use-toast";
 import { getPaystackConfig } from "@/lib/paystack";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
+
+// Interface for geocoding response
+interface GeocodingResult {
+  lat: string;
+  lon: string;
+  display_name: string;
+}
 
 // Dynamically import PaystackButton with SSR disabled:
 const PaystackButton = dynamic(
@@ -74,6 +85,26 @@ const Cart = () => {
     address: "",
   });
 
+  // New state for address autocomplete
+  const [addressInput, setAddressInput] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState<
+    Array<{ display_name: string; place_id: string }>
+  >([]);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // State for distance calculation
+  const [calculatedDistance, setCalculatedDistance] = useState<number | null>(
+    null
+  );
+  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
+  const [productLocation, setProductLocation] = useState(
+    "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja"
+  );
+
+  // Add state to track if we're showing the address selection UI
+  const [showAddressSelection, setShowAddressSelection] = useState(false);
+
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
     const existingUsers = localStorage.getItem("savedUsers");
@@ -81,6 +112,181 @@ const Cart = () => {
       setSavedUsers(JSON.parse(existingUsers));
     }
   }, []);
+
+  // Function to fetch address suggestions
+  const fetchAddressSuggestions = async (query: string) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsLoadingAddresses(true);
+    try {
+      const response = await fetch(
+        `https://api.locationiq.com/v1/autocomplete?key=${
+          process.env.NEXT_PUBLIC_LOCATION_IQ_API_KEY
+        }&q=${encodeURIComponent(query)}&limit=5&dedupe=1`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch address suggestions");
+      }
+
+      const data = await response.json();
+      setAddressSuggestions(data || []);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error("Error fetching address suggestions:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load address suggestions",
+      });
+      setAddressSuggestions([]);
+    } finally {
+      setIsLoadingAddresses(false);
+    }
+  };
+
+  // Debounce function for address input
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (addressInput) {
+        fetchAddressSuggestions(addressInput);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [addressInput]);
+
+  // Handle selecting an address from suggestions
+  const handleSelectAddress = (address: string) => {
+    setAddressInput(address);
+    setNewUserDetails({
+      ...newUserDetails,
+      address,
+    });
+    setShowSuggestions(false);
+  };
+
+  // Calculate product location based on cart items
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      // Use the location of the first product in the cart or the default
+      const firstProductLocation =
+        cartItems[0].product.location ||
+        "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja";
+      setProductLocation(firstProductLocation);
+    }
+  }, [cartItems]);
+
+  // Function to geocode an address using LocationIQ
+  const geocodeAddress = async (
+    address: string
+  ): Promise<GeocodingResult | null> => {
+    try {
+      const response = await fetch(
+        `https://us1.locationiq.com/v1/search.php?key=${
+          process.env.NEXT_PUBLIC_LOCATION_IQ_API_KEY
+        }&q=${encodeURIComponent(address)}&format=json`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to geocode address");
+      }
+
+      const data = await response.json();
+      if (data && data.length > 0) {
+        return {
+          lat: data[0].lat,
+          lon: data[0].lon,
+          display_name: data[0].display_name,
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+      return null;
+    }
+  };
+
+  // Calculate distance between two points using Haversine formula
+  const calculateHaversineDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+  };
+
+  // Calculate the actual distance between product location and delivery address
+  const calculateActualDistance = async () => {
+    if (!selectedUser?.address) {
+      toast({
+        variant: "destructive",
+        title: "Missing address",
+        description: "Please select a delivery address first.",
+      });
+      return;
+    }
+
+    setIsCalculatingDistance(true);
+
+    try {
+      // Geocode the product location
+      const productCoords = await geocodeAddress(productLocation);
+
+      // Geocode the user's address
+      const userCoords = await geocodeAddress(selectedUser.address);
+
+      if (productCoords && userCoords) {
+        // Calculate distance
+        const distance = calculateHaversineDistance(
+          parseFloat(productCoords.lat),
+          parseFloat(productCoords.lon),
+          parseFloat(userCoords.lat),
+          parseFloat(userCoords.lon)
+        );
+
+        // Round to nearest integer
+        const roundedDistance = Math.round(distance);
+        setCalculatedDistance(roundedDistance);
+
+        // Update delivery distance for cost calculation
+        setDeliveryDistance(roundedDistance);
+
+        toast({
+          title: "Distance calculated",
+          description: `Delivery distance: ${roundedDistance} km.`,
+        });
+      } else {
+        throw new Error("Could not geocode addresses");
+      }
+    } catch (error) {
+      console.error("Error calculating distance:", error);
+      toast({
+        variant: "destructive",
+        title: "Error calculating distance",
+        description:
+          "Could not calculate the delivery distance. Using default estimate.",
+      });
+    } finally {
+      setIsCalculatingDistance(false);
+    }
+  };
 
   // Calculate delivery cost based on location, distance, and weight
   const calculateDeliveryCost = () => {
@@ -91,7 +297,7 @@ const Cart = () => {
     if (deliveryLocation === "abuja") baseCost += 500;
     if (deliveryLocation === "other") baseCost += 1000;
 
-    // Adjust based on distance (₦50 per km)
+    // Adjust based on actual distance (₦50 per km) if available
     const distanceCost = deliveryDistance * 50;
 
     // Adjust based on weight (₦1 per kg)
@@ -154,7 +360,7 @@ const Cart = () => {
               quantity: item.quantity,
             })),
             totalAmount: total,
-            location: deliveryLocation,
+            location: selectedUser.address,
             transportFare: deliveryCost,
             distance: deliveryDistance,
             weight: deliveryWeight,
@@ -199,7 +405,35 @@ const Cart = () => {
 
   const handleSelectUser = (user: any) => {
     setSelectedUser(user);
+    setShowAddressSelection(false); // Hide the address selection after selecting
     setShowUserForm(false);
+    // Reset calculated distance so it can be recalculated
+    setCalculatedDistance(null);
+  };
+
+  // Effect to auto-calculate distance when a user is selected
+  useEffect(() => {
+    if (selectedUser && selectedUser.address && productLocation) {
+      calculateActualDistance();
+    }
+  }, [selectedUser, productLocation]);
+
+  // Function to remove a saved user
+  const handleRemoveUser = (email: string) => {
+    const updatedUsers = savedUsers.filter((user) => user.email !== email);
+    setSavedUsers(updatedUsers);
+    localStorage.setItem("savedUsers", JSON.stringify(updatedUsers));
+
+    // If the removed user was selected, clear selection
+    if (selectedUser && selectedUser.email === email) {
+      setSelectedUser(null);
+      setCalculatedDistance(null);
+    }
+
+    toast({
+      title: "User removed",
+      description: "User has been removed from your saved addresses",
+    });
   };
 
   const config = getPaystackConfig("user@example.com", total * 100);
@@ -227,6 +461,23 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Head>
+        <title>Your Cart - Aycee Builder</title>
+        <meta
+          name="description"
+          content="Review your cart items and checkout"
+        />
+        <meta
+          property="og:title"
+          content="Your Shopping Cart - Aycee Builder"
+        />
+        <meta
+          property="og:description"
+          content="Review your selected construction materials and complete your purchase."
+        />
+        <meta property="og:image" content="/images/og-cart.jpg" />
+        <meta property="og:type" content="website" />
+      </Head>
 
       <main className="flex-grow pt-20">
         <div className="bg-secondary/5 py-6">
@@ -452,65 +703,231 @@ const Cart = () => {
                       <h3 className="font-medium mb-2">Delivery Information</h3>
 
                       <div className="space-y-3">
-                        <div>
-                          <label className="text-sm text-muted-foreground mb-1 block">
-                            Location
-                          </label>
-                          <Select
-                            value={deliveryLocation}
-                            onValueChange={setDeliveryLocation}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="lagos">Lagos</SelectItem>
-                              <SelectItem value="abuja">Abuja</SelectItem>
-                              <SelectItem value="other">
-                                Other Cities
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        {/* Updated User Selection UI */}
+                        {savedUsers.length > 0 &&
+                        (showAddressSelection ||
+                          (!selectedUser && !showUserForm)) ? (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <Label className="text-sm font-medium">
+                                {selectedUser
+                                  ? "Change delivery address"
+                                  : "Select a saved address"}
+                              </Label>
+                              <Button
+                                variant="link"
+                                className="text-xs p-0 h-auto"
+                                onClick={() => {
+                                  setSelectedUser(null);
+                                  setShowUserForm(true);
+                                  setShowAddressSelection(false);
+                                }}
+                              >
+                                Add new
+                              </Button>
+                            </div>
 
-                        {/* <div>
-                          <label className="text-sm text-muted-foreground mb-1 block">
-                            Delivery Distance (km)
-                          </label>
-                          <Input
-                            type="number"
-                            value={deliveryDistance}
-                            onChange={(e) =>
-                              setDeliveryDistance(parseInt(e.target.value) || 0)
-                            }
-                            min="1"
-                          />
-                        </div>
+                            {/* User Cards */}
+                            <div className="space-y-3">
+                              {savedUsers.map((user, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                                    selectedUser &&
+                                    selectedUser.email === user.email
+                                      ? "border-primary bg-primary/5"
+                                      : "hover:border-gray-400"
+                                  }`}
+                                  onClick={() => handleSelectUser(user)}
+                                >
+                                  <div className="flex justify-between">
+                                    <div className="font-medium">
+                                      {user.name}
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveUser(user.email);
+                                      }}
+                                    >
+                                      <UserX size={14} />
+                                    </Button>
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {user.email}
+                                  </div>
+                                  <div className="text-sm mt-1 break-words">
+                                    {user.address}
+                                  </div>
 
-                        <div>
-                          <label className="text-sm text-muted-foreground mb-1 block">
-                            Estimated Weight (kg)
-                          </label>
-                          <Input
-                            type="number"
-                            value={deliveryWeight}
-                            onChange={(e) =>
-                              setDeliveryWeight(parseInt(e.target.value) || 0)
-                            }
-                            min="1"
-                          />
-                        </div> */}
+                                  {selectedUser &&
+                                    selectedUser.email === user.email &&
+                                    calculatedDistance !== null && (
+                                      <div className="mt-2 text-sm flex items-center text-primary">
+                                        <Truck size={14} className="mr-1" />
+                                        <span>
+                                          Distance: {calculatedDistance} km
+                                        </span>
+                                      </div>
+                                    )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : showUserForm ? (
+                          // User form - unchanged
+                          <div className="flex flex-col gap-4">
+                            <div className="flex justify-end">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setShowUserForm(false);
+                                  setNewUserDetails({
+                                    name: "",
+                                    email: "",
+                                    address: "",
+                                  });
+                                  setAddressInput("");
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <Label className="text-sm font-medium">
+                              Enter user details
+                            </Label>
+                            <div className="space-y-2">
+                              <Label className="text-black/80">Name</Label>
+                              <Input
+                                placeholder="Jane Doe"
+                                value={newUserDetails.name}
+                                onChange={(e) =>
+                                  setNewUserDetails({
+                                    ...newUserDetails,
+                                    name: e.target.value,
+                                  })
+                                }
+                              />
+                              <Label className="text-black/80">Email</Label>
+                              <Input
+                                placeholder="janedoe@gmail.com"
+                                value={newUserDetails.email}
+                                onChange={(e) =>
+                                  setNewUserDetails({
+                                    ...newUserDetails,
+                                    email: e.target.value,
+                                  })
+                                }
+                              />
+                              <Label className="text-black/80">Address</Label>
+                              <div className="relative">
+                                <div className="flex">
+                                  <Input
+                                    placeholder="Start typing your address"
+                                    value={addressInput}
+                                    onChange={(e) =>
+                                      setAddressInput(e.target.value)
+                                    }
+                                    className="w-full"
+                                  />
+                                  {isLoadingAddresses && (
+                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                    </div>
+                                  )}
+                                </div>
+
+                                {showSuggestions &&
+                                  addressSuggestions.length > 0 && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+                                      {addressSuggestions.map((suggestion) => (
+                                        <div
+                                          key={suggestion.place_id}
+                                          className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-start"
+                                          onClick={() =>
+                                            handleSelectAddress(
+                                              suggestion.display_name
+                                            )
+                                          }
+                                        >
+                                          <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                                          <span>{suggestion.display_name}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                            <Button
+                              className="mt-3 w-full"
+                              onClick={handleSaveNewUser}
+                            >
+                              Save User
+                            </Button>
+                          </div>
+                        ) : selectedUser ? (
+                          // Selected address with change button
+                          <div className="mt-2 bg-secondary/10 p-3 rounded-lg">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-medium">
+                                Delivery Address
+                              </span>
+                              <Button
+                                variant="link"
+                                className="text-xs p-0 h-auto"
+                                onClick={() => setShowAddressSelection(true)}
+                              >
+                                Change address
+                              </Button>
+                            </div>
+
+                            <div className="text-sm font-medium">
+                              {selectedUser.name}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {selectedUser.email}
+                            </div>
+                            <div className="text-sm mt-1 break-words">
+                              {selectedUser.address}
+                            </div>
+
+                            {isCalculatingDistance ? (
+                              <div className="flex items-center text-sm mt-2 text-muted-foreground">
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                Calculating delivery distance...
+                              </div>
+                            ) : calculatedDistance !== null ? (
+                              <div className="flex items-center text-sm mt-2 text-primary">
+                                <Truck size={14} className="mr-1" />
+                                <span>
+                                  Estimated distance: {calculatedDistance} km
+                                </span>
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
 
-                    <div className="flex justify-between border-t pt-2">
-                      <span className="text-muted-foreground">
-                        Delivery Fee
-                      </span>
-                      <span className="font-medium">
-                        ₦{deliveryCost.toLocaleString()}
-                      </span>
-                    </div>
+                    {calculatedDistance && (
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="text-muted-foreground">
+                          Delivery Fee
+                        </span>
+                        <span className="font-medium">
+                          ₦{deliveryCost.toLocaleString()}
+                          {calculatedDistance && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({calculatedDistance} km)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
 
                     <div className="border-t pt-3 flex justify-between items-center">
                       <span className="font-bold">Total</span>
@@ -552,108 +969,6 @@ const Cart = () => {
                       <p className="text-xs text-green-600">
                         Promo code applied successfully!
                       </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-4 p-4 border border-muted rounded-md bg-secondary/5">
-                    {savedUsers.length > 0 && !showUserForm ? (
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">
-                          Select a saved user
-                        </Label>
-                        <Select
-                          onValueChange={(value) =>
-                            handleSelectUser(
-                              savedUsers.find((u) => u.email === value)
-                            )
-                          }
-                          defaultValue={selectedUser?.email || ""}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="-- Select User --" />
-                          </SelectTrigger>
-                          <SelectContent className="">
-                            {savedUsers.map((user, idx) => (
-                              <SelectItem key={idx} value={user.email}>
-                                {user.name} ({user.email})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          variant="outline"
-                          className="mt-2 w-full"
-                          onClick={() => {
-                            setSelectedUser(null);
-                            setShowUserForm(true);
-                          }}
-                        >
-                          Use new details
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-4">
-                        <div className="flex justify-end">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setShowUserForm(false);
-                              setNewUserDetails({
-                                name: "",
-                                email: "",
-                                address: "",
-                              });
-                            }}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <Label className="text-sm font-medium">
-                          Enter user details
-                        </Label>
-                        <div className="space-y-2">
-                          <Label className="text-black/80">Name</Label>
-                          <Input
-                            placeholder="Jane Doe"
-                            value={newUserDetails.name}
-                            onChange={(e) =>
-                              setNewUserDetails({
-                                ...newUserDetails,
-                                name: e.target.value,
-                              })
-                            }
-                          />
-                          <Label className="text-black/80">Email</Label>
-                          <Input
-                            placeholder="janedoe@gmail.com"
-                            value={newUserDetails.email}
-                            onChange={(e) =>
-                              setNewUserDetails({
-                                ...newUserDetails,
-                                email: e.target.value,
-                              })
-                            }
-                          />
-                          <Label className="text-black/80">Address</Label>
-                          <Input
-                            placeholder="No. 1 123 Street, City"
-                            value={newUserDetails.address}
-                            onChange={(e) =>
-                              setNewUserDetails({
-                                ...newUserDetails,
-                                address: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                        <Button
-                          className="mt-3 w-full"
-                          onClick={handleSaveNewUser}
-                        >
-                          Save User
-                        </Button>
-                      </div>
                     )}
                   </div>
 
@@ -702,7 +1017,6 @@ const Cart = () => {
           )}
         </motion.div>
       </main>
-
     </div>
   );
 };

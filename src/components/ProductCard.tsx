@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Heart, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import Link from "next/link";
+import { updateProduct } from "@/lib/redux/productSlice";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
 
 export interface ProductCardProps {
   product: Product;
@@ -21,6 +23,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const wishlisted = isInWishlist(product.id);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  
+  // Add state to track which image to show
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Function to handle mouse enter - show second image if available
+  const handleMouseEnter = () => {
+    if (product.images && product.images.length > 1) {
+      setCurrentImageIndex(1);
+    }
+  };
+
+  // Function to handle mouse leave - always go back to first image
+  const handleMouseLeave = () => {
+    setCurrentImageIndex(0);
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,12 +58,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
 
+  const handleProductClick = () => {
+    dispatch(updateProduct(product));
+    router.push(`/products/${product.id}`);
+  };
+
   return (
-    <Link
-      href={`/products/${product.id}`}
+    <div
       className={`group !relative border rounded-xl bg-white overflow-hidden transition-all hover:shadow-md ${className}`}
       style={style}
       aria-label={`View details for ${product.name}`}
+      onClick={handleProductClick}
     >
       <div className="absolute top-3 right-3 z-10">
         <Button
@@ -65,7 +89,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {product.discountPrice && (
         <Badge
           variant="destructive"
-          className="absolute top-3 left-full z-10 px-2 py-1"
+          className="absolute top-3 left-3 z-10 px-2 py-1"
         >
           {Math.round(
             ((product.price - product.discountPrice) / product.price) * 100
@@ -74,11 +98,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </Badge>
       )}
 
-      <div className="aspect-[4/3] overflow-hidden bg-secondary/20">
+      {/* Image container with hover effect to switch images */}
+      <div 
+        className="aspect-[4/3] overflow-hidden bg-secondary/20"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <img
-          src={product.image}
+          src={product.images[currentImageIndex] || product.image}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src =
+              "https://placehold.co/600x400?text=No+Image";
+          }}
         />
       </div>
 
@@ -110,6 +143,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <div className="flex items-center justify-between text-sm mb-4">
           <div className="flex items-center">
             <div className="flex">
+              {/* Star rating display */}
               {[1, 2, 3, 4, 5].map((star) => (
                 <svg
                   key={star}
@@ -126,6 +160,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </div>
             <span className="ml-1 text-muted-foreground">
               ({product.reviewCount})
+              
             </span>
           </div>
           {product.inStock ? (
@@ -146,7 +181,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           Add to Cart
         </Button>
       </div>
-    </Link>
+    </div>
   );
 };
 

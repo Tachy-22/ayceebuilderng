@@ -20,15 +20,15 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+//import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 
-import ProductCard from "@/components/ProductCard";
+//import ProductCard from "@/components/ProductCard";
 import {
   categories,
-  featuredProducts,
-  bestSellerProducts,
-  products,
+  // featuredProducts,
+  // bestSellerProducts,
+  // products,
 } from "@/data/products";
 import Link from "next/link";
 import { whatsappNumber } from "@/lib/utils";
@@ -99,7 +99,7 @@ const Home = () => {
                   <ArrowRight size={16} className="ml-2" aria-hidden="true" />
                 </Button>
               </Link>
-              <Link href="/categories" aria-label="Browse Categories">
+              <Link href="/products" aria-label="Browse Categories">
                 <Button
                   size="lg"
                   variant="outline"
@@ -319,7 +319,7 @@ const Home = () => {
             {categories.slice(0, 5).map((category, index) => (
               <motion.div key={category.id} variants={fadeIn}>
                 <Link
-                  href={`/categories/${category.id}`}
+                  href={`/products?sheet=${category.id}&page=1&limit=8`}
                   className="bg-white rounded-xl p-4 text-center transition-all duration-300 hover:shadow-md hover-lift border block"
                 >
                   <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -351,7 +351,7 @@ const Home = () => {
       </section>
 
       {/* Products Section */}
-      <section className="py-16 md:py-24">
+      {/* <section className="py-16 md:py-24">
         <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
             className="flex flex-col md:flex-row md:items-end justify-between mb-12"
@@ -435,13 +435,13 @@ const Home = () => {
             </TabsContent>
           </Tabs>
         </div>
-      </section>
+      </section> */}
 
       {/* Customer Benefits */}
       <section className="py-16 md:py-24 bg-secondary/5">
         <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-16 "
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -457,19 +457,21 @@ const Home = () => {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 h-full"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-            <motion.div variants={fadeIn}>
+            <motion.div className="h-full" variants={fadeIn}>
               <Card className="border-0 shadow-md">
                 <CardContent className="p-8">
                   <div className="rounded-full w-12 h-12 bg-green-100 flex items-center justify-center mb-6">
                     <CheckCircle className="text-green-600" size={24} />
                   </div>
-                  <h3 className="text-xl font-bold mb-3 ">Quality Guaranteed</h3>
+                  <h3 className="text-xl font-bold mb-3 ">
+                    Quality Guaranteed
+                  </h3>
                   <p className="text-muted-foreground">
                     All our products undergo strict quality control. We only
                     partner with trusted manufacturers and vendors who meet our
@@ -479,7 +481,7 @@ const Home = () => {
               </Card>
             </motion.div>
 
-            <motion.div variants={fadeIn}>
+            <motion.div className="h-full" variants={fadeIn}>
               <Card className="border-0 shadow-md">
                 <CardContent className="p-8">
                   <div className="rounded-full w-12 h-12 bg-blue-100 flex items-center justify-center mb-6">
@@ -494,7 +496,7 @@ const Home = () => {
               </Card>
             </motion.div>
 
-            <motion.div variants={fadeIn}>
+            <motion.div className="h-full" variants={fadeIn}>
               <Card className="border-0 shadow-md">
                 <CardContent className="p-8">
                   <div className="rounded-full w-12 h-12 bg-purple-100 flex items-center justify-center mb-6">
@@ -524,7 +526,9 @@ const Home = () => {
             viewport={{ once: true, margin: "-100px" }}
           >
             <div>
-              <h2 className="text-3xl text-grey-800 font-bold mb-4">Project Showcase</h2>
+              <h2 className="text-3xl text-grey-800 font-bold mb-4">
+                Project Showcase
+              </h2>
               <p className="text-muted-foreground max-w-xl">
                 See how our materials have been used in some of Nigeria&apos;s
                 most impressive construction projects
@@ -651,7 +655,9 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            <h2 className="text-3xl text-grey-800 font-bold mb-4">Market Insights</h2>
+            <h2 className="text-3xl text-grey-800 font-bold mb-4">
+              Market Insights
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Stay updated with the latest trends and prices in the construction
               materials market
