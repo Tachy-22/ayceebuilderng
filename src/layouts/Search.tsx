@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { products, categories, Product } from "@/data/products";
+import { categories, Product } from "@/data/products";
 import { Search as SearchIcon, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,26 +24,9 @@ const Search = () => {
   const [priceRange, setPriceRange] = useState([0, 50000]);
   const [sortOption, setSortOption] = useState("relevance");
 
-  useEffect(() => {
-    if (initialQuery) {
-      performSearch(initialQuery);
-    }
-    setTimeout(() => setIsLoaded(true), 100);
-  }, [initialQuery]);
-
-  const performSearch = (query:string) => {
-    const results = products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.description.toLowerCase().includes(query.toLowerCase())
-    );
-
-    setSearchResults(results);
-  };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    performSearch(searchQuery);
 
     // Update URL
     const params = new URLSearchParams(location.search);
@@ -100,7 +83,6 @@ const Search = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-
       <main className="flex-grow pt-20">
         <div className="bg-secondary/5 py-10">
           <div className="container mx-auto px-4">
@@ -219,7 +201,8 @@ const Search = () => {
                   <div>
                     <h2 className="text-2xl font-bold">Search Results</h2>
                     <p className="text-muted-foreground">
-                      {filteredResults.length} results for &quot;{searchQuery}&quot;
+                      {filteredResults.length} results for &quot;{searchQuery}
+                      &quot;
                     </p>
                   </div>
 
@@ -274,8 +257,8 @@ const Search = () => {
             <div className="text-center py-16">
               <h2 className="text-2xl font-bold mb-3">No results found</h2>
               <p className="text-muted-foreground max-w-md mx-auto mb-8">
-                We couldn&apos;t find any products matching &quot; {searchQuery} &quot;. Try
-                using different keywords or browse our categories.
+                We couldn&apos;t find any products matching &quot; {searchQuery}{" "}
+                &quot;. Try using different keywords or browse our categories.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/products">
@@ -391,7 +374,6 @@ const Search = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
