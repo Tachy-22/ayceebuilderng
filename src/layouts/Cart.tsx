@@ -105,11 +105,21 @@ const Cart = () => {
   // Add state to track if we're showing the address selection UI
   const [showAddressSelection, setShowAddressSelection] = useState(false);
 
+  // Set initial state based on saved users
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
     const existingUsers = localStorage.getItem("savedUsers");
     if (existingUsers) {
-      setSavedUsers(JSON.parse(existingUsers));
+      const parsedUsers = JSON.parse(existingUsers);
+      setSavedUsers(parsedUsers);
+      
+      // Automatically show the form if there are no saved users
+      if (parsedUsers.length === 0) {
+        setShowUserForm(true);
+      }
+    } else {
+      // No users in localStorage, show the form
+      setShowUserForm(true);
     }
   }, []);
 
@@ -703,19 +713,16 @@ const Cart = () => {
                       <h3 className="font-medium mb-2">Delivery Information</h3>
 
                       <div className="space-y-3">
-                        {/* Updated User Selection UI */}
-                        {savedUsers.length > 0 &&
-                        (showAddressSelection ||
-                          (!selectedUser && !showUserForm)) ? (
+                        {/* Updated User Selection UI - Modified logic to handle empty savedUsers */}
+                        {savedUsers.length > 0 && 
+                         (showAddressSelection || (!selectedUser && !showUserForm)) ? (
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
                               <Label className="text-sm font-medium">
-                                {selectedUser
-                                  ? "Change delivery address"
-                                  : "Select a saved address"}
+                                {selectedUser ? "Change delivery address" : "Select a saved address"}
                               </Label>
-                              <Button
-                                variant="link"
+                              <Button 
+                                variant="link" 
                                 className="text-xs p-0 h-auto"
                                 onClick={() => {
                                   setSelectedUser(null);
@@ -777,28 +784,30 @@ const Cart = () => {
                               ))}
                             </div>
                           </div>
-                        ) : showUserForm ? (
-                          // User form - unchanged
+                        ) : showUserForm || savedUsers.length === 0 ? (
+                          // User form - shown by default if no saved users
                           <div className="flex flex-col gap-4">
-                            <div className="flex justify-end">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setShowUserForm(false);
-                                  setNewUserDetails({
-                                    name: "",
-                                    email: "",
-                                    address: "",
-                                  });
-                                  setAddressInput("");
-                                }}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            {savedUsers.length > 0 && (
+                              <div className="flex justify-end">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setShowUserForm(false);
+                                    setNewUserDetails({
+                                      name: "",
+                                      email: "",
+                                      address: "",
+                                    });
+                                    setAddressInput("");
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
                             <Label className="text-sm font-medium">
-                              Enter user details
+                              {savedUsers.length === 0 ? "Enter delivery details" : "Enter user details"}
                             </Label>
                             <div className="space-y-2">
                               <Label className="text-black/80">Name</Label>
