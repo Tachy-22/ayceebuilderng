@@ -14,13 +14,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { Product, ProductNew, mapNewProductToProduct } from "@/data/products";
+import {
+  Product,
+  ProductNew,
+  mapNewProductToProduct,
+  mapNewProductsToProducts,
+} from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useAppSelector } from "@/lib/redux/hooks";
 
 interface ProductDetailProps {
   mappedProducts?: Product[];
@@ -28,8 +32,13 @@ interface ProductDetailProps {
 }
 
 const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
+  console.log({ rawProduct });
+  const product = mapNewProductsToProducts([rawProduct as ProductNew])[0];
+
+  console.log({ rawProduct, product });
+
   const { id } = useParams();
-  const { product } = useAppSelector((state) => state.productSlice);
+  // const { product } = useAppSelector((state) => state.productSlice);
   const [quantity, setQuantity] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -38,7 +47,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
 
   useEffect(() => {
     // Reset image index when product changes
-    setCurrentImageIndex(0);
+   /// setCurrentImageIndex(0);
 
     // First try to find the product in the mapped products
     if (mappedProducts && mappedProducts.length > 0) {
@@ -153,9 +162,9 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
               {/* Main Product Image */}
               <div className="bg-secondary/20 rounded-xl overflow-hidden max-h-[30rem]">
                 <img
-                  src={product.images[currentImageIndex] || product.image}
+                  src={product.images[currentImageIndex]}
                   alt={product.name}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-[25rem] lg:h-[30rem] object-cover object-center"
                 />
               </div>
 
@@ -165,7 +174,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                   {product.images.map((img, index) => (
                     <button
                       key={index}
-                      onClick={() => changeImage(index)}
+                      onClick={() => setCurrentImageIndex(index)}
                       className={`w-20 h-20 border-2 rounded overflow-hidden ${
                         currentImageIndex === index
                           ? "border-primary"

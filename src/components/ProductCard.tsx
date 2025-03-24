@@ -59,8 +59,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const handleProductClick = () => {
+    // Store product in Redux for quick access
     dispatch(updateProduct(product));
+    // Navigate to product detail page
     router.push(`/products/${product.id}`);
+  };
+  
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Store product in Redux for quick access
+    dispatch(updateProduct(product));
+    
+    // Encode the product name/title for URL
+    const encodedTitle = encodeURIComponent(product.name);
+    
+    // Navigate to product detail page with search parameter
+    router.push(`/products/${product.id}?searchTitle=${encodedTitle}`);
   };
 
   return (
@@ -68,7 +84,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       className={`group !relative border rounded-xl bg-white overflow-hidden transition-all hover:shadow-md ${className}`}
       style={style}
       aria-label={`View details for ${product.name}`}
-      onClick={handleProductClick}
+    //  onClick={handleProductClick}
     >
       <div className="absolute top-3 right-3 z-10">
         <Button
@@ -103,6 +119,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         className="aspect-[4/3] overflow-hidden bg-secondary/20"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onClick={handleImageClick}  // Added specific handler for image clicks
       >
         <img
           src={product.images[currentImageIndex] || product.image}
