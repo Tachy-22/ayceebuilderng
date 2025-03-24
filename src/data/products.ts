@@ -28,10 +28,10 @@ export interface Product {
 export const categories = [
   { id: "tiles", name: "Tiles", icon: "🔲", itemCount: 20 },
   { id: "electrical", name: "Electrical", icon: "⚡", itemCount: 22 },
-  { id: "sanitary-ware", name: "Sanitary Ware", icon: "🚰", itemCount: 12 },
+  { id: "sanitaryware", name: "Sanitary Ware", icon: "🚰", itemCount: 12 },
   { id: "cladding", name: "Cladding", icon: "🧱", itemCount: 14 },
   {
-    id: "adhesive&admix",
+    id: "adhesiveandadmix",
     name: "Adhesives & Admixtures",
     icon: "🧪",
     itemCount: 9,
@@ -168,7 +168,7 @@ export function mapNewProductToProduct(
       description: product.Description || "No description available",
       features: features,
       specifications: specifications,
-      inStock: product.inStock == false ? false : true, // Default to in stock
+      inStock: product.inStock === false ? false : true, // Default to in stock unless explicitly false
       location:
         product.location ||
         "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja", // Default location

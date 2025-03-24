@@ -48,7 +48,7 @@ const page = async ({ searchParams }: PageProps) => {
 
   // API URL for fetching products
   const apiUrl =
-    "https://script.google.com/macros/s/AKfycbztbKRga_98oBmFrtzddOaYWWXKeCWyfNVCldKxjO7zWorKnv24lVJJ73hUiVVXGz3N/exec";
+    "https://script.google.com/macros/s/AKfycbyEk6BGwOcRfk8-W_CTzLucKsj13Rx3eoyITKz9_ghDbP0lnSdoGmeqoa7MMaXsmm7W/exec";
 
   // Build query string for the API request
   let queryParams = `?page=${currentPage}&limit=${limit}&sheet=${sheet}`;
@@ -62,7 +62,7 @@ const page = async ({ searchParams }: PageProps) => {
   const res = await fetch(url, { cache: "no-store" }); // Ensure fresh data
   const response: ProductResponse = await res.json();
 
- // console.log(response);
+  // console.log(response);
 
   return (
     <div>

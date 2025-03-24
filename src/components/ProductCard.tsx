@@ -15,6 +15,11 @@ export interface ProductCardProps {
   style?: React.CSSProperties;
 }
 
+// Function to calculate discount percentage
+const calculateDiscountPercentage = (originalPrice: number, discountPrice: number): number => {
+  return Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
+};
+
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
   className,
@@ -109,10 +114,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           variant="destructive"
           className="absolute top-3 left-3 z-10 px-2 py-1"
         >
-          {Math.round(
-            ((product.price - product.discountPrice) / product.price) * 100
-          )}
-          % OFF
+          {calculateDiscountPercentage(product.price, product.discountPrice)}% OFF
         </Badge>
       )}
 
@@ -126,7 +128,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <img
           src={product.images[currentImageIndex] || product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
           onError={(e) => {
             (e.target as HTMLImageElement).src =
               "https://placehold.co/600x400?text=No+Image";

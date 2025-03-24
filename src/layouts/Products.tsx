@@ -74,7 +74,7 @@ const ProductsPage = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState([0, 50000]);
+  const [priceRange, setPriceRange] = useState([0, 100000000]);
   const [sortOption, setSortOption] = useState("featured");
   const [searchQuery, setSearchQuery] = useState(search);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -157,6 +157,7 @@ const ProductsPage = ({
   // Map fetched products to the Product format
   useEffect(() => {
     const mapped = mapNewProductsToProducts(fetchedProducts);
+    console.log({ mapped });
     setMappedProducts(mapped);
     setFilteredProducts(mapped);
     setIsLoaded(true);
@@ -303,7 +304,10 @@ const ProductsPage = ({
 
     // Calculate range of pages to show
     let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(displayedTotalPages, startPage + maxVisiblePages - 1);
+    let endPage = Math.min(
+      displayedTotalPages,
+      startPage + maxVisiblePages - 1
+    );
 
     if (endPage - startPage < maxVisiblePages - 1) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -411,7 +415,9 @@ const ProductsPage = ({
                 <p className="text-muted-foreground">
                   {actionLoading
                     ? "Loading..."
-                    : `${totalItems || filteredProducts.length} products available`}
+                    : `${
+                        totalItems || filteredProducts.length
+                      } products available`}
                 </p>
               </div>
 
@@ -579,8 +585,9 @@ const ProductsPage = ({
               {actionLoading ? (
                 // Show skeleton when loading
                 <ProductSkeletonGrid />
-              ) : filteredProducts.length === 0 ? (
+              ) : filteredProducts.length == 0 ? (
                 // Show "No products found" message
+
                 <div className="text-center py-12">
                   <h3 className="text-lg font-medium mb-2">
                     No products found
@@ -637,7 +644,8 @@ const ProductsPage = ({
                                 : "cursor-pointer"
                             }
                             isActive={
-                              actionLoading || currentPage >= displayedTotalPages
+                              actionLoading ||
+                              currentPage >= displayedTotalPages
                             }
                           />
                         </PaginationItem>
@@ -646,8 +654,8 @@ const ProductsPage = ({
 
                     {/* Current page indicator - now shows accurate totals */}
                     <div className="text-sm text-center text-muted-foreground">
-                      Page {currentPage} of {displayedTotalPages} • Showing{" "}
-                      {filteredProducts.length} of {totalItems} products
+                      Page {currentPage} of {displayedTotalPages} • Total of {totalItems}{" "}
+                      products
                     </div>
                   </div>
                 </>
