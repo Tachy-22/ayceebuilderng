@@ -55,6 +55,8 @@ interface ProductsPageProps {
   sheet?: string;
   search?: string;
   hasMore?: boolean;
+  totalItems?: number; // New prop for total number of products
+  totalPages?: number; // New prop for total number of pages
 }
 
 const ProductsPage = ({
@@ -65,6 +67,8 @@ const ProductsPage = ({
   sheet = "all",
   search = "",
   hasMore = false,
+  totalItems = 0, // Default to 0 if not provided
+  totalPages = 1, // Default to 1 if not provided
 }: ProductsPageProps) => {
   console.log({ fetchedProducts });
   const [isLoaded, setIsLoaded] = useState(false);
@@ -77,8 +81,10 @@ const ProductsPage = ({
   const [mappedProducts, setMappedProducts] = useState<Product[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [pageInput, setPageInput] = useState<string>(currentPage.toString());
-  const [totalPages, setTotalPages] = useState<number>(
-    hasMore ? currentPage + 1 : currentPage
+
+  // Use the totalPages from API instead of calculating it
+  const [displayedTotalPages, setDisplayedTotalPages] = useState<number>(
+    totalPages || 1
   );
 
   // New state for tracking actions that require loading skeletons
@@ -138,17 +144,15 @@ const ProductsPage = ({
     // Update page input when current page changes
     setPageInput(currentPage.toString());
 
-    // Estimate total pages
-    if (hasMore) {
-      setTotalPages((prevTotal) => Math.max(prevTotal, currentPage + 1));
-    } else {
-      setTotalPages(currentPage);
+    // Use totalPages from API response
+    if (totalPages) {
+      setDisplayedTotalPages(totalPages);
     }
 
     // Data has arrived, turn off loading states
     setActionLoading(false);
     setIsLoadingMore(false);
-  }, [search, sheet, currentPage, hasMore, fetchedProducts]);
+  }, [search, sheet, currentPage, hasMore, fetchedProducts, totalPages]);
 
   // Map fetched products to the Product format
   useEffect(() => {
@@ -266,7 +270,7 @@ const ProductsPage = ({
 
   // Handle navigation to specific page
   const goToPage = (page: number) => {
-    if (page < 1 || page > totalPages) return;
+    if (page < 1 || page > displayedTotalPages) return;
 
     // Set loading state
     setActionLoading(true);
@@ -282,7 +286,7 @@ const ProductsPage = ({
   const handlePageInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newPage = parseInt(pageInput, 10);
-    if (newPage && newPage > 0 && newPage <= totalPages) {
+    if (newPage && newPage > 0 && newPage <= displayedTotalPages) {
       // Set loading state
       setActionLoading(true);
       goToPage(newPage);
@@ -299,7 +303,7 @@ const ProductsPage = ({
 
     // Calculate range of pages to show
     let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    let endPage = Math.min(displayedTotalPages, startPage + maxVisiblePages - 1);
 
     if (endPage - startPage < maxVisiblePages - 1) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -343,8 +347,8 @@ const ProductsPage = ({
     }
 
     // Add ellipsis and last page if needed
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
+    if (endPage < displayedTotalPages) {
+      if (endPage < displayedTotalPages - 1) {
         items.push(
           <PaginationItem key="ellipsis-2">
             <PaginationEllipsis />
@@ -353,12 +357,12 @@ const ProductsPage = ({
       }
 
       items.push(
-        <PaginationItem key={`page-${totalPages}`}>
+        <PaginationItem key={`page-${displayedTotalPages}`}>
           <PaginationLink
-            isActive={currentPage === totalPages}
-            onClick={() => goToPage(totalPages)}
+            isActive={currentPage === displayedTotalPages}
+            onClick={() => goToPage(displayedTotalPages)}
           >
-            {totalPages}
+            {displayedTotalPages}
           </PaginationLink>
         </PaginationItem>
       );
@@ -407,7 +411,7 @@ const ProductsPage = ({
                 <p className="text-muted-foreground">
                   {actionLoading
                     ? "Loading..."
-                    : `${filteredProducts.length} products available`}
+                    : `${totalItems || filteredProducts.length} products available`}
                 </p>
               </div>
 
@@ -623,21 +627,27 @@ const ProductsPage = ({
 
                         <PaginationItem>
                           <PaginationNext
-                            onClick={() => hasMore && goToPage(currentPage + 1)}
+                            onClick={() =>
+                              currentPage < displayedTotalPages &&
+                              goToPage(currentPage + 1)
+                            }
                             className={
-                              !hasMore
+                              currentPage >= displayedTotalPages
                                 ? "pointer-events-none opacity-50"
                                 : "cursor-pointer"
                             }
-                            isActive={actionLoading || !hasMore}
+                            isActive={
+                              actionLoading || currentPage >= displayedTotalPages
+                            }
                           />
                         </PaginationItem>
                       </PaginationContent>
                     </Pagination>
 
-                    {/* Current page indicator */}
+                    {/* Current page indicator - now shows accurate totals */}
                     <div className="text-sm text-center text-muted-foreground">
-                      Page {currentPage} of {totalPages}
+                      Page {currentPage} of {displayedTotalPages} • Showing{" "}
+                      {filteredProducts.length} of {totalItems} products
                     </div>
                   </div>
                 </>

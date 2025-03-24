@@ -15,28 +15,32 @@ interface PageProps {
   };
   searchParams: {
     searchTitle?: string;
+    sheet?: string;
   };
 }
 
 const page = async ({ params, searchParams }: PageProps) => {
   const { id } = params;
-  const { searchTitle } = searchParams;
-  
+  const { searchTitle, sheet } = searchParams;
+
   // Base API URL
-  const apiUrl = "https://script.google.com/macros/s/AKfycbztbKRga_98oBmFrtzddOaYWWXKeCWyfNVCldKxjO7zWorKnv24lVJJ73hUiVVXGz3N/exec";
-  
+  const apiUrl =
+    "https://script.google.com/macros/s/AKfycbztbKRga_98oBmFrtzddOaYWWXKeCWyfNVCldKxjO7zWorKnv24lVJJ73hUiVVXGz3N/exec";
+
   let productData: ProductNew | null = null;
-  
+
   // If we have a search title, use it to find the product
   if (searchTitle) {
     // Build the URL with search parameter
-    const searchUrl = `${apiUrl}?search=${encodeURIComponent(searchTitle)}&limit=1`;
-    
+    const searchUrl = `${apiUrl}?sheet${encodeURIComponent(
+      sheet || "all"
+    )}&search=${encodeURIComponent(searchTitle)}&limit=1`;
+
     try {
       // Fetch product by title
       const response = await fetch(searchUrl, { cache: "no-store" });
       const result = await response.json();
-      
+
       // If we found a product, use it
       if (result && Array.isArray(result.data) && result.data.length > 0) {
         productData = result.data[0];
@@ -45,23 +49,10 @@ const page = async ({ params, searchParams }: PageProps) => {
       console.error("Error fetching product by title:", error);
     }
   }
-  
-  // If we didn't find by title or no title was provided, try to fetch by ID
-  if (!productData) {
-    try {
-      // Use ID to fetch product
-      const idUrl = `${apiUrl}?id=${id}`;
-      const response = await fetch(idUrl, { cache: "no-store" });
-      const result = await response.json();
-      
-      if (result && Array.isArray(result.data) && result.data.length > 0) {
-        productData = result.data[0];
-      }
-    } catch (error) {
-      console.error("Error fetching product by ID:", error);
-    }
-  }
 
+  // If we didn't find by title or no title was provided, try to fetch by ID
+
+  console.log(productData, "here");
   return (
     <div>
       <ProductDetail rawProduct={productData || undefined} />

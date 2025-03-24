@@ -30,6 +30,15 @@ interface PageProps {
   };
 }
 
+// Define the API response type
+interface ProductResponse {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  data: ProductNew[];
+}
+
 const page = async ({ searchParams }: PageProps) => {
   // Get parameters from the URL or use defaults
   const currentPage = parseInt(searchParams.page || "1", 10);
@@ -51,24 +60,22 @@ const page = async ({ searchParams }: PageProps) => {
 
   const url = `${apiUrl}${queryParams}`;
   const res = await fetch(url, { cache: "no-store" }); // Ensure fresh data
-  const response = await res.json();
+  const response: ProductResponse = await res.json();
 
-  // Extract products from the response
-  const products = Array.isArray(response.data) ? response.data : [];
-
-  // Determine if there are more products to load
-  const hasMore = products.length >= limit;
+ // console.log(response);
 
   return (
     <div>
       <ProductsPage
-        fetchedProducts={products}
+        fetchedProducts={response.data || []}
         apiUrl={apiUrl}
         currentPage={currentPage}
         limit={limit}
         sheet={sheet}
         search={search}
-        hasMore={hasMore}
+        hasMore={currentPage < response.totalPages}
+        totalItems={response.total}
+        totalPages={response.totalPages}
       />
     </div>
   );

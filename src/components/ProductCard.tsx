@@ -25,7 +25,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const wishlisted = isInWishlist(product.id);
   const dispatch = useDispatch();
   const router = useRouter();
-  
+
   // Add state to track which image to show
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -64,19 +64,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
     // Navigate to product detail page
     router.push(`/products/${product.id}`);
   };
-  
+
   const handleImageClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Store product in Redux for quick access
     dispatch(updateProduct(product));
-    
+
     // Encode the product name/title for URL
     const encodedTitle = encodeURIComponent(product.name);
-    
+
     // Navigate to product detail page with search parameter
-    router.push(`/products/${product.id}?searchTitle=${encodedTitle}`);
+    router.push(
+      `/products/${product.id}?searchTitle=${encodedTitle}&sheet=${product.category}`
+    );
   };
 
   return (
@@ -84,7 +86,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       className={`group !relative border rounded-xl bg-white overflow-hidden transition-all hover:shadow-md ${className}`}
       style={style}
       aria-label={`View details for ${product.name}`}
-    //  onClick={handleProductClick}
+      //  onClick={handleProductClick}
     >
       <div className="absolute top-3 right-3 z-10">
         <Button
@@ -115,11 +117,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
       )}
 
       {/* Image container with hover effect to switch images */}
-      <div 
+      <div
         className="aspect-[4/3] overflow-hidden bg-secondary/20"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        onClick={handleImageClick}  // Added specific handler for image clicks
+        onClick={handleImageClick} // Added specific handler for image clicks
       >
         <img
           src={product.images[currentImageIndex] || product.image}
@@ -177,7 +179,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
             </div>
             <span className="ml-1 text-muted-foreground">
               ({product.reviewCount})
-              
             </span>
           </div>
           {product.inStock ? (
