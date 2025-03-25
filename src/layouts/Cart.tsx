@@ -112,7 +112,7 @@ const Cart = () => {
     if (existingUsers) {
       const parsedUsers = JSON.parse(existingUsers);
       setSavedUsers(parsedUsers);
-      
+
       // Automatically show the form if there are no saved users
       if (parsedUsers.length === 0) {
         setShowUserForm(true);
@@ -446,7 +446,7 @@ const Cart = () => {
     });
   };
 
-  const config = getPaystackConfig("user@example.com", total * 100);
+  const config = getPaystackConfig(selectedUser?.email as string, total * 100);
 
   // Animation variants
   const containerVariants = {
@@ -567,7 +567,11 @@ const Cart = () => {
                               </div>
                               <div>
                                 <Link
-                                  href={`/products/${item.product.id}`}
+                                  href={`/products/${
+                                    item.product.id
+                                  }?searchTitle=${encodeURIComponent(
+                                    item.product.name
+                                  )}`}
                                   className="font-medium hover:text-primary"
                                 >
                                   {item.product.name}
@@ -714,15 +718,18 @@ const Cart = () => {
 
                       <div className="space-y-3">
                         {/* Updated User Selection UI - Modified logic to handle empty savedUsers */}
-                        {savedUsers.length > 0 && 
-                         (showAddressSelection || (!selectedUser && !showUserForm)) ? (
+                        {savedUsers.length > 0 &&
+                        (showAddressSelection ||
+                          (!selectedUser && !showUserForm)) ? (
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
                               <Label className="text-sm font-medium">
-                                {selectedUser ? "Change delivery address" : "Select a saved address"}
+                                {selectedUser
+                                  ? "Change delivery address"
+                                  : "Select a saved address"}
                               </Label>
-                              <Button 
-                                variant="link" 
+                              <Button
+                                variant="link"
                                 className="text-xs p-0 h-auto"
                                 onClick={() => {
                                   setSelectedUser(null);
@@ -807,7 +814,9 @@ const Cart = () => {
                               </div>
                             )}
                             <Label className="text-sm font-medium">
-                              {savedUsers.length === 0 ? "Enter delivery details" : "Enter user details"}
+                              {savedUsers.length === 0
+                                ? "Enter delivery details"
+                                : "Enter user details"}
                             </Label>
                             <div className="space-y-2">
                               <Label className="text-black/80">Name</Label>

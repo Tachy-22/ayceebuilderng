@@ -47,7 +47,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
 
   useEffect(() => {
     // Reset image index when product changes
-   /// setCurrentImageIndex(0);
+    /// setCurrentImageIndex(0);
 
     // First try to find the product in the mapped products
     if (mappedProducts && mappedProducts.length > 0) {
@@ -199,10 +199,14 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                 <h1 className="text-3xl font-bold">{product.name}</h1>
                 <div className="flex items-center mt-2">
                   <div className="flex items-center">
-                    <Star
-                      size={16}
-                      className="fill-yellow-400 text-yellow-400"
-                    />
+                    {Array.from({ length: product.rating }).map((_, id) => (
+                      <Star
+                        key={id}
+                        size={16}
+                        className="fill-yellow-400 text-yellow-400"
+                      />
+                    ))}
+
                     <span className="ml-1 font-medium">{product.rating}</span>
                   </div>
                   <span className="mx-2 text-muted-foreground">•</span>

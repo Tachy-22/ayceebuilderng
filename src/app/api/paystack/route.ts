@@ -41,6 +41,8 @@ export async function POST(request: Request) {
     //     }
 
     // 2. Send confirmation emails:
+
+    
     const orderConfirmationEmailHTML = OrderConfirmationEmail({
       userName: user.name,
       userEmail: user.email,
