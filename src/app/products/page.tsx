@@ -1,7 +1,8 @@
 import ProductsPage from "@/layouts/Products";
 import React from "react";
 import { Metadata } from "next";
-import { ProductNew } from "@/data/products";
+import { Product, ProductNew } from "@/data/products";
+import ProductsProvider from "./productsProvider";
 
 export const metadata: Metadata = {
   title: "Construction Products",
@@ -59,15 +60,15 @@ const page = async ({ searchParams }: PageProps) => {
   }
 
   const url = `${apiUrl}${queryParams}`;
-  const res = await fetch(url, { cache: "no-store" }); // Ensure fresh data
+  const res = await fetch(url, { next: { revalidate: 3600 } });
   const response: ProductResponse = await res.json();
 
   // console.log(response);
 
   return (
-    <div>
+    <ProductsProvider products={response.data || []}>
       <ProductsPage
-        fetchedProducts={response.data || []}
+        //  fetchedProducts={response.data || []}
         apiUrl={apiUrl}
         currentPage={currentPage}
         limit={limit}
@@ -77,7 +78,7 @@ const page = async ({ searchParams }: PageProps) => {
         totalItems={response.total}
         totalPages={response.totalPages}
       />
-    </div>
+    </ProductsProvider>
   );
 };
 

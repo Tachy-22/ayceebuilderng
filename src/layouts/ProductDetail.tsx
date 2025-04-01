@@ -25,6 +25,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface ProductDetailProps {
   mappedProducts?: Product[];
@@ -33,12 +34,18 @@ interface ProductDetailProps {
 
 const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
   console.log({ rawProduct });
-  const product = mapNewProductsToProducts([rawProduct as ProductNew])[0];
+  const fetchedMappedProduct = mapNewProductsToProducts([
+    rawProduct as ProductNew,
+  ])[0];
 
-  console.log({ rawProduct, product });
+  console.log({ rawProduct, fetchedMappedProduct });
 
   const { id } = useParams();
-  // const { product } = useAppSelector((state) => state.productSlice);
+  const { product: storedProduct } = useAppSelector(
+    (state) => state.productSlice
+  );
+  const product = storedProduct ? storedProduct : fetchedMappedProduct;
+  
   const [quantity, setQuantity] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

@@ -38,6 +38,7 @@ import {
   mapNewProductsToProducts,
 } from "@/data/products";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 const sortOptions = [
   { value: "featured", label: "Featured" },
@@ -48,7 +49,6 @@ const sortOptions = [
 ];
 
 interface ProductsPageProps {
-  fetchedProducts: ProductNew[];
   apiUrl?: string;
   currentPage?: number;
   limit?: number;
@@ -60,7 +60,6 @@ interface ProductsPageProps {
 }
 
 const ProductsPage = ({
-  fetchedProducts = [],
   apiUrl = "",
   currentPage = 1,
   limit = 12,
@@ -70,7 +69,10 @@ const ProductsPage = ({
   totalItems = 0, // Default to 0 if not provided
   totalPages = 1, // Default to 1 if not provided
 }: ProductsPageProps) => {
-  console.log({ fetchedProducts });
+  const { products: fetchedProducts } = useAppSelector(
+    (state) => state.productSlice
+  );
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -654,8 +656,8 @@ const ProductsPage = ({
 
                     {/* Current page indicator - now shows accurate totals */}
                     <div className="text-sm text-center text-muted-foreground">
-                      Page {currentPage} of {displayedTotalPages} • Total of {totalItems}{" "}
-                      products
+                      Page {currentPage} of {displayedTotalPages} • Total of{" "}
+                      {totalItems} products
                     </div>
                   </div>
                 </>

@@ -38,7 +38,7 @@ const page = async ({ params, searchParams }: PageProps) => {
 
     try {
       // Fetch product by title
-      const response = await fetch(searchUrl, { cache: "no-store" });
+      const response = await fetch(searchUrl, { next: { revalidate: 3600 } });
       const result = await response.json();
 
       // If we found a product, use it
@@ -52,12 +52,7 @@ const page = async ({ params, searchParams }: PageProps) => {
 
   // If we didn't find by title or no title was provided, try to fetch by ID
 
-  console.log(productData, "here");
-  return (
-    <div>
-      <ProductDetail rawProduct={productData || undefined} />
-    </div>
-  );
+  return <ProductDetail rawProduct={productData || undefined} />;
 };
 
 export default page;
