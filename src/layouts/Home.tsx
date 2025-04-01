@@ -333,20 +333,7 @@ const Home = () => {
             ))}
           </motion.div>
 
-          <motion.div
-            className="text-center mt-10"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            <Link href="/categories" aria-label="View All Categories">
-              <Button variant="outline" aria-label="View All Categories">
-                View All Categories
-                <ChevronRight size={16} className="ml-1" aria-hidden="true" />
-              </Button>
-            </Link>
-          </motion.div>
+     
         </div>
       </section>
 
