@@ -227,7 +227,7 @@ const ReceiptDocument = ({ orderData }: { orderData: any }) => {
                 Transport Fare:
               </Text>
               <Text style={styles.value}>
-                ₦{transportFare.toLocaleString()}
+                N{transportFare.toLocaleString()}
               </Text>
             </View>
           </View>
@@ -251,11 +251,11 @@ const ReceiptDocument = ({ orderData }: { orderData: any }) => {
               <View key={index} style={styles.row}>
                 <Text style={styles.col1}>{item.productName}</Text>
                 <Text style={styles.col2}>
-                  ₦{item.unitPrice.toLocaleString()}
+                  N{item.unitPrice.toLocaleString()}
                 </Text>
                 <Text style={styles.col3}>{item.quantity}</Text>
                 <Text style={styles.col4}>
-                  ₦{(item.unitPrice * item.quantity).toLocaleString()}
+                  N{(item.unitPrice * item.quantity).toLocaleString()}
                 </Text>
               </View>
             ))}
@@ -267,23 +267,23 @@ const ReceiptDocument = ({ orderData }: { orderData: any }) => {
 
           <View style={styles.row}>
             <Text style={styles.col1}>Subtotal</Text>
-            <Text style={styles.col4}>₦{subtotal.toLocaleString()}</Text>
+            <Text style={styles.col4}>N{subtotal.toLocaleString()}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.col1}>VAT (7.5%)</Text>
-            <Text style={styles.col4}>₦{tax.toLocaleString()}</Text>
+            <Text style={styles.col4}>N{tax.toLocaleString()}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.col1}>Delivery Fee</Text>
-            <Text style={styles.col4}>₦{transportFare.toLocaleString()}</Text>
+            <Text style={styles.col4}>N{transportFare.toLocaleString()}</Text>
           </View>
 
           <View style={styles.totalRow}>
             <Text style={styles.totalText}>Total Amount</Text>
             <Text style={styles.totalAmount}>
-              ₦{orderData.totalAmount.toLocaleString()}
+              N{orderData.totalAmount.toLocaleString()}
             </Text>
           </View>
         </View>
@@ -293,7 +293,7 @@ const ReceiptDocument = ({ orderData }: { orderData: any }) => {
           <Text>Thank you for shopping with Ayceebuilder!</Text>
           <Text>
             For any inquiries, please contact our customer service at
-            support@ayceebuilder.com
+            aycee20@ayceebuilder.com
           </Text>
         </View>
 

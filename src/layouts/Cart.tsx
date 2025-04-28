@@ -404,6 +404,21 @@ const Cart = () => {
     };
   };
 
+  // Calculate total weight from cart items and update deliveryWeight
+  useEffect(() => {
+    const calculatedWeight = cartItems.reduce(
+      (sum, item) => sum + item.quantity * (item.product.weight || 0),
+      0
+    );
+
+    // Use the calculated weight if it's greater than 0, otherwise use default 500kg
+    if (calculatedWeight > 0) {
+      setDeliveryWeight(calculatedWeight);
+    } else {
+      setDeliveryWeight(500); // Default weight when no items have weight specified
+    }
+  }, [cartItems]);
+
   // Calculate cart totals
   const subtotal = cartItems.reduce((sum, item) => {
     const price = item.product.discountPrice || item.product.price;
@@ -413,11 +428,6 @@ const Cart = () => {
   const tax = subtotal * 0.075; // 7.5% VAT
   const deliveryCost = calculateDeliveryCost();
   const total = subtotal + tax + deliveryCost - discountAmount;
-
-  const totalWeight = cartItems.reduce(
-    (sum, item) => sum + item.quantity * item.product.weight,
-    0
-  );
 
   const applyPromoCode = () => {
     if (promoCode.toUpperCase() === "WELCOME10") {
