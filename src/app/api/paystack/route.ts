@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
     // User email
     await sendEmail({
-      subject: `AYCEEBUILDER Order Confirmation - ${reference.reference}`,
+      subject: `AYCEEBUILDER Order Confirmation - ${reference}`,
       content: orderConfirmationEmailHTML,
       recipients: user.email,
     });
