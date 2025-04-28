@@ -25,7 +25,7 @@ export function OrderConfirmationEmail({
     <div style="font-family: Arial, sans-serif; background-color: #F0FDF4; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto;">
       <!-- Logo -->
       <div style="text-align: center; margin-bottom: 20px;">
-    <img src="https://ayceebuilder.com/wp-content/uploads/2024/07/AYCEE-BUILDER-S.png" 
+    <img src="https://ayceebuilder.com/aycee-logo.png" 
      alt="Ayceebuilder" 
      style="height: 40px; width: auto;" />
       </div>
@@ -37,8 +37,10 @@ export function OrderConfirmationEmail({
       <div style="background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
         <p><strong>Email:</strong> ${userEmail}</p>
         <p><strong>Shipping Address:</strong> ${address}</p>
-                  <p><strong>Distance:</strong> ${distance || 0} kg</p>
-     
+        <p><strong>Distance:</strong> ${distance || 0} km</p>
+        <p><strong>Transport Fare:</strong> ₦${(
+          transportFare || 0
+        ).toLocaleString()}</p>
         <p><strong>Weight:</strong> ${weight || 0} kg</p>
       </div>
 
@@ -112,9 +114,10 @@ export function NewOrderEmail({
         <p><strong>Customer:</strong> ${userName}</p>
         <p><strong>Email:</strong> ${userEmail}</p>
         <p><strong>Shipping Address:</strong> ${address}</p>
-      
-             <p><strong>Distance:</strong> ${distance || 0} kg</p>
-
+        <p><strong>Distance:</strong> ${distance || 0} km</p>
+        <p><strong>Transport Fare:</strong> ₦${(
+          transportFare || 0
+        ).toLocaleString()}</p>
         <p><strong>Weight:</strong> ${weight || 0} kg</p>
       </div>
 

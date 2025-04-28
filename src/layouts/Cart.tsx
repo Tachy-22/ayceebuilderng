@@ -51,6 +51,12 @@ const PaystackButton = dynamic(
   { ssr: false }
 );
 
+// New import for receipt
+const DownloadableReceipt = dynamic(
+  () => import("@/components/DownloadableReceipt"),
+  { ssr: false }
+);
+
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -61,6 +67,9 @@ const Cart = () => {
   const [deliveryDistance, setDeliveryDistance] = useState(10);
   const [deliveryWeight, setDeliveryWeight] = useState(500);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [orderReference, setOrderReference] = useState("");
+  const [confirmedItems, setConfirmedItems] = useState<any[]>([]);
+  const [confirmedTotal, setConfirmedTotal] = useState(0);
   const [savedUsers, setSavedUsers] = useState<
     | {
         name: string;
@@ -298,22 +307,101 @@ const Cart = () => {
     }
   };
 
-  // Calculate delivery cost based on location, distance, and weight
+  // Calculate delivery cost based on the new pricing structure with fixed values
   const calculateDeliveryCost = () => {
-    // Base delivery cost
-    let baseCost = 1000;
+    if (!selectedUser || calculatedDistance === null) return 0;
 
-    // Adjust based on location
-    if (deliveryLocation === "abuja") baseCost += 500;
-    if (deliveryLocation === "other") baseCost += 1000;
+    // Base fare
+    const baseFare = 750;
 
-    // Adjust based on actual distance (₦50 per km) if available
-    const distanceCost = deliveryDistance * 50;
+    // Time cost (using 30 minutes as default travel time, or ~2 mins per km)
+    const estimatedTimeHours = Math.max(0.5, calculatedDistance * 0.0033); // at least 30 minutes
+    const timeCost = 50 * estimatedTimeHours;
 
-    // Adjust based on weight (₦1 per kg)
-    const weightCost = deliveryWeight * 1;
+    // Distance cost
+    const distanceCost = 90 * calculatedDistance;
 
-    return baseCost + distanceCost + weightCost;
+    // Fixed fees - no longer toggle-based
+    const surgeCost = 2000; // Heavy traffic fee always applied
+    const tollsCost = 300; // Toll fee always applied
+    const waitTimeCost = 300; // Wait time fee always applied
+
+    // Weight cost calculation based on weight tiers
+    let weightCost = 0;
+    if (deliveryWeight <= 200) {
+      weightCost = deliveryWeight * 10; // 1-200kg @ ₦100 per kg
+    } else if (deliveryWeight <= 500) {
+      weightCost = deliveryWeight * 15; // 201-500kg @ ₦150 per kg
+    } else {
+      weightCost = deliveryWeight * 20; // 500kg+ @ ₦200 per kg
+    }
+
+    // Calculate subtotal before service fee
+    const subtotalDeliveryCost =
+      baseFare +
+      timeCost +
+      distanceCost +
+      surgeCost +
+      tollsCost +
+      waitTimeCost +
+      weightCost;
+
+    // Service fee (7.5%)
+    const serviceFee = subtotalDeliveryCost * 0.075;
+
+    // Total delivery cost
+    return subtotalDeliveryCost + serviceFee;
+  };
+
+  // Calculate delivery cost breakdown for display
+  const getDeliveryBreakdown = () => {
+    if (!selectedUser || calculatedDistance === null) return null;
+
+    const baseFare = 750;
+    const estimatedTimeHours = Math.max(0.5, calculatedDistance * 0.0033);
+    const timeCost = 500 * estimatedTimeHours;
+    const distanceCost = 900 * calculatedDistance;
+    const surgeCost = 2000; // Fixed heavy traffic fee
+    const tollsCost = 300; // Fixed toll fee
+    const waitTimeCost = 300; // Fixed wait time fee
+
+    let weightCost = 0;
+    let weightRate = 0;
+    if (deliveryWeight <= 200) {
+      weightCost = deliveryWeight * 100;
+      weightRate = 100;
+    } else if (deliveryWeight <= 500) {
+      weightCost = deliveryWeight * 150;
+      weightRate = 150;
+    } else {
+      weightCost = deliveryWeight * 200;
+      weightRate = 200;
+    }
+
+    const subtotalDeliveryCost =
+      baseFare +
+      timeCost +
+      distanceCost +
+      surgeCost +
+      tollsCost +
+      waitTimeCost +
+      weightCost;
+    const serviceFee = subtotalDeliveryCost * 0.075;
+
+    return {
+      baseFare,
+      timeCost,
+      timeHours: estimatedTimeHours.toFixed(1),
+      distanceCost,
+      surgeCost,
+      tollsCost,
+      waitTimeCost,
+      weightCost,
+      weightRate,
+      subtotalDeliveryCost,
+      serviceFee,
+      total: subtotalDeliveryCost + serviceFee,
+    };
   };
 
   // Calculate cart totals
@@ -351,24 +439,26 @@ const Cart = () => {
     }
   };
 
-  const handlePaystackSuccess = async (reference: string) => {
+  const handlePaystackSuccess = async (reference: any) => {
     try {
       if (selectedUser) {
+        const itemsForReceipt = cartItems.map((item) => ({
+          productName: item.product.name,
+          unitPrice: item.product.discountPrice || item.product.price,
+          quantity: item.quantity,
+        }));
+
         const res = await fetch("/api/paystack", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            reference,
+            reference: reference.reference, // Extract the reference string
             user: {
               email: selectedUser.email,
               name: selectedUser.name,
               address: selectedUser.address,
             },
-            items: cartItems.map((item) => ({
-              productName: item.product.name,
-              unitPrice: item.product.discountPrice || item.product.price,
-              quantity: item.quantity,
-            })),
+            items: itemsForReceipt,
             totalAmount: total,
             location: selectedUser.address,
             transportFare: deliveryCost,
@@ -379,11 +469,14 @@ const Cart = () => {
 
         if (res.ok) {
           console.log({ res });
+          setOrderReference(reference.reference); // Store just the reference string
+          // Save items and total for the receipt before clearing cart
+          setConfirmedItems(itemsForReceipt);
+          setConfirmedTotal(total);
           clearCart();
           setPaymentConfirmed(true);
         }
       }
-      // ...existing code...
     } catch (error) {
       console.error("Error sending payment data:", error);
     }
@@ -519,15 +612,38 @@ const Cart = () => {
         >
           {paymentConfirmed ? (
             <div className="text-center py-16">
-              <h2 className="text-2xl font-bold mb-3">
-                Payment confirmed, Order processing
-              </h2>
-              <p className="text-muted-foreground mb-8">
-                Continue shopping for more items
-              </p>
-              <Link href="/products">
-                <Button size="lg">Shop Now</Button>
-              </Link>
+              <div className="max-w-md mx-auto">
+                <h2 className="text-2xl font-bold mb-3">
+                  Payment confirmed, Order processing
+                </h2>
+                <p className="text-muted-foreground mb-8">
+                  Your order has been received and is being processed.
+                  You&apos;ll receive a confirmation email shortly.
+                </p>
+
+                {/* Receipt Download Button - Update to use saved items */}
+                {selectedUser && (
+                  <DownloadableReceipt
+                    orderData={{
+                      reference: orderReference,
+                      user: {
+                        name: selectedUser.name,
+                        email: selectedUser.email,
+                        address: selectedUser.address,
+                      },
+                      items: confirmedItems,
+                      totalAmount: confirmedTotal,
+                      transportFare: deliveryCost,
+                      distance: deliveryDistance,
+                      weight: deliveryWeight,
+                    }}
+                  />
+                )}
+
+                <Link href="/products" className="block mt-6">
+                  <Button size="lg">Continue Shopping</Button>
+                </Link>
+              </div>
             </div>
           ) : cartItems.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
@@ -931,19 +1047,133 @@ const Cart = () => {
                       </div>
                     </div>
 
-                    {calculatedDistance && (
-                      <div className="flex justify-between border-t pt-2">
-                        <span className="text-muted-foreground">
-                          Delivery Fee
-                        </span>
-                        <span className="font-medium">
-                          ₦{deliveryCost.toLocaleString()}
-                          {calculatedDistance && (
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({calculatedDistance} km)
-                            </span>
+                    {calculatedDistance !== null && (
+                      <div className="border-t pt-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-muted-foreground font-medium">
+                            Delivery Details
+                          </span>
+                          {getDeliveryBreakdown() && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-xs p-0 underline"
+                              onClick={() => {
+                                const breakdown = getDeliveryBreakdown();
+                                toast({
+                                  title: "Delivery Cost Breakdown",
+                                  description: (
+                                    <div className="text-sm space-y-1 mt-2">
+                                      <div className="flex justify-between">
+                                        <span>Base Fare:</span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.baseFare.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>
+                                          Distance ({calculatedDistance}km):
+                                        </span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.distanceCost.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>
+                                          Time ({breakdown?.timeHours}h):
+                                        </span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.timeCost.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>
+                                          Weight ({deliveryWeight}kg @ ₦
+                                          {breakdown?.weightRate}/kg):
+                                        </span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.weightCost.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Heavy Traffic Fee:</span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.surgeCost.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Toll Fee:</span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.tollsCost.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Wait Time Fee:</span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.waitTimeCost.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="border-t pt-1 mt-1"></div>
+                                      <div className="flex justify-between">
+                                        <span>Subtotal:</span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.subtotalDeliveryCost.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>Service Fee (7.5%):</span>
+                                        <span>
+                                          ₦
+                                          {breakdown?.serviceFee.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between font-medium">
+                                        <span>Total Delivery:</span>
+                                        <span>
+                                          ₦{breakdown?.total.toLocaleString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ),
+                                  duration: 8000,
+                                });
+                              }}
+                            >
+                              View breakdown
+                            </Button>
                           )}
-                        </span>
+                        </div>
+
+                        {getDeliveryBreakdown() && (
+                          <div className="text-sm space-y-1.5">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                Distance
+                              </span>
+                              <span>{calculatedDistance} km</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                Weight
+                              </span>
+                              <span>{deliveryWeight} kg</span>
+                            </div>
+                            <div className="flex justify-between font-medium">
+                              <span className="text-muted-foreground">
+                                Delivery Fee
+                              </span>
+                              <span>₦{deliveryCost.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -952,12 +1182,6 @@ const Cart = () => {
                       <span className="text-xl font-bold">
                         ₦{total.toLocaleString()}
                       </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">
-                        Total Weight
-                      </span>
-                      <span className="font-medium">{totalWeight} kg</span>
                     </div>
                   </div>
 

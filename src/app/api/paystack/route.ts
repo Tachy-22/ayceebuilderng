@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       address: user.address,
       items,
       totalAmount,
-      orderId: reference.reference,
+      orderId: reference,
       location,
       transportFare,
       distance,
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 
     // Company email
     await sendEmail({
-      subject: `AYCEEBUILDER New Order - ${reference.reference}`,
+      subject: `AYCEEBUILDER New Order - ${reference}`,
       content: newOrderEmailHTML,
       recipients: process.env.EMAIL_USER as string,
     });
