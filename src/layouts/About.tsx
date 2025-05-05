@@ -121,7 +121,7 @@ const About = () => {
               </div>
             </motion.div>
             <motion.div
-              className="relative"
+              className="relative overflow-hidden"
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
@@ -129,16 +129,12 @@ const About = () => {
             >
               <div className="rounded-lg overflow-hidden shadow-xl">
                 <Image
-                  src="/about-image.webp"
+                  src="https://media.istockphoto.com/id/1178452628/photo/attractive-black-businessman-being-encouraged-by-diverse-multi-ethnic-group-of-coworkers.jpg?s=612x612&w=0&k=20&c=0CseKVV2CEx7jCgdfwpFwcNbnVfPpsF32EKVsyAB-ik="
                   alt="Aycee Builder Team"
                   width={600}
                   height={400}
                   className="w-full h-auto object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src =
-                      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1000&auto=format&fit=crop";
-                  }}
+               
                 />
               </div>
               <div className="absolute -z-10 -bottom-10 -right-10 w-64 h-64 bg-primary/10 rounded-full" />
@@ -528,126 +524,9 @@ const About = () => {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <motion.div
-            className="text-center max-w-3xl mx-auto mb-16"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeIn}
-          >
-            <Badge className="mb-4">Meet Our Team</Badge>
-            <h2 className="text-3xl font-bold mb-6 text-grey-800">
-              The People Behind Aycee Builder
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Our diverse team of experts is committed to transforming
-              Africa&apos;s construction industry through innovation, quality,
-              and excellence.
-            </p>
-          </motion.div>
+    
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
-            <motion.div
-              variants={fadeIn}
-              className="bg-white p-6 rounded-xl border hover-lift subtle-shadow text-center"
-            >
-              <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4 overflow-hidden">
-                <Image
-                  src="/team-member-1.webp"
-                  alt="Team Member - CEO"
-                  width={200}
-                  height={200}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src =
-                      "https://randomuser.me/api/portraits/men/32.jpg";
-                  }}
-                />
-              </div>
-              <h3 className="text-xl font-bold mb-1 text-grey-800">
-                Ayo Christopher
-              </h3>
-              <p className="text-primary font-medium mb-3">Founder & CEO</p>
-              <p className="text-muted-foreground text-sm mb-4">
-                Visionary leader with extensive experience in construction and
-                business development.
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={fadeIn}
-              className="bg-white p-6 rounded-xl border hover-lift subtle-shadow text-center"
-            >
-              <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4 overflow-hidden">
-                <Image
-                  src="/team-member-2.webp"
-                  alt="Team Member - COO"
-                  width={200}
-                  height={200}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src =
-                      "https://randomuser.me/api/portraits/women/44.jpg";
-                  }}
-                />
-              </div>
-              <h3 className="text-xl font-bold mb-1 text-grey-800">
-                Sarah Johnson
-              </h3>
-              <p className="text-primary font-medium mb-3">
-                Chief Operations Officer
-              </p>
-              <p className="text-muted-foreground text-sm mb-4">
-                Operational expert with a track record of streamlining processes
-                and enhancing efficiency.
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={fadeIn}
-              className="bg-white p-6 rounded-xl border hover-lift subtle-shadow text-center"
-            >
-              <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4 overflow-hidden">
-                <Image
-                  src="/team-member-3.webp"
-                  alt="Team Member - CTO"
-                  width={200}
-                  height={200}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src =
-                      "https://randomuser.me/api/portraits/men/67.jpg";
-                  }}
-                />
-              </div>
-              <h3 className="text-xl font-bold mb-1 text-grey-800">
-                Daniel Okonkwo
-              </h3>
-              <p className="text-primary font-medium mb-3">
-                Chief Technology Officer
-              </p>
-              <p className="text-muted-foreground text-sm mb-4">
-                Tech innovator dedicated to leveraging digital solutions for
-                construction excellence.
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
+      {/* CTA Section explore our */}
       <section className="py-16 md:py-24 bg-primary relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
@@ -667,10 +546,11 @@ const About = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/products">
-                <Button className="w-full sm:w-auto bg-[#004d40] hover:bg-[#004d40]/90">
+                <Button className="w-full sm:w-auto bg-[#004d40] hover:bg-[#004d40]/90 text-white">
                   Explore Our Products
                 </Button>
               </Link>
+              {/* who we */}
               <a href={whatsappURL} target="_blank" rel="noopener noreferrer">
                 <Button variant="secondary" className="w-full sm:w-auto">
                   <span className="flex items-center">
@@ -699,3 +579,5 @@ const About = () => {
 };
 
 export default About;
+
+//team

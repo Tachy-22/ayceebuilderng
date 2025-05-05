@@ -14,19 +14,15 @@ const footerLinks = [
     links: [
       { name: "All Products", href: "/products" },
       { name: "Categories", href: "/categories" },
-      { name: "Vendors", href: "/vendors" },
     ],
   },
-  // {
-  //   title: "Company",
-  //   links: [
-  //     { name: "About Us", href: "/about" },
-  //     { name: "Careers", href: "/careers" },
-  //     { name: "Blog", href: "/blog" },
-  //     { name: "Press", href: "/press" },
-  //     { name: "Partners", href: "/partners" },
-  //   ],
-  // },
+  {
+    title: "Company",
+    links: [
+      { name: "About Us", href: "/about" },
+      { name: "Building Quotation tool", href: "/building-quotation" },
+    ],
+  },
   // {
   //   title: "Support",
   //   links: [
@@ -110,7 +106,7 @@ Facebook: https://www.facebook.com/profile.php?id=100083060214875 */}{" "}
               </a>
 
               <a
-                href="#"
+                href="https://twitter.com/ayceeaycee98629"
                 aria-label="Visit our Twitter"
                 className=""
                 target="_blank"
@@ -125,7 +121,7 @@ Facebook: https://www.facebook.com/profile.php?id=100083060214875 */}{" "}
                   <Twitter size={20} />
                 </Button>
               </a>
-
+              {/* vendors */}
               <a
                 href="https://www.facebook.com/profile.php?id=100083060214875"
                 aria-label="Visit our Facebook"

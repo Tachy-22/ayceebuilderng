@@ -100,7 +100,7 @@ const Home = () => {
               Nigeria&apos;s Premier Construction Marketplace
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-grey-800">
-              Building Nigeria, <br />
+              Ayceebuilder, Building Africa, <br />
               One Material at a Time
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
@@ -163,7 +163,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* New Section: Building Quotation Tool */}
+      {/* New Section: Building Quotation Tool categories */}
       <section className="py-10 bg-primary/10 mt-16">
         <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
@@ -309,11 +309,11 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
+      {/* Categories Section who we are */}
       <section className="py-16 md:py-24 bg-gray-200/20">
         <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
-            className="text-center max-w-xl mx-auto "
+            className="text-center max-w-xl mx-auto py-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -322,14 +322,14 @@ const Home = () => {
             <h2 className="text-3xl font-bold mb-4 text-grey-800">
               Shop by Categories
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground ">
               Browse our wide range of construction materials categorized for
               your convenience.
             </p>
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-9 grid-rows-3 gap-4 md:gap-6 max-w-7xl mx-auto"
+            className="grid grid-cols-9 grid-rows-3 gap-4 md:gap-6 max-w-7xl mx-auto pt-4"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -670,7 +670,7 @@ const Home = () => {
                   </h3>
                   <p className="text-muted-foreground">
                     All our products undergo strict quality control. We only
-                    partner with trusted manufacturers and vendors who meet our
+                    partner with trusted manufacturers and vendors  we are meet our
                     standards.
                   </p>
                 </CardContent>
