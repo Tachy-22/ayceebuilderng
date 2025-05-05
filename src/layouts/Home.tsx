@@ -17,6 +17,9 @@ import {
   Users,
   BarChart3,
   Building,
+  Award,
+  ShieldCheck,
+  Lightbulb,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +59,22 @@ const staggerContainer = {
       delayChildren: 0.2,
     },
   },
+};
+
+const getCategoryDescription = (categoryName: string) => {
+  const descriptions: { [key: string]: string } = {
+    Cement: "High-quality cement for all your construction needs.",
+    Steel: "Durable steel materials for reinforcement and structures.",
+    Roofing: "Premium roofing materials for lasting protection.",
+    Tiling: "Elegant tiles to enhance your spaces.",
+    Plumbing: "Reliable plumbing supplies for efficient systems.",
+    Electrical: "Top-notch electrical components for safe installations.",
+    Paints: "Vibrant paints for a perfect finish.",
+    Wood: "Quality wood for furniture and construction.",
+    Glass: "Clear and durable glass for modern designs.",
+    Tools: "Essential tools for every construction project.",
+  };
+  return descriptions[categoryName] || "Explore our wide range of materials.";
 };
 
 const Home = () => {
@@ -310,119 +329,309 @@ const Home = () => {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
+            className="grid grid-cols-9 grid-rows-3 gap-4 md:gap-6 max-w-7xl mx-auto"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-            {categories.slice(0, 5).map((category, index) => (
-              <motion.div key={category.id} variants={fadeIn}>
-                <Link
-                  href={`/products?sheet=${category.id}&page=1&limit=8`}
-                  className="bg-white rounded-xl p-4 text-center transition-all duration-300 hover:shadow-md hover-lift border block"
-                >
-                  <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-primary text-xl">
-                      {category.name.charAt(0)}
-                    </span>
+            {/* First item - Large */}
+            <motion.div
+              variants={fadeIn}
+              className="col-span-3 row-span-2 overflow-hidden rounded-xl border"
+            >
+              <Link
+                href={`/products?sheet=${categories[0].id}&page=1&limit=8`}
+                className="group relative h-full block w-full"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
+                <div className="relative h-full w-full bg-gray-200 overflow-hidden">
+                  <Image
+                    src={`https://images.unsplash.com/photo-1706629503586-2731f65587ae?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Zmxvb3IlMjB0aWxlc3xlbnwwfHwwfHx8MA%3D%3D`}
+                    alt={categories[0].name}
+                    width={800}
+                    height={600}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                  <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 className="font-medium text-white text-xl">
+                      {categories[0].name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                        {getCategoryDescription(categories[0].name)}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="font-medium">{category.name}</h3>
-                </Link>
-              </motion.div>
-            ))}
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Second item */}
+            <motion.div
+              variants={fadeIn}
+              className="col-span-4 row-span-1 overflow-hidden rounded-xl border"
+            >
+              <Link
+                href={`/products?sheet=${categories[1].id}&page=1&limit=8`}
+                className="group relative h-full block w-full"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
+                <div className="relative h-full w-full bg-gray-200 overflow-hidden">
+                  <Image
+                    src={`https://media.istockphoto.com/id/1472464806/photo/decorative-antique-edison-style-filament-light-bulbs-hanging-an-electrician-is-installing.jpg?s=612x612&w=0&k=20&c=3wirHrNX0E-pN-UTaAJhQ18jyoCuUM3ZwOaUHwqbls0=`}
+                    alt={categories[1].name}
+                    width={500}
+                    height={300}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                  <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 className="font-medium text-white">
+                      {categories[1].name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                        {getCategoryDescription(categories[1].name)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Third item */}
+            <motion.div
+              variants={fadeIn}
+              className="col-span-2 row-span-1 overflow-hidden rounded-xl border"
+            >
+              <Link
+                href={`/products?sheet=${categories[2].id}&page=1&limit=8`}
+                className="group relative h-full block w-full"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
+                <div className="relative h-full w-full bg-gray-200 overflow-hidden">
+                  <Image
+                    src={`https://5.imimg.com/data5/IR/AL/PO/SELLER-43531398/sanitary-ware.JPG`}
+                    alt={categories[2].name}
+                    width={400}
+                    height={300}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                  <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 className="font-medium text-white">
+                      {categories[2].name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                        {getCategoryDescription(categories[2].name)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Fourth item */}
+            <motion.div
+              variants={fadeIn}
+              className="col-span-2 row-span-1 overflow-hidden rounded-xl border"
+            >
+              <Link
+                href={`/products?sheet=${categories[3].id}&page=1&limit=8`}
+                className="group relative h-full block w-full"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
+                <div className="relative h-full w-full bg-gray-200 overflow-hidden">
+                  <Image
+                    src={`https://media.istockphoto.com/id/2150737447/photo/living-room-designed-in-a-modern-minimalist-style.jpg?s=612x612&w=0&k=20&c=dLISljRiuau099SmQboAzWvnHYQzM6ezn_7XD_WzPS0=`}
+                    alt={categories[3].name}
+                    width={400}
+                    height={300}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                  <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 className="font-medium text-white">
+                      {categories[3].name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                        {getCategoryDescription(categories[3].name)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Fifth item */}
+            <motion.div
+              variants={fadeIn}
+              className="col-span-2 row-span-1 overflow-hidden rounded-xl border"
+            >
+              <Link
+                href={`/products?sheet=${categories[4].id}&page=1&limit=8`}
+                className="group relative h-full block w-full"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
+                <div className="relative h-full w-full bg-gray-200 overflow-hidden">
+                  <Image
+                    src={`https://media.istockphoto.com/id/1314469297/photo/pouring-glue-into-glue-container.jpg?s=612x612&w=0&k=20&c=z5biCsx3lpS-g0aNDpRYnLGP5d5yHF705ZQa2uLD3D8=`}
+                    alt={categories[4].name}
+                    width={400}
+                    height={300}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                  <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 className="font-medium text-white">
+                      {categories[4].name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                        {getCategoryDescription(categories[4].name)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* Sixth item */}
+            <motion.div
+              variants={fadeIn}
+              className="col-span-2 row-span-1 overflow-hidden rounded-xl border"
+            >
+              <Link
+                href={`/products?sheet=${categories[5].id}&page=1&limit=8`}
+                className="group relative h-full block w-full"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
+                <div className="relative h-full w-full bg-gray-200 overflow-hidden">
+                  <Image
+                    src={`https://media.istockphoto.com/id/1135314838/photo/repair-of-hydraulic-heating-system-in-the-house.jpg?s=612x612&w=0&k=20&c=Z8-BohVX0_Niqp72nroZzeK3m8C69U2xLcvQYE_iHuA=`}
+                    alt={categories[5].name}
+                    width={800}
+                    height={300}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                  <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 className="font-medium text-white">
+                      {categories[5].name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                        {getCategoryDescription(categories[5].name)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
           </motion.div>
 
-     
+          <div className="mt-8 text-center">
+            <Link href="/products">
+              <Button variant="outline">
+                View All Categories
+                <ChevronRight size={16} className="ml-2" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Products Section */}
-      {/* <section className="py-16 md:py-24">
+      {/* About Us Section (New) */}
+      <section className="py-16 md:py-24">
         <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
-            className="flex flex-col md:flex-row md:items-end justify-between mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
           >
-            <div>
-              <h2 className="text-grey-800 text-3xl font-bold mb-4">
-                Featured Products
+            <motion.div variants={fadeIn}>
+              <Badge className="mb-4">About Aycee Builder</Badge>
+              <h2 className="text-3xl font-bold mb-6 text-grey-800">
+                Building Africa&apos;s Construction Future
               </h2>
-              <p className="text-muted-foreground max-w-xl">
-                Explore our handpicked selection of high-quality construction
-                materials from trusted vendors.
+              <p className="text-lg text-muted-foreground mb-4">
+                Aycee Builder is focused on becoming Africa&apos;s leading
+                online marketplace for construction and finishing materials. We
+                are dedicated to delivering high-quality products and services,
+                emphasizing customization, sustainability, and excellence.
               </p>
-            </div>
-            <Link
-              href="/products"
-              className="text-primary font-medium hover:underline mt-4 md:mt-0 inline-flex items-center"
-              aria-label="View All Products"
-            >
-              View All Products
-              <ArrowRight size={16} className="ml-1" aria-hidden="true" />
-            </Link>
+              <p className="text-lg text-muted-foreground mb-6">
+                Our mission is to provide high-quality construction and
+                finishing materials to both high-end and regular markets through
+                efficient and convenient means.
+              </p>
+
+              <div className="flex flex-wrap gap-4 mt-6">
+                <Link href="/about">
+                  <Button variant="outline" size="lg">
+                    Learn More About Us
+                    <ChevronRight size={16} className="ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div variants={fadeIn} className="grid grid-cols-2 gap-6">
+              <div className="bg-primary/5 p-6 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4">
+                  <Award className="text-primary h-6 w-6" />
+                </div>
+                <h3 className="font-bold mb-2">Quality</h3>
+                <p className="text-sm text-muted-foreground">
+                  Committed to offering only the highest-quality materials.
+                </p>
+              </div>
+
+              <div className="bg-primary/5 p-6 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4">
+                  <Users className="text-primary h-6 w-6" />
+                </div>
+                <h3 className="font-bold mb-2">Customer-centric</h3>
+                <p className="text-sm text-muted-foreground">
+                  We place customers at the core of everything we do.
+                </p>
+              </div>
+
+              <div className="bg-primary/5 p-6 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4">
+                  <ShieldCheck className="text-primary h-6 w-6" />
+                </div>
+                <h3 className="font-bold mb-2">Integrity</h3>
+                <p className="text-sm text-muted-foreground">
+                  We operate with transparency and honesty.
+                </p>
+              </div>
+
+              <div className="bg-primary/5 p-6 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4">
+                  <Lightbulb className="text-primary h-6 w-6" />
+                </div>
+                <h3 className="font-bold mb-2">Innovation</h3>
+                <p className="text-sm text-muted-foreground">
+                  Embracing the latest trends and advancements.
+                </p>
+              </div>
+            </motion.div>
           </motion.div>
-
-          <Tabs defaultValue="featured" className="w-full">
-            <TabsList className="mb-8">
-              <TabsTrigger value="featured">Featured</TabsTrigger>
-              <TabsTrigger value="bestsellers">Best Sellers</TabsTrigger>
-              <TabsTrigger value="new">New Arrivals</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="featured" className="mt-0">
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={staggerContainer}
-              >
-                {featuredProducts.map((product) => (
-                  <motion.div key={product.id} variants={fadeIn}>
-                    <ProductCard product={product} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="bestsellers" className="mt-0">
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={staggerContainer}
-              >
-                {bestSellerProducts.map((product) => (
-                  <motion.div key={product.id} variants={fadeIn}>
-                    <ProductCard product={product} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="new" className="mt-0">
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={staggerContainer}
-              >
-                {products.slice(0, 4).map((product) => (
-                  <motion.div key={product.id} variants={fadeIn}>
-                    <ProductCard product={product} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </TabsContent>
-          </Tabs>
         </div>
-      </section> */}
+      </section>
 
       {/* Customer Benefits */}
       <section className="py-16 md:py-24 bg-secondary/5">

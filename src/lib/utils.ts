@@ -93,3 +93,25 @@ export const calculateTiles = (floorArea: number, tileSize: TileSize) => {
 };
 
 export const whatsappNumber = "+2347039520579";
+
+// Function to get category descriptions for the specific categories in our data
+export function getCategoryDescription(categoryName: string): string {
+  const descriptions: Record<string, string> = {
+    Tiles: "Premium wall and floor tiles for a stylish finish to any space.",
+    Electrical:
+      "Complete range of electrical supplies for safe, efficient installations.",
+    "Sanitary Ware":
+      "High-quality bathroom fixtures and fittings for modern homes.",
+    Cladding:
+      "Versatile coverings to enhance and protect interior and exterior walls.",
+    "Adhesives & Admixtures":
+      "Professional bonding agents and additives for construction projects.",
+    Plumbing:
+      "Durable pipes, fittings and fixtures for reliable water systems.",
+  };
+
+  return (
+    descriptions[categoryName] ||
+    "Quality construction materials for your building projects."
+  );
+}

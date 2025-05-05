@@ -74,7 +74,9 @@ const Footer = () => {
               Your one-stop shop for all construction materials. Quality
               products at competitive prices.
             </p>
-            <h3 className="font-medium mb-3 text-white/50">Subscribe to our newsletter</h3>
+            <h3 className="font-medium mb-3 text-white/50">
+              Subscribe to our newsletter
+            </h3>
             <div className="flex gap-2">
               <Input
                 type="email"
@@ -88,12 +90,15 @@ const Footer = () => {
             </div>
             <div className="flex space-x-4 mt-8">
               <a
-                href="https://www.instagram.com/aycee_builder"
+                href="https://www.instagram.com/aycee_builder?igsh=MWZqNzdkeXg0dmRmcQ%3D%3D&utm_source=qr"
                 aria-label="Visit our Instagram"
                 className=""
                 target="_blank"
               >
-                {" "}
+                {/* 
+                Instagram: https://www.instagram.com/aycee_builder?igsh=MWZqNzdkeXg0dmRmcQ%3D%3D&utm_source=qr
+
+Facebook: https://www.facebook.com/profile.php?id=100083060214875 */}{" "}
                 <Button
                   aria-label="Visit our Instagram"
                   variant="ghost"
@@ -171,10 +176,10 @@ const Footer = () => {
               <div className="flex items-center">
                 <Mail size={16} className="mr-2 text-white/50" />
                 <a
-                  href="mailto:ayceemarket505@gmail.com"
+                  href="mailto:aaycee54@gmail.com"
                   className="text-sm text-white/50 hover:underline"
                 >
-                  ayceemarket505@gmail.com
+                  aaycee54@gmail.com{" "}
                 </a>
               </div>
               <div className="flex items-center">
