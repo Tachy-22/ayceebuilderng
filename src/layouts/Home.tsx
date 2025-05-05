@@ -313,7 +313,7 @@ const Home = () => {
       <section className="py-16 md:py-24 bg-gray-200/20">
         <div className="max-w-7xl w-full mx-auto px-4">
           <motion.div
-            className="text-center max-w-xl mx-auto mb-12"
+            className="text-center max-w-xl mx-auto "
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -540,7 +540,7 @@ const Home = () => {
             </motion.div>
           </motion.div>
 
-          <div className="mt-8 text-center">
+          <div className=" text-center">
             <Link href="/products">
               <Button variant="outline">
                 View All Categories
