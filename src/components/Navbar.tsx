@@ -8,6 +8,7 @@ import {
   User,
   X,
   ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,16 +23,19 @@ import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+import { categories } from "@/data/products";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showMobileCategories, setShowMobileCategories] = useState(false);
   const pathname = usePathname();
   const { getItemCount } = useCart();
   const { wishlistItems } = useWishlist();
+  const router = useRouter();
 
   const cartItemCount = getItemCount();
   const wishlistItemCount = wishlistItems.length;
@@ -59,6 +63,11 @@ const Navbar = () => {
     if (searchQuery.trim()) {
       window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
     }
+  };
+
+  const handleCategoryClick = (categoryId: string) => {
+    router.push(`/products?sheet=${categoryId}&page=1&limit=12`);
+    setIsMobileMenuOpen(false);
   };
 
   const navLinks = [
@@ -241,6 +250,34 @@ const Navbar = () => {
                         {link.name}
                       </Link>
                     ))}
+                    <button
+                      onClick={() =>
+                        setShowMobileCategories(!showMobileCategories)
+                      }
+                      className="flex items-center justify-between px-4 py-3 rounded-md text-sm font-medium transition-colors hover:bg-secondary/5"
+                    >
+                      Categories
+                      <ChevronDown
+                        size={18}
+                        className={`transition-transform ${
+                          showMobileCategories ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {showMobileCategories && (
+                      <div className="pl-4 space-y-1">
+                        {categories.map((category) => (
+                          <button
+                            key={category.id}
+                            onClick={() => handleCategoryClick(category.id)}
+                            className="flex items-center px-4 py-3 rounded-md text-sm font-medium transition-colors hover:bg-secondary/5 w-full"
+                          >
+                            <ChevronRight size={18} className="mr-2" />
+                            {category.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </nav>
                   {/* <div className="mt-auto py-4 border-t">
                     <Link
