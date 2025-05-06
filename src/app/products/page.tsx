@@ -60,7 +60,7 @@ const page = async ({ searchParams }: PageProps) => {
   }
 
   const url = `${apiUrl}${queryParams}`;
-  const res = await fetch(url, { next: { revalidate: 3600 } });
+  const res = await fetch(url, { next: { revalidate: 1 } });
   const response: ProductResponse = await res.json();
 
   // console.log(response);

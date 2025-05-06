@@ -38,7 +38,7 @@ const page = async ({ params, searchParams }: PageProps) => {
 
     try {
       // Fetch product by title
-      const response = await fetch(searchUrl, { next: { revalidate: 3600 } });
+      const response = await fetch(searchUrl, { next: { revalidate: 1 } });
       const result = await response.json();
 
       // If we found a product, use it
