@@ -28,7 +28,7 @@ export interface Product {
 export const categories = [
   { id: "tiles", name: "Tiles", icon: "🔲", itemCount: 20 },
 
-  { id: "lighting", name: "Lighting", icon: "🔲", itemCount: 20 },
+ 
   { id: "electrical", name: "Electrical", icon: "⚡", itemCount: 22 },
   { id: "sanitaryware", name: "Sanitary Ware", icon: "🚰", itemCount: 12 },
   { id: "cladding", name: "Cladding", icon: "🧱", itemCount: 14 },
@@ -39,6 +39,7 @@ export const categories = [
     itemCount: 9,
   },
   { id: "plumbing", name: "Plumbing", icon: "💧", itemCount: 18 },
+   { id: "lighting", name: "Lighting", icon: "🔲", itemCount: 20 },
 ];
 
 export interface ProductNew {

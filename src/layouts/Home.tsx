@@ -329,7 +329,7 @@ const Home = () => {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-9 grid-rows-3 gap-4 md:gap-6 max-w-7xl mx-auto pt-4"
+            className="grid grid-cols-1 lg:grid-cols-9 lg:grid-rows-4 gap-4 md:gap-6 max-w-7xl mx-auto pt-4  lg:h-[60rem]"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -338,7 +338,7 @@ const Home = () => {
             {/* First item - Large */}
             <motion.div
               variants={fadeIn}
-              className="col-span-3 row-span-2 overflow-hidden rounded-xl border"
+              className="lg:col-span-3 lg:row-span-2 overflow-hidden rounded-xl border"
             >
               <Link
                 href={`/products?sheet=${categories[0].id}&page=1&limit=8`}
@@ -354,13 +354,13 @@ const Home = () => {
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform  z-20">
                   <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
                     <h3 className="font-medium text-white text-xl">
                       {categories[0].name}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                      <p className="text-sm text-gray-300  transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
                         {getCategoryDescription(categories[0].name)}
                       </p>
                     </div>
@@ -372,7 +372,7 @@ const Home = () => {
             {/* Second item */}
             <motion.div
               variants={fadeIn}
-              className="col-span-4 row-span-1 overflow-hidden rounded-xl border"
+              className="lg:col-span-4 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
                 href={`/products?sheet=${categories[1].id}&page=1&limit=8`}
@@ -381,20 +381,20 @@ const Home = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
                   <Image
-                    src={`https://media.istockphoto.com/id/1472464806/photo/decorative-antique-edison-style-filament-light-bulbs-hanging-an-electrician-is-installing.jpg?s=612x612&w=0&k=20&c=3wirHrNX0E-pN-UTaAJhQ18jyoCuUM3ZwOaUHwqbls0=`}
+                    src={`https://media.istockphoto.com/id/1469656864/photo/electrician-engineer-uses-a-multimeter-to-test-the-electrical-installation-and-power-line.jpg?s=612x612&w=0&k=20&c=h70UOpNbJYT5G2oGT-KUeIE3yXwEgsCpr25yR1rnGtU=`}
                     alt={categories[1].name}
                     width={500}
                     height={300}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform  z-20">
                   <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
                     <h3 className="font-medium text-white">
                       {categories[1].name}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                      <p className="text-sm text-gray-300  transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
                         {getCategoryDescription(categories[1].name)}
                       </p>
                     </div>
@@ -406,7 +406,7 @@ const Home = () => {
             {/* Third item */}
             <motion.div
               variants={fadeIn}
-              className="col-span-2 row-span-1 overflow-hidden rounded-xl border"
+              className="lg:col-span-2 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
                 href={`/products?sheet=${categories[2].id}&page=1&limit=8`}
@@ -422,13 +422,13 @@ const Home = () => {
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform  z-20">
                   <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
                     <h3 className="font-medium text-white">
                       {categories[2].name}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                      <p className="text-sm text-gray-300  transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
                         {getCategoryDescription(categories[2].name)}
                       </p>
                     </div>
@@ -440,7 +440,7 @@ const Home = () => {
             {/* Fourth item */}
             <motion.div
               variants={fadeIn}
-              className="col-span-2 row-span-1 overflow-hidden rounded-xl border"
+              className="lg:col-span-2 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
                 href={`/products?sheet=${categories[3].id}&page=1&limit=8`}
@@ -456,13 +456,13 @@ const Home = () => {
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform  z-20">
                   <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
                     <h3 className="font-medium text-white">
                       {categories[3].name}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                      <p className="text-sm text-gray-300  transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
                         {getCategoryDescription(categories[3].name)}
                       </p>
                     </div>
@@ -474,7 +474,7 @@ const Home = () => {
             {/* Fifth item */}
             <motion.div
               variants={fadeIn}
-              className="col-span-2 row-span-1 overflow-hidden rounded-xl border"
+              className="lg:col-span-2 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
                 href={`/products?sheet=${categories[4].id}&page=1&limit=8`}
@@ -490,13 +490,13 @@ const Home = () => {
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform  z-20">
                   <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
                     <h3 className="font-medium text-white">
                       {categories[4].name}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                      <p className="text-sm text-gray-300  transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
                         {getCategoryDescription(categories[4].name)}
                       </p>
                     </div>
@@ -508,7 +508,7 @@ const Home = () => {
             {/* Sixth item */}
             <motion.div
               variants={fadeIn}
-              className="col-span-2 row-span-1 overflow-hidden rounded-xl border"
+              className="lg:col-span-2 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
                 href={`/products?sheet=${categories[5].id}&page=1&limit=8`}
@@ -524,13 +524,46 @@ const Home = () => {
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full transition-transform duration-300 group-hover:translate-y-0 z-20">
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform  z-20">
                   <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
                     <h3 className="font-medium text-white">
                       {categories[5].name}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-300 opacity-0 max-h-0 transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                      <p className="text-sm text-gray-300  transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
+                        {getCategoryDescription(categories[5].name)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+            {/* Seventh item */}
+            <motion.div
+              variants={fadeIn}
+              className="lg:col-span-9 lg:row-span-0 overflow-hidden rounded-xl border"
+            >
+              <Link
+                href={`/products?sheet=${categories[6].id}&page=1&limit=8`}
+                className="group relative h-full block w-full"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
+                <div className="relative h-full w-full bg-gray-200 overflow-hidden">
+                  <Image
+                    src={`https://media.istockphoto.com/id/1472464806/photo/decorative-antique-edison-style-filament-light-bulbs-hanging-an-electrician-is-installing.jpg?s=612x612&w=0&k=20&c=3wirHrNX0E-pN-UTaAJhQ18jyoCuUM3ZwOaUHwqbls0=`}
+                    alt={categories[6].name}
+                    width={800}
+                    height={300}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform  z-20">
+                  <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
+                    <h3 className="font-medium text-white">
+                      {categories[5].name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm text-gray-300  transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
                         {getCategoryDescription(categories[5].name)}
                       </p>
                     </div>
@@ -540,7 +573,7 @@ const Home = () => {
             </motion.div>
           </motion.div>
 
-          <div className=" text-center">
+          <div className=" text-center mt-[1rem]">
             <Link href="/products">
               <Button variant="outline">
                 View All Categories
@@ -670,8 +703,8 @@ const Home = () => {
                   </h3>
                   <p className="text-muted-foreground">
                     All our products undergo strict quality control. We only
-                    partner with trusted manufacturers and vendors  we are meet our
-                    standards.
+                    partner with trusted manufacturers and vendors we are meet
+                    our standards.
                   </p>
                 </CardContent>
               </Card>

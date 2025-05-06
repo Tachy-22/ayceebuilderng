@@ -231,6 +231,12 @@ const ProductsPage = ({
     // Update selected categories for UI
     setSelectedCategories(newSheet === "all" ? [] : [categoryId]);
 
+    // Close the mobile filter drawer if it's open
+    if (isMobileFilterOpen) {
+      setIsMobileFilterOpen(false);
+      document.body.style.overflow = "auto";
+    }
+
     // Update URL to fetch products for this category
     router.push(
       `${pathname}?${createQueryString({
