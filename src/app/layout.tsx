@@ -10,10 +10,19 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: {
     default: "Ayceebuilder Nigeria | Building Materials eCommerce",
-    template: "%s | Ayceebuilder Nigeria"
+    template: "%s | Ayceebuilder Nigeria",
   },
-  description: "Modern eCommerce platform for building materials in Nigeria. Find quality products for contractors, builders, and homeowners.",
-  keywords: ["construction", "building materials", "ecommerce", "Nigeria", "contractors", "builders", "construction supplies"],
+  description:
+    "Modern eCommerce platform for building materials in Nigeria. Find quality products for contractors, builders, and homeowners.",
+  keywords: [
+    "construction",
+    "building materials",
+    "ecommerce",
+    "Nigeria",
+    "contractors",
+    "builders",
+    "construction supplies",
+  ],
   authors: [{ name: "Ayceebuilder Nigeria" }],
   creator: "Ayceebuilder Nigeria",
   publisher: "Ayceebuilder Nigeria",
@@ -26,13 +35,13 @@ export const metadata: Metadata = {
     title: "Ayceebuilder Nigeria | Building Materials eCommerce",
     description: "Modern eCommerce platform for building materials in Nigeria.",
     url: "https://ayceebuilder.com",
-       images: [
+    images: [
       {
-        url: '/og-image.png', // Update this path to your actual image
+        url: "/og-image.png", // Update this path to your actual image
         width: 1200,
         height: 630,
-        alt: 'ayceebuilder',
-      }
+        alt: "ayceebuilder",
+      },
     ],
     siteName: "Ayceebuilder Nigeria",
     locale: "en_NG",
@@ -54,9 +63,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
-          <Navbar />
-          {children}
-          <Footer />
+          <div className="overflow-x-hidden">
+            {" "}
+            <Navbar />
+            {children}
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>

@@ -198,7 +198,8 @@ const ReceiptDocument = ({ orderData }: { orderData: any }) => {
             <View style={styles.inline}>
               <Text style={[styles.label, { width: 80 }]}>Name:</Text>
               <Text style={styles.value}>{orderData.user.name}</Text>
-            </View>            <View style={styles.inline}>
+            </View>{" "}
+            <View style={styles.inline}>
               <Text style={[styles.label, { width: 80 }]}>Email:</Text>
               <Text style={styles.value}>{orderData.user.email}</Text>
             </View>
