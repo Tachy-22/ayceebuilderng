@@ -52,7 +52,7 @@ const page = async ({ params, searchParams }: PageProps) => {
 
   // If we didn't find by title or no title was provided, try to fetch by ID
 
-  return <ProductDetail rawProduct={productData || undefined} />;
+  return <ProductDetail rawProduct={productData || null} />;
 };
 
 export default page;

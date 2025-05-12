@@ -32,11 +32,11 @@ import { useAppSelector } from "@/lib/redux/hooks";
 
 interface ProductDetailProps {
   mappedProducts?: Product[];
-  rawProduct?: ProductNew;
+  rawProduct: ProductNew | null;
 }
 
 const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
-  console.log({ rawProduct });
+  // console.log({ rawProduct });
   const fetchedMappedProduct = mapNewProductsToProducts([
     rawProduct as ProductNew,
   ])[0];
