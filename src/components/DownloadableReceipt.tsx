@@ -198,11 +198,16 @@ const ReceiptDocument = ({ orderData }: { orderData: any }) => {
             <View style={styles.inline}>
               <Text style={[styles.label, { width: 80 }]}>Name:</Text>
               <Text style={styles.value}>{orderData.user.name}</Text>
-            </View>
-            <View style={styles.inline}>
+            </View>            <View style={styles.inline}>
               <Text style={[styles.label, { width: 80 }]}>Email:</Text>
               <Text style={styles.value}>{orderData.user.email}</Text>
             </View>
+            {orderData.user.phone && (
+              <View style={styles.inline}>
+                <Text style={[styles.label, { width: 80 }]}>Phone:</Text>
+                <Text style={styles.value}>{orderData.user.phone}</Text>
+              </View>
+            )}
             <View style={styles.inline}>
               <Text style={[styles.label, { width: 80 }]}>Address:</Text>
               <Text style={styles.value}>{orderData.user.address}</Text>
@@ -317,11 +322,13 @@ interface DownloadableReceiptProps {
       name: string;
       email: string;
       address: string;
+      phone?: string;
     };
     items: {
       productName: string;
       unitPrice: number;
       quantity: number;
+      color?: string;
     }[];
     totalAmount: number;
     transportFare?: number;

@@ -7,6 +7,7 @@ type CartItem = {
   id: string;
   product: Product;
   quantity: number;
+  color?: string;
 };
 
 interface CartContextType {
@@ -53,14 +54,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
-
   // Add product to cart
   const addToCart = (product: Product, quantity: number) => {
     setCartItems((prevItems) => {
-      // Create a unique ID for the cart item
-      const cartItemId = product.id;
-      
-      // Check if the product is already in the cart
+      // Check if product has a selected color
+      const productColor = product.selectedColor || null;
+
+      // Create a unique ID for the cart item - include color in the ID if present
+      const cartItemId = productColor
+        ? `${product.id}-${productColor}`
+        : product.id;
+
+      // Check if the product with the same color is already in the cart
       const existingItemIndex = prevItems.findIndex(
         (item) => item.id === cartItemId
       );
@@ -69,10 +74,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         // If the item exists, update its quantity
         const updatedItems = [...prevItems];
         updatedItems[existingItemIndex].quantity += quantity;
-        
+
         toast({
           title: "Cart updated",
-          description: `${product.name} quantity updated in your cart`,
+          description: `${product.name} ${
+            productColor ? `(${productColor})` : ""
+          } quantity updated in your cart`,
         });
 
         return updatedItems;
@@ -80,21 +87,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         // Otherwise, add a new item
         toast({
           title: "Added to cart",
-          description: `${product.name} has been added to your cart`,
+          description: `${product.name} ${
+            productColor ? `(${productColor})` : ""
+          } has been added to your cart`,
         });
 
-        return [...prevItems, { 
-          id: cartItemId, 
-          product, 
-          quantity
-        }];
+        return [
+          ...prevItems,
+          {
+            id: cartItemId,
+            product,
+            quantity,
+            color: productColor || undefined,
+          },
+        ];
       }
     });
   };
 
   const removeFromCart = (id: string) => {
     setCartItems((prevItems) => {
-      const item = prevItems.find(item => item.id === id);
+      const item = prevItems.find((item) => item.id === id);
       if (item) {
         toast({
           title: "Removed from cart",
@@ -112,9 +125,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity } : item
-      )
+      prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
   };
 

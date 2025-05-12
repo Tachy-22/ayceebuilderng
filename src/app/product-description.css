@@ -1,0 +1,31 @@
+/* Custom styles for product description */
+.product-description ul {
+      list-style-type: disc;
+      padding-left: 1.5rem;
+      margin: 1rem 0;
+}
+
+.product-description li {
+      margin-bottom: 0.5rem;
+}
+
+.product-description p {
+      margin-bottom: 1rem;
+}
+
+.product-description-bullet {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+}
+
+.product-description-bullet-icon {
+      color: var(--color-primary);
+      flex-shrink: 0;
+      margin-right: 0.5rem;
+      font-weight: bold;
+}
+
+.product-description-bullet-text {
+      flex: 1;
+}

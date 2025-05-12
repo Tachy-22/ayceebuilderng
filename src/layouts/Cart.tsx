@@ -82,16 +82,19 @@ const Cart = () => {
     name: string;
     email: string;
     address: string;
+    phone: string | null;
   } | null>(null);
   const [showUserForm, setShowUserForm] = useState(false);
   const [newUserDetails, setNewUserDetails] = useState<{
     name: string;
     email: string;
     address: string;
+    phone: string;
   }>({
     name: "",
     email: "",
     address: "",
+    phone: "",
   });
 
   // New state for address autocomplete
@@ -110,9 +113,103 @@ const Cart = () => {
   const [productLocation, setProductLocation] = useState(
     "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja"
   );
-
   // Add state to track if we're showing the address selection UI
   const [showAddressSelection, setShowAddressSelection] = useState(false);
+
+  // Helper function to convert color names to hex values
+  const getColorValue = (colorName: string): string => {
+    const colorMap: Record<string, string> = {
+      white: "#FFFFFF",
+      "off-white": "#F5F5F5",
+      ivory: "#FFFFF0",
+      cream: "#FFFDD0",
+      beige: "#F5F5DC",
+      eggshell: "#F0EAD6",
+      "light gray": "#D3D3D3",
+      silver: "#C0C0C0",
+      gray: "#808080",
+      charcoal: "#36454F",
+      pewter: "#899499",
+      "sky blue": "#87CEEB",
+      "baby blue": "#89CFF0",
+      "powder blue": "#B0E0E6",
+      "navy blue": "#000080",
+      "royal blue": "#4169E1",
+      teal: "#008080",
+      turquoise: "#40E0D0",
+      cyan: "#00FFFF",
+      aqua: "#00FFFF",
+      periwinkle: "#CCCCFF",
+      "steel blue": "#4682B4",
+      blue: "#0000FF",
+      mint: "#98FB98",
+      "lime green": "#32CD32",
+      "forest green": "#228B22",
+      "olive green": "#808000",
+      sage: "#BCB88A",
+      emerald: "#50C878",
+      seafoam: "#71EEB8",
+      green: "#008000",
+      lemon: "#FFF44F",
+      butter: "#F0E36B",
+      marigold: "#EAA221",
+      mustard: "#E1AD01",
+      gold: "#FFD700",
+      amber: "#FFBF00",
+      tangerine: "#F28500",
+      peach: "#FFE5B4",
+      coral: "#FF7F50",
+      orange: "#FFA500",
+      apricot: "#FBCEB1",
+      yellow: "#FFFF00",
+      pink: "#FFC0CB",
+      rose: "#FF007F",
+      fuchsia: "#FF00FF",
+      magenta: "#FF00FF",
+      burgundy: "#800020",
+      maroon: "#800000",
+      crimson: "#DC143C",
+      rust: "#B7410E",
+      salmon: "#FA8072",
+      terracotta: "#E2725B",
+      cherry: "#DE3163",
+      red: "#FF0000",
+      lavender: "#E6E6FA",
+      lilac: "#C8A2C8",
+      plum: "#8E4585",
+      violet: "#8F00FF",
+      amethyst: "#9966CC",
+      indigo: "#4B0082",
+      purple: "#800080",
+      tan: "#D2B48C",
+      khaki: "#C3B091",
+      caramel: "#C68E17",
+      taupe: "#483C32",
+      chocolate: "#7B3F00",
+      mahogany: "#4A0100",
+      coffee: "#6F4E37",
+      mocha: "#A38068",
+      brown: "#964B00",
+      "jet black": "#000000",
+      onyx: "#353839",
+      black: "#000000",
+    };
+
+    if (!colorName) return "#D3D3D3"; // Default to light gray if color is undefined
+
+    const lowerColorName = colorName.toLowerCase().trim();
+    if (lowerColorName in colorMap) {
+      return colorMap[lowerColorName];
+    }
+
+    for (const [key, value] of Object.entries(colorMap)) {
+      if (lowerColorName.includes(key) || key.includes(lowerColorName)) {
+        return value;
+      }
+    }
+
+    return "#D3D3D3"; // Default to light gray
+  };
 
   // Set initial state based on saved users
   useEffect(() => {
@@ -456,6 +553,7 @@ const Cart = () => {
           productName: item.product.name,
           unitPrice: item.product.discountPrice || item.product.price,
           quantity: item.quantity,
+          color: item.color,
         }));
 
         const res = await fetch("/api/paystack", {
@@ -467,6 +565,7 @@ const Cart = () => {
               email: selectedUser.email,
               name: selectedUser.name,
               address: selectedUser.address,
+              phone: selectedUser?.phone || "",
             },
             items: itemsForReceipt,
             totalAmount: total,
@@ -495,12 +594,12 @@ const Cart = () => {
   const handlePaystackClose = () => {
     // ...handle close...
   };
-
   const handleSaveNewUser = () => {
     if (
       !newUserDetails.name.trim() ||
       !newUserDetails.email.trim() ||
-      !newUserDetails.address.trim()
+      !newUserDetails.address.trim() ||
+      !newUserDetails.phone.trim()
     ) {
       toast({
         variant: "destructive",
@@ -640,6 +739,7 @@ const Cart = () => {
                         name: selectedUser.name,
                         email: selectedUser.email,
                         address: selectedUser.address,
+                        phone: selectedUser.phone || "",
                       },
                       items: confirmedItems,
                       totalAmount: confirmedTotal,
@@ -700,6 +800,7 @@ const Cart = () => {
                                   )}`}
                                   className="font-medium hover:text-primary"
                                 >
+                                  {" "}
                                   {item.product.name}
                                 </Link>
                                 {item.product.inStock ? (
@@ -710,6 +811,20 @@ const Cart = () => {
                                   <div className="text-xs text-red-500 mt-1 flex items-center">
                                     <AlertCircle size={12} className="mr-1" />
                                     Out of Stock
+                                  </div>
+                                )}
+                                {item.color && (
+                                  <div className="flex items-center text-xs text-gray-600 mt-1">
+                                    <div
+                                      className="w-3 h-3 rounded-full mr-1.5"
+                                      style={{
+                                        backgroundColor: getColorValue(
+                                          item.color
+                                        ),
+                                        border: "1px solid rgba(0,0,0,0.1)",
+                                      }}
+                                    ></div>
+                                    Color: {item.color}
                                   </div>
                                 )}
                               </div>
@@ -895,14 +1010,18 @@ const Cart = () => {
                                     >
                                       <UserX size={14} />
                                     </Button>
-                                  </div>
+                                  </div>{" "}
                                   <div className="text-sm text-muted-foreground">
                                     {user.email}
                                   </div>
+                                  {user.phone && (
+                                    <div className="text-sm text-muted-foreground">
+                                      {user.phone}
+                                    </div>
+                                  )}
                                   <div className="text-sm mt-1 break-words">
                                     {user.address}
                                   </div>
-
                                   {selectedUser &&
                                     selectedUser.email === user.email &&
                                     calculatedDistance !== null && (
@@ -931,6 +1050,7 @@ const Cart = () => {
                                       name: "",
                                       email: "",
                                       address: "",
+                                      phone: "",
                                     });
                                     setAddressInput("");
                                   }}
@@ -955,7 +1075,7 @@ const Cart = () => {
                                     name: e.target.value,
                                   })
                                 }
-                              />
+                              />{" "}
                               <Label className="text-black/80">Email</Label>
                               <Input
                                 placeholder="janedoe@gmail.com"
@@ -964,6 +1084,19 @@ const Cart = () => {
                                   setNewUserDetails({
                                     ...newUserDetails,
                                     email: e.target.value,
+                                  })
+                                }
+                              />
+                              <Label className="text-black/80">
+                                Phone Number
+                              </Label>
+                              <Input
+                                placeholder="+234 800 123 4567"
+                                value={newUserDetails.phone}
+                                onChange={(e) =>
+                                  setNewUserDetails({
+                                    ...newUserDetails,
+                                    phone: e.target.value,
                                   })
                                 }
                               />
@@ -1027,18 +1160,21 @@ const Cart = () => {
                               >
                                 Change address
                               </Button>
-                            </div>
-
+                            </div>{" "}
                             <div className="text-sm font-medium">
                               {selectedUser.name}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               {selectedUser.email}
                             </div>
+                            {selectedUser.phone && (
+                              <div className="text-sm text-muted-foreground">
+                                {selectedUser.phone}
+                              </div>
+                            )}
                             <div className="text-sm mt-1 break-words">
                               {selectedUser.address}
                             </div>
-
                             {isCalculatingDistance ? (
                               <div className="flex items-center text-sm mt-2 text-muted-foreground">
                                 <Loader2 className="h-3 w-3 animate-spin mr-1" />

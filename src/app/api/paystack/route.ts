@@ -46,6 +46,8 @@ export async function POST(request: Request) {
     const orderConfirmationEmailHTML = OrderConfirmationEmail({
       userName: user.name,
       userEmail: user.email,
+      userPhone: user.phone,
+
       address: user.address,
       items,
       totalAmount,
@@ -58,6 +60,8 @@ export async function POST(request: Request) {
     const newOrderEmailHTML = NewOrderEmail({
       userName: user.name,
       userEmail: user.email,
+      userPhone: user.phone,
+
       address: user.address,
       items,
       totalAmount,

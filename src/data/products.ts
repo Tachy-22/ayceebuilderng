@@ -23,14 +23,15 @@ export interface Product {
     verified: boolean;
   };
   weight: number;
+  colors?: string[]; // Array of available colors
+  selectedColor?: string; // Selected color
 }
 
 export const categories = [
   { id: "tiles", name: "Tiles", icon: "🔲", itemCount: 20 },
 
- 
   { id: "electrical", name: "Electrical", icon: "⚡", itemCount: 22 },
-  {id:"paint",name:"Paint",icon:"🎨",itemCount:10},
+  { id: "paint", name: "Paint", icon: "🎨", itemCount: 10 },
   { id: "sanitaryware", name: "Sanitary Ware", icon: "🚰", itemCount: 12 },
   { id: "cladding", name: "Cladding", icon: "🧱", itemCount: 14 },
   {
@@ -40,7 +41,7 @@ export const categories = [
     itemCount: 9,
   },
   { id: "plumbing", name: "Plumbing", icon: "💧", itemCount: 18 },
-   { id: "lighting", name: "Lighting", icon: "🔲", itemCount: 20 },
+  { id: "lighting", name: "Lighting", icon: "🔲", itemCount: 20 },
 ];
 
 export interface ProductNew {
@@ -65,6 +66,8 @@ export interface ProductNew {
   Vendor?: string;
   id?: number;
   location?: string; // New location field in raw data
+  colors?: string; // Colors as comma-separated string
+  Colors?: string; // Alternative capitalization for colors
 }
 
 // Helper function to parse specifications string into object
@@ -73,16 +76,34 @@ function parseSpecifications(specString: string): Record<string, string> {
 
   const result: Record<string, string> = {};
   try {
+    // Log the raw specification string for debugging
+    console.log("Raw specifications:", specString);
+
     // Split by comma, then by colon
     const specs = specString.split(",");
 
     specs.forEach((spec) => {
-      const [key, value] = spec.split(":");
-      if (key && value) {
-        result[key.trim()] = value.trim();
+      // Check for colon as separator
+      if (spec.includes(":")) {
+        const [key, value] = spec.split(":");
+        if (key && value) {
+          // Remove any quotes around the value
+          const cleanValue = value.trim().replace(/^['"]|['"]$/g, "");
+          result[key.trim()] = cleanValue;
+        }
+      }
+      // Special handling for "Colors = 'Red,Yellow'" format
+      else if (spec.includes("=")) {
+        const [key, value] = spec.split("=");
+        if (key && value) {
+          // Remove any quotes around the value
+          const cleanValue = value.trim().replace(/^['"]|['"]$/g, "");
+          result[key.trim()] = cleanValue;
+        }
       }
     });
 
+    console.log("Parsed specifications:", result);
     return result;
   } catch (error) {
     console.error("Error parsing specifications:", error);
@@ -108,18 +129,99 @@ function parseFeatures(featuresString: string): string[] {
   }
 }
 
+// Helper function to parse colors string into array
+function parseColors(colorsString: string): string[] {
+  if (!colorsString || typeof colorsString !== "string") return [];
+
+  try {
+    // Remove any quotes around the string
+    const cleanString = colorsString.replace(/^['"]|['"]$/g, "");
+    console.log("Parsing colors from:", cleanString);
+
+    // Split by comma or handle as single color
+    return cleanString.includes(",")
+      ? cleanString
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean)
+      : [cleanString.trim()];
+  } catch (error) {
+    console.error("Error parsing colors:", error);
+    return [];
+  }
+}
+
 // Helper function to convert ProductNew to Product format
 export function mapNewProductToProduct(
   product: ProductNew,
   index: number
 ): Product {
   try {
+    // Log raw product data for debugging
+    console.log("Raw product data:", {
+      id: product.id,
+      title: product.Title,
+      colors: product.colors,
+      Colors: product.Colors,
+      specification: product.Specification,
+    });
+
     // Parse specifications and features as before
     const specifications = product.Specification
       ? parseSpecifications(product.Specification)
       : {};
 
-    const features = product.Features ? parseFeatures(product.Features) : [];
+    const features = product.Features ? parseFeatures(product.Features) : []; // Parse colors either from dedicated field or from specifications
+    let colors: string[] = [];
+
+    // Check for direct colors field (from colors property in product data)
+    if (product.colors) {
+      colors = parseColors(product.colors);
+      console.log("Colors from product.colors:", colors);
+    }
+    // Check for Colors property directly in the product (independent of specs)
+    else if (product.Colors) {
+      colors = parseColors(product.Colors);
+      console.log("Colors from product.Colors:", colors);
+    }
+    // Check in specifications with different capitalizations
+    else if (specifications.Colors) {
+      colors = parseColors(specifications.Colors);
+      console.log("Colors from specifications.Colors:", colors);
+    } else if (specifications.colors) {
+      colors = parseColors(specifications.colors);
+      console.log("Colors from specifications.colors:", colors);
+    } else if (specifications.Color) {
+      colors = parseColors(specifications.Color);
+      console.log("Colors from specifications.Color:", colors);
+    } else if (specifications.color) {
+      colors = parseColors(specifications.color);
+      console.log("Colors from specifications.color:", colors);
+    }
+
+    // Look for specific "Colors" property that may not be in specifications
+    if (colors.length === 0 && typeof product.Specification === "string") {
+      // Try to extract Colors directly from the specification string
+      const colorsMatch = product.Specification.match(
+        /Colors\s*[:=]\s*['"]([^'"]+)['"]/i
+      );
+      if (colorsMatch && colorsMatch[1]) {
+        colors = parseColors(colorsMatch[1]);
+        console.log("Colors extracted from spec string:", colors);
+      }
+    }
+
+    // Log the extracted colors
+    console.log("Extracted colors:", {
+      productId: product.id,
+      productTitle: product.Title,
+      colors: colors,
+    });
+
+    // For paint products, ensure at least one color is available
+    if (product.sheetName?.toLowerCase() === "paint" && colors.length === 0) {
+      colors = ["White"];
+    }
 
     // Handle image arrays and different image formats
     let imageUrl = "https://placehold.co/600x400?text=No+Image";
@@ -182,6 +284,7 @@ export function mapNewProductToProduct(
         verified: true,
       },
       weight: product.weight || 0, // Default weight since no weight info
+      colors: colors, // Add colors array
     };
   } catch (error) {
     console.error("Error mapping product:", error, product);
@@ -208,6 +311,7 @@ export function mapNewProductToProduct(
         verified: false,
       },
       weight: 0,
+      colors: [], // Empty colors array for fallback product
     };
   }
 }
@@ -218,6 +322,19 @@ export function mapNewProductsToProducts(products: ProductNew[]): Product[] {
     console.error("Expected products array, received:", products);
     return [];
   }
+
+  // Log the first product to see its structure
+  if (products.length > 0) {
+    console.log("First product structure:", {
+      keys: Object.keys(products[0]),
+      hasColors: "Colors" in products[0],
+      hasLowerColors: "colors" in products[0],
+      colorValue: products[0].Colors || "none",
+      specification: products[0].Specification,
+    });
+  }
+
+  console.log({ seeNow: products });
 
   return products.map((product, index) => {
     try {
@@ -245,6 +362,7 @@ export function mapNewProductsToProducts(products: ProductNew[]): Product[] {
           verified: false,
         },
         weight: 0,
+        colors: [], // Empty colors array for fallback product
       };
     }
   });

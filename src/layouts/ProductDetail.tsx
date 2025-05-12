@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ChevronRight,
   Star,
@@ -9,6 +9,9 @@ import {
   Heart,
   Share2,
   Check,
+  ChevronDown,
+  ChevronUp,
+  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +40,6 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
   const fetchedMappedProduct = mapNewProductsToProducts([
     rawProduct as ProductNew,
   ])[0];
-
   console.log({ rawProduct, fetchedMappedProduct });
 
   const { id } = useParams();
@@ -45,63 +47,169 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
     (state) => state.productSlice
   );
   const product = storedProduct ? storedProduct : fetchedMappedProduct;
-  
+
+  // Log the product to help with debugging color data
+  console.log("Product with colors:", {
+    productColors: product.colors,
+    specs: product.specifications,
+  });
   const [quantity, setQuantity] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
-  useEffect(() => {
-    // Reset image index when product changes
-    /// setCurrentImageIndex(0);
+  // This function maps common paint color names to their CSS color values
+  const getColorValue = (colorName: string): string => {
+    const colorMap: Record<string, string> = {
+      white: "#FFFFFF",
+      "off-white": "#F5F5F5",
+      ivory: "#FFFFF0",
+      cream: "#FFFDD0",
+      beige: "#F5F5DC",
+      eggshell: "#F0EAD6",
+      "light gray": "#D3D3D3",
+      silver: "#C0C0C0",
+      gray: "#808080",
+      charcoal: "#36454F",
+      pewter: "#899499",
+      "sky blue": "#87CEEB",
+      "baby blue": "#89CFF0",
+      "powder blue": "#B0E0E6",
+      "navy blue": "#000080",
+      "royal blue": "#4169E1",
+      teal: "#008080",
+      turquoise: "#40E0D0",
+      cyan: "#00FFFF",
+      aqua: "#00FFFF",
+      periwinkle: "#CCCCFF",
+      "steel blue": "#4682B4",
+      blue: "#0000FF",
+      mint: "#98FB98",
+      "lime green": "#32CD32",
+      "forest green": "#228B22",
+      "olive green": "#808000",
+      sage: "#BCB88A",
+      emerald: "#50C878",
+      seafoam: "#71EEB8",
+      green: "#008000",
+      lemon: "#FFF44F",
+      butter: "#F0E36B",
+      marigold: "#EAA221",
+      mustard: "#E1AD01",
+      gold: "#FFD700",
+      amber: "#FFBF00",
+      tangerine: "#F28500",
+      peach: "#FFE5B4",
+      coral: "#FF7F50",
+      orange: "#FFA500",
+      apricot: "#FBCEB1",
+      yellow: "#FFFF00",
+      pink: "#FFC0CB",
+      rose: "#FF007F",
+      fuchsia: "#FF00FF",
+      magenta: "#FF00FF",
+      burgundy: "#800020",
+      maroon: "#800000",
+      crimson: "#DC143C",
+      rust: "#B7410E",
+      salmon: "#FA8072",
+      terracotta: "#E2725B",
+      cherry: "#DE3163",
+      red: "#FF0000",
+      lavender: "#E6E6FA",
+      lilac: "#C8A2C8",
+      plum: "#8E4585",
+      violet: "#8F00FF",
+      amethyst: "#9966CC",
+      indigo: "#4B0082",
+      purple: "#800080",
+      tan: "#D2B48C",
+      khaki: "#C3B091",
+      caramel: "#C68E17",
+      taupe: "#483C32",
+      chocolate: "#7B3F00",
+      mahogany: "#4A0100",
+      coffee: "#6F4E37",
+      mocha: "#A38068",
+      brown: "#964B00",
+      "jet black": "#000000",
+      onyx: "#353839",
+      black: "#000000",
+    };
 
-    // First try to find the product in the mapped products
-    if (mappedProducts && mappedProducts.length > 0) {
-      const foundProduct = mappedProducts.find((p) => p.id === id);
-      if (foundProduct) {
-        setTimeout(() => setIsLoaded(true), 100);
-        return;
+    const lowerColorName = colorName.toLowerCase().trim();
+    if (lowerColorName in colorMap) {
+      return colorMap[lowerColorName];
+    }
+
+    for (const [key, value] of Object.entries(colorMap)) {
+      if (lowerColorName.includes(key) || key.includes(lowerColorName)) {
+        return value;
       }
     }
 
-    // If we have a raw product, map it
-    if (rawProduct) {
-      const mappedProduct = mapNewProductToProduct(rawProduct, 0);
-      setTimeout(() => setIsLoaded(true), 100);
-      return;
+    return "#D3D3D3";
+  };
+  const getProductColors = (): string[] => {
+    console.log("Getting product colors from:", {
+      productColors: product.colors,
+      specifications: product.specifications,
+    });
+
+    // First, check if we have colors from the product model directly
+    if (
+      product.colors &&
+      Array.isArray(product.colors) &&
+      product.colors.length > 0
+    ) {
+      console.log("Using colors directly from product.colors");
+      return product.colors;
     }
 
-    // If we have a product from redux
-    if (product) {
-      setTimeout(() => setIsLoaded(true), 100);
+    // Otherwise check from specifications with different case variations
+    if (product.specifications) {
+      for (const key of Object.keys(product.specifications)) {
+        if (key.toLowerCase() === "colors" || key.toLowerCase() === "color") {
+          console.log(`Using colors from specifications.${key}`);
+          const colorsValue = product.specifications[key];
+          return colorsValue.split(",").map((color) => color.trim());
+        }
+      }
     }
-  }, [id, product, mappedProducts, rawProduct]);
 
-  if (!product) {
-    return (
-      <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-          <p className="mb-6">
-            The product you&apos;re looking for doesn&apos;t exist or has been
-            removed.
-          </p>
-          <Link href="/products">
-            <Button>Browse All Products</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+    // Only return common colors for paint products
+    if (product.category.toLowerCase() === "paint") {
+      console.log("Using default color for paint product");
+      return ["White"];
+    }
+
+    console.log("No colors found for product");
+    return [];
+  };
+
+  const productColors = getProductColors();
+  useEffect(() => {
+    if (productColors.length > 0 && !selectedColor) {
+      setSelectedColor(productColors[0]);
+    }
+  }, [product, productColors, productColors.length, selectedColor]);
 
   const handleAddToCart = () => {
-    // Add product to cart
-    addToCart(product, quantity);
+    const productWithColor =
+      selectedColor && productColors.length > 0
+        ? { ...product, selectedColor }
+        : product;
+
+    addToCart(productWithColor, quantity);
 
     toast({
       title: "Added to Cart",
-      description: `${product.name} added to cart`,
+      description: `${product.name} ${
+        selectedColor ? `(${selectedColor})` : ""
+      } added to cart`,
     });
   };
 
@@ -121,7 +229,6 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
     });
   };
 
-  // Change the displayed image
   const changeImage = (index: number) => {
     if (index >= 0 && index < product.images.length) {
       setCurrentImageIndex(index);
@@ -132,10 +239,26 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
     product.discountPrice && product.discountPrice < product.price;
   const wishlisted = isInWishlist(product.id);
 
+  if (!product) {
+    return (
+      <div className="min-h-screen">
+        <div className="container mx-auto px-4 py-20 text-center">
+          <h1 className="text-2xl font-bold mb-4">Product not found</h1>
+          <p className="mb-6">
+            The product you&apos;re looking for doesn&apos;t exist or has been
+            removed.
+          </p>
+          <Link href="/products">
+            <Button>Browse All Products</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen max-w-7xl mx-auto flex flex-col">
       <main className="flex-grow pt-20">
-        {/* Breadcrumbs */}
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center text-sm text-muted-foreground">
             <Link href="/" className="hover:text-foreground">
@@ -164,9 +287,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
           }`}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {/* Product Image Column */}
             <div className="space-y-4">
-              {/* Main Product Image */}
               <div className="bg-secondary/20 rounded-xl overflow-hidden max-h-[30rem]">
                 <img
                   src={product.images[currentImageIndex]}
@@ -175,7 +296,6 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                 />
               </div>
 
-              {/* Image Thumbnails */}
               {product.images.length > 1 && (
                 <div className="flex flex-wrap gap-2 justify-start">
                   {product.images.map((img, index) => (
@@ -200,7 +320,6 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
               )}
             </div>
 
-            {/* Product Info */}
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-bold">{product.name}</h1>
@@ -230,7 +349,6 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                   </span>
                 </div>
               </div>
-
               <div>
                 {hasDiscount && product.discountPrice ? (
                   <div className="flex items-baseline gap-2">
@@ -255,8 +373,6 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                   </span>
                 )}
               </div>
-
-              {/* Features List - Quick view */}
               {product.features && product.features.length > 0 && (
                 <div className="pt-4 border-t">
                   <h3 className="font-medium mb-3">Key Features</h3>
@@ -273,7 +389,48 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                   </ul>
                 </div>
               )}
-
+              {productColors.length > 0 && (
+                <div className="pt-4 border-t">
+                  <h3 className="font-medium mb-3">
+                    <span className="flex items-center">
+                      <Palette size={16} className="mr-2 text-primary" />
+                      Color Options
+                    </span>
+                  </h3>{" "}
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {productColors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className="group relative focus:outline-none"
+                        aria-label={`Select ${color} color`}
+                      >
+                        <div
+                          className={`h-[1rem] w-[1rem] rounded-full transition-transform ${
+                            selectedColor === color
+                              ? "ring-2 ring-primary scale-110 shadow-sm"
+                              : "ring-1 ring-gray-200 hover:scale-105"
+                          }`}
+                          style={{ backgroundColor: getColorValue(color) }}
+                        />
+                        {selectedColor === color && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            {/* <div className="bg-white rounded-full p-0.5">
+                              <Check size={12} className="text-primary" />
+                            </div> */}
+                          </div>
+                        )}
+                        <span className="sr-only">{color}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {selectedColor && (
+                    <div className="mt-4 text-sm font-medium text-primary">
+                      Selected: {selectedColor}
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center border rounded-md">
@@ -341,7 +498,6 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                   </Button>
                 </div>
               </div>
-
               <div className="pt-4 border-t">
                 <div className="flex items-start gap-2 text-sm">
                   <Truck
@@ -371,13 +527,72 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                     Features
                   </TabsTrigger>
                 )}
-              </TabsList>
-
+              </TabsList>{" "}
               <TabsContent value="description" className="mt-6">
                 <div className="prose max-w-none">
-                  <p>{product.description}</p>
-                  {!product.description ||
-                  product.description === "No description available" ? (
+                  {product.description &&
+                  product.description !== "No description available" ? (
+                    <>
+                      {" "}
+                      <div
+                        className={`product-description ${
+                          !isDescriptionExpanded
+                            ? "max-h-[300px] overflow-hidden relative border-b-2 border-gray-100"
+                            : ""
+                        }`}
+                        dangerouslySetInnerHTML={{
+                          __html: product.description
+                            .replace(
+                              /\n\s*\n([A-Z][^a-z\n]{2,}.*?)(?=\n)/g,
+                              '</p><h3 class="text-lg font-semibold mt-5 mb-3">$1</h3><p class="mb-3">'
+                            )
+                            .replace(
+                              /\n(\d+\.\s+.*?)(?=\n\d+\.|$)/g,
+                              '</p><ol class="list-decimal pl-5 mb-4"><li class="mb-2">$1</li></ol><p class="mb-3">'
+                            )
+                            .replace(
+                              /\n[-•*]\s+(.*?)(?=\n[-•*]|$)/g,
+                              '</p><ul class="list-disc pl-5 mb-4"><li class="mb-2">$1</li></ul><p class="mb-3">'
+                            )
+                            .replace(
+                              /<\/ul><p class="mb-3">\n[-•*]\s+(.*?)(?=\n[-•*]|$)/g,
+                              '<li class="mb-2">$1</li>'
+                            )
+                            .replace(/\n\s*\n/g, '</p><p class="mb-3">')
+                            .replace(/\n/g, "<br />")
+                            .replace(/- /g, "• ")
+                            .replace(
+                              /• (.*?)(?=<br \/>|<\/p>)/g,
+                              '<span class="flex items-start mb-2"><span class="text-primary mr-2 flex-shrink-0">•</span>$1</span>'
+                            )
+                            .replace(
+                              /^(.+?)(?=<\/p>|<h3|<ul|<ol)/,
+                              '<p class="mb-3">$1'
+                            )
+                            .replace(/([^>])$/, "$1</p>")
+                            .replace(/<p class="mb-3"><\/p>/g, ""),
+                        }}
+                      />
+                      <button
+                        onClick={() =>
+                          setIsDescriptionExpanded(!isDescriptionExpanded)
+                        }
+                        className="flex items-center text-primary font-medium mt-4 mb-2 hover:underline focus:outline-none"
+                      >
+                        {isDescriptionExpanded ? (
+                          <>
+                            <span>Show less</span>
+                            <ChevronUp size={16} className="ml-1" />
+                          </>
+                        ) : (
+                          <>
+                            <span>Show more</span>
+                            <ChevronDown size={16} className="ml-1" />
+                          </>
+                        )}
+                      </button>
+                    </>
+                  ) : (
                     <p>
                       This premium construction material is designed to meet the
                       highest industry standards and is suitable for both
@@ -385,10 +600,46 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                       durability in mind, it will withstand the test of time and
                       environmental conditions.
                     </p>
-                  ) : null}
-                </div>
+                  )}
+                </div>{" "}
+                <style jsx>{`
+                  .product-description p {
+                    margin-bottom: 0.75rem;
+                  }
+                  .product-description h3 {
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    margin-top: 1.5rem;
+                    margin-bottom: 0.75rem;
+                    color: hsl(160, 64%, 45%);
+                  }
+                  .product-description ul,
+                  .product-description ol {
+                    margin-left: 1.5rem;
+                    margin-bottom: 1rem;
+                  }
+                  .product-description li {
+                    margin-bottom: 0.5rem;
+                  }
+                  .product-description ul li {
+                    list-style-type: disc;
+                  }
+                  .product-description ol li {
+                    list-style-type: decimal;
+                  }
+                  .product-description span.flex {
+                    display: flex;
+                    align-items: flex-start;
+                    margin-bottom: 0.5rem;
+                  }
+                  .product-description span.flex span:first-child {
+                    color: hsl(160, 64%, 55%);
+                    font-weight: bold;
+                    margin-right: 0.5rem;
+                    flex-shrink: 0;
+                  }
+                `}</style>
               </TabsContent>
-
               <TabsContent value="specifications" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
@@ -444,7 +695,6 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                   </div>
                 </div>
               </TabsContent>
-
               <TabsContent value="features" className="mt-6">
                 <div className="prose max-w-none">
                   <ul className="space-y-3">
