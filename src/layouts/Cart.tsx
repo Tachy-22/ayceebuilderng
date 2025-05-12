@@ -75,6 +75,7 @@ const Cart = () => {
         name: string;
         email: string;
         address: string;
+        phone:string
       }[]
     | []
   >([]);
@@ -983,7 +984,7 @@ const Cart = () => {
                             </div>
 
                             {/* User Cards */}
-                            <div className="space-y-3">
+                            <div className="spangce-y-3">
                               {savedUsers.map((user, idx) => (
                                 <div
                                   key={idx}
