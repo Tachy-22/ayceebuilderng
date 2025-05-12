@@ -30,6 +30,7 @@ export const categories = [
 
  
   { id: "electrical", name: "Electrical", icon: "⚡", itemCount: 22 },
+  {id:"paint",name:"Paint",icon:"🎨",itemCount:10},
   { id: "sanitaryware", name: "Sanitary Ware", icon: "🚰", itemCount: 12 },
   { id: "cladding", name: "Cladding", icon: "🧱", itemCount: 14 },
   {

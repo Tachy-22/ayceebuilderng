@@ -25,7 +25,7 @@ const page = async ({ params, searchParams }: PageProps) => {
 
   // Base API URL
   const apiUrl =
-    "https://script.google.com/macros/s/AKfycbzAP8eEfRBVKyCDUhp2LlFHcvMZrbvC6IY_XI5rx7wfHKVkSTmbirWU-6eVy5_nhvWr/exec";
+    "https://script.google.com/macros/s/AKfycbwT0TdiN9b9pa7ihupog_ztKDe9C3KK2BvGef4X_Zpy1W-pRJf7vupnqAXQB8cQuw-W/exec";
 
   let productData: ProductNew | null = null;
 

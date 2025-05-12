@@ -49,7 +49,7 @@ const page = async ({ searchParams }: PageProps) => {
 
   // API URL for fetching products
   const apiUrl =
-    "https://script.google.com/macros/s/AKfycbzAP8eEfRBVKyCDUhp2LlFHcvMZrbvC6IY_XI5rx7wfHKVkSTmbirWU-6eVy5_nhvWr/exec";
+    "https://script.google.com/macros/s/AKfycbwT0TdiN9b9pa7ihupog_ztKDe9C3KK2BvGef4X_Zpy1W-pRJf7vupnqAXQB8cQuw-W/exec";
 
   // Build query string for the API request
   let queryParams = `?page=${currentPage}&limit=${limit}&sheet=${sheet}`;
