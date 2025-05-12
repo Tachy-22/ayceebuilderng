@@ -157,21 +157,27 @@ export function mapNewProductToProduct(
   index: number
 ): Product {
   try {
+    // Check if product is null or undefined
+    if (!product) {
+      throw new Error("Product is undefined or null");
+    }
+
     // Log raw product data for debugging
     console.log("Raw product data:", {
-      id: product.id,
-      title: product.Title,
-      colors: product.colors,
-      Colors: product.Colors,
-      specification: product.Specification,
-    });
-
-    // Parse specifications and features as before
+      id: product.id || "unknown",
+      title: product.Title || "No Title",
+      colors: product.colors || "none",
+      Colors: product.Colors || "none",
+      specification: product.Specification || "none",
+    }); // Parse specifications and features as before
     const specifications = product.Specification
       ? parseSpecifications(product.Specification)
       : {};
 
-    const features = product.Features ? parseFeatures(product.Features) : []; // Parse colors either from dedicated field or from specifications
+    // Parse features safely
+    const features = product.Features ? parseFeatures(product.Features) : [];
+
+    // Parse colors either from dedicated field or from specifications
     let colors: string[] = [];
 
     // Check for direct colors field (from colors property in product data)
@@ -221,35 +227,44 @@ export function mapNewProductToProduct(
     // For paint products, ensure at least one color is available
     if (product.sheetName?.toLowerCase() === "paint" && colors.length === 0) {
       colors = ["White"];
-    }
-
-    // Handle image arrays and different image formats
+    } // Handle image arrays and different image formats
     let imageUrl = "https://placehold.co/600x400?text=No+Image";
     let imageArray: string[] = [];
 
-    // If we have an images array, use that
-    if (
-      product.images &&
-      Array.isArray(product.images) &&
-      product.images.length > 0
-    ) {
-      imageArray = product.images;
-      imageUrl = product.images[0]; // Use first image as main image
-    }
-    // Otherwise check for single image field
-    else if (typeof product.image === "string" && product.image) {
-      imageUrl = product.image;
-      imageArray = [product.image]; // Create an array with the single image
-    } else if (
-      product.image &&
-      typeof product.image === "object" &&
-      "src" in product.image &&
-      product.image.src
-    ) {
-      imageUrl = product.image.src;
-      imageArray = [product.image.src]; // Create an array with the single image
-    } else {
-      imageArray = [imageUrl]; // Use placeholder as array
+    try {
+      // If we have an images array, use that
+      if (
+        product.images &&
+        Array.isArray(product.images) &&
+        product.images.length > 0
+      ) {
+        // Filter out any null or undefined values
+        const validImages = product.images.filter(Boolean);
+        if (validImages.length > 0) {
+          imageArray = validImages;
+          imageUrl = validImages[0]; // Use first image as main image
+        }
+      }
+      // Otherwise check for single image field
+      else if (typeof product.image === "string" && product.image) {
+        imageUrl = product.image;
+        imageArray = [product.image]; // Create an array with the single image
+      } else if (
+        product.image &&
+        typeof product.image === "object" &&
+        "src" in product.image &&
+        product.image.src
+      ) {
+        imageUrl = product.image.src;
+        imageArray = [product.image.src]; // Create an array with the single image
+      } else {
+        imageArray = [imageUrl]; // Use placeholder as array
+      }
+    } catch (error) {
+      console.error("Error processing product images:", error);
+      // Fall back to placeholder image
+      imageUrl = "https://placehold.co/600x400?text=Image+Error";
+      imageArray = [imageUrl];
     }
 
     // Ensure we always have at least one image in the array
@@ -322,16 +337,19 @@ export function mapNewProductsToProducts(products: ProductNew[]): Product[] {
     console.error("Expected products array, received:", products);
     return [];
   }
-
   // Log the first product to see its structure
-  if (products.length > 0) {
-    console.log("First product structure:", {
-      keys: Object.keys(products[0]),
-      hasColors: "Colors" in products[0],
-      hasLowerColors: "colors" in products[0],
-      colorValue: products[0].Colors || "none",
-      specification: products[0].Specification,
-    });
+  if (products && products.length > 0 && products[0]) {
+    try {
+      console.log("First product structure:", {
+        keys: Object.keys(products[0] || {}),
+        hasColors: products[0] && "Colors" in products[0],
+        hasLowerColors: products[0] && "colors" in products[0],
+        colorValue: products[0]?.Colors || "none",
+        specification: products[0]?.Specification,
+      });
+    } catch (error) {
+      console.log("Error logging product structure:", error);
+    }
   }
 
   console.log({ seeNow: products });
