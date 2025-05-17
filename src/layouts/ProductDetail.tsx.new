@@ -1,0 +1,586 @@
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { MinusIcon, PlusIcon, HeartIcon } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
+import RelatedProducts from "@/components/RelatedProducts";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+
+// Helper function to get hex code for color names
+const getColorHex = (colorName?: string): string => {
+  if (!colorName) return "#FFFFFF";
+  
+  const colorMap: Record<string, string> = {
+    // Reds
+    "Red": "#FF0000",
+    "Crimson": "#DC143C",
+    "Maroon": "#800000",
+    "Burgundy": "#800020",
+    "Cherry": "#DE3163",
+    "Apple": "#ff0800",
+    "Tomato": "#ff6347",
+    
+    // Yellows
+    "Yellow": "#FFFF00",
+    "Gold": "#FFD700",
+    "Amber": "#FFBF00",
+    "Mustard": "#FFDB58",
+    "Lemon": "#FFF44F",
+    
+    // Greens
+    "Green": "#008000",
+    "Olive": "#808000",
+    "Lime": "#00FF00",
+    "Forest": "#228B22",
+    "Mint": "#98FB98",
+    "Emerald": "#50C878",
+    "Sage": "#BCB88A",
+    
+    // Blues
+    "Blue": "#0000FF",
+    "Navy": "#000080",
+    "Sky": "#87CEEB",
+    "Turquoise": "#40E0D0",
+    "Teal": "#008080",
+    "Azure": "#007FFF",
+    "Cyan": "#00FFFF",
+    
+    // Purples
+    "Purple": "#800080",
+    "Lavender": "#E6E6FA",
+    "Violet": "#8F00FF",
+    "Plum": "#DDA0DD",
+    "Magenta": "#FF00FF",
+    "Mauve": "#E0B0FF",
+    
+    // Browns
+    "Brown": "#A52A2A",
+    "Beige": "#F5F5DC",
+    "Tan": "#D2B48C",
+    "Chocolate": "#7B3F00",
+    "Walnut": "#5C4033",
+    "Coffee": "#6F4E37",
+    
+    // Whites & Creams
+    "White": "#FFFFFF",
+    "Cream": "#FFFDD0",
+    "Ivory": "#FFFFF0",
+    "Pearl": "#EAEAEA",
+    "Vanilla": "#F3E5AB",
+    
+    // Grays & Blacks
+    "Black": "#000000",
+    "Gray": "#808080",
+    "Silver": "#C0C0C0",
+    "Charcoal": "#36454F",
+    "Slate": "#708090",
+    
+    // Pinks & Peaches
+    "Pink": "#FFC0CB",
+    "Rose": "#FF007F",
+    "Coral": "#FF7F50",
+    "Peach": "#FFDAB9",
+    "Salmon": "#FA8072"
+  };
+  
+  return colorMap[colorName] || "#CCCCCC"; // Default to light gray if not found
+};
+
+// Helper function to add a border for light colors
+const getColorBorder = (colorName?: string): string => {
+  if (!colorName) return "none";
+  
+  const lightColors = [
+    "White", "Cream", "Ivory", "Pearl", "Vanilla", 
+    "Yellow", "Lemon", "Mint", "Silver"
+  ];
+  
+  return lightColors.includes(colorName) ? "1px solid #CCCCCC" : "none";
+};
+
+// Group colors by family
+const colorFamilies: Record<string, string[]> = {
+  "Reds": ["Red", "Crimson", "Maroon", "Burgundy", "Cherry", "Apple", "Tomato"],
+  "Yellows": ["Yellow", "Gold", "Amber", "Mustard", "Lemon"],
+  "Greens": ["Green", "Olive", "Lime", "Forest", "Mint", "Emerald", "Sage"],
+  "Blues": ["Blue", "Navy", "Sky", "Turquoise", "Teal", "Azure", "Cyan"],
+  "Purples": ["Purple", "Lavender", "Violet", "Plum", "Magenta", "Mauve"],
+  "Browns": ["Brown", "Beige", "Tan", "Chocolate", "Walnut", "Coffee"],
+  "Whites": ["White", "Cream", "Ivory", "Pearl", "Vanilla"],
+  "Grays": ["Black", "Gray", "Silver", "Charcoal", "Slate"],
+  "Pinks": ["Pink", "Rose", "Coral", "Peach", "Salmon"]
+};
+
+// Flatten color families into a single array for carousel
+const allColors = Object.values(colorFamilies).flat();
+
+export default function ProductDetail({ product, isFeatured = false }) {
+  const [quantity, setQuantity] = useState(1);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
+  const [centerColorIndex, setCenterColorIndex] = useState(0);
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { toast } = useToast();
+  const inWishlist = isInWishlist(product.id);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
+  const handleQuantityChange = (amount: number) => {
+    const newQuantity = quantity + amount;
+    if (newQuantity >= 1) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const toggleWishlist = () => {
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+      toast({
+        title: "Removed from Wishlist",
+        description: `${product.name} removed from your wishlist`,
+      });
+    } else {
+      addToWishlist(product);
+      toast({
+        title: "Added to Wishlist",
+        description: `${product.name} added to your wishlist`,
+      });
+    }
+  };
+
+  const handleAddToCart = () => {
+    // Check if it's a paint product that requires color selection
+    if (product.category.toLowerCase() === "paint" && !selectedColor) {
+      // If paint product without selected color, show toast notification
+      toast({
+        title: "Color Selection Required",
+        description: "Please select a color for this paint before adding to cart",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create a product copy with the selected color if needed
+    const productToAdd = selectedColor
+      ? { ...product, selectedColor }
+      : product;
+
+    // Add product to cart
+    addToCart(productToAdd, quantity);
+
+    const colorInfo = selectedColor ? ` (${selectedColor})` : "";
+    toast({
+      title: "Added to Cart",
+      description: `${product.name}${colorInfo} added to cart`,
+    });
+  };
+
+  const handleColorSelection = (color: string) => {
+    setSelectedColor(color);
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col lg:flex-row -mx-4">
+        <div className="lg:w-1/2 px-4 mb-8 lg:mb-0">
+          <div className="relative mb-4 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 aspect-square bg-white dark:bg-gray-950">
+            {product.images && product.images.length > 0 ? (
+              <Image
+                src={product.images[currentImageIndex]}
+                alt={product.name}
+                fill
+                className={`object-contain transition-opacity duration-300 ${
+                  isLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                priority
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full w-full bg-gray-200 dark:bg-gray-800">
+                No image available
+              </div>
+            )}
+          </div>
+
+          {/* Thumbnail Gallery */}
+          {product.images && product.images.length > 1 && (
+            <div className="grid grid-cols-5 gap-2">
+              {product.images.map((image, index) => (
+                <div
+                  key={index}
+                  className={`cursor-pointer rounded-md overflow-hidden border ${
+                    index === currentImageIndex
+                      ? "border-primary ring-2 ring-primary ring-opacity-50"
+                      : "border-gray-200 dark:border-gray-800"
+                  } aspect-square bg-white dark:bg-gray-950`}
+                  onClick={() => setCurrentImageIndex(index)}
+                >
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={image}
+                      alt={`${product.name} - Image ${index + 1}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="lg:w-1/2 px-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">
+                {product.name}
+              </h1>
+              <div className="flex items-center mb-3">
+                <div className="text-xl font-bold text-primary">
+                  ${product.price.toFixed(2)}
+                </div>
+                {product.comparePrice && (
+                  <span className="ml-2 text-gray-500 line-through">
+                    ${product.comparePrice.toFixed(2)}
+                  </span>
+                )}
+                {product.comparePrice && (
+                  <span className="ml-2 bg-green-600/10 text-green-700 dark:text-green-500 text-sm px-2 py-0.5 rounded-md font-medium">
+                    Save $
+                    {(product.comparePrice - product.price).toFixed(2)}
+                  </span>
+                )}
+              </div>
+              <p className="mb-4 text-muted-foreground">
+                SKU: {product.sku || "N/A"} | Stock:{" "}
+                <span
+                  className={
+                    product.stock === 0
+                      ? "text-red-500"
+                      : product.stock < 5
+                      ? "text-orange-500"
+                      : "text-green-500"
+                  }
+                >
+                  {product.stock === 0
+                    ? "Out of Stock"
+                    : product.stock < 5
+                    ? "Low Stock"
+                    : "In Stock"}
+                </span>
+              </p>
+
+              {product.shortDescription && (
+                <div className="mb-4 text-muted-foreground">
+                  {product.shortDescription}
+                </div>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleWishlist}
+              className="h-9 w-9"
+            >
+              <HeartIcon
+                className={inWishlist ? "fill-red-500 text-red-500" : ""}
+              />
+            </Button>
+          </div>
+
+          <div className="space-y-6 my-6">
+            <div className="space-y-2">
+              <div className="font-medium">Quantity</div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1}
+                >
+                  <MinusIcon className="h-3 w-3" />
+                </Button>
+                <div className="w-12 h-8 flex items-center justify-center border border-gray-300 dark:border-gray-700 rounded-md">
+                  {quantity}
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleQuantityChange(1)}
+                >
+                  <PlusIcon className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Color selection for paint products */}
+            {product.category.toLowerCase() === "paint" && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="font-medium flex justify-between">
+                    <span>Select Color</span>
+                    {selectedColor && (
+                      <span className="text-primary">
+                        Selected: {selectedColor}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    {/* Selected color display */}
+                    {selectedColor && (
+                      <div className="mb-4 flex items-center space-x-3">
+                        <div
+                          className="w-12 h-12 rounded-md shadow-md"
+                          style={{
+                            backgroundColor: getColorHex(selectedColor),
+                            border: getColorBorder(selectedColor),
+                          }}
+                        />
+                        <span className="font-medium text-sm">
+                          Selected: {selectedColor}
+                        </span>
+                      </div>
+                    )}
+
+                    <Carousel
+                      opts={{
+                        align: "center",
+                        loop: true,
+                        containScroll: false,
+                      }}
+                      className="w-full"
+                      onSelect={(api) => {
+                        if (api) {
+                          setCenterColorIndex(api.selectedScrollSnap());
+                        }
+                      }}
+                    >
+                      <CarouselContent className="-ml-4">
+                        {allColors.map((color, index) => (
+                          <CarouselItem 
+                            key={color} 
+                            className="pl-4 xs:basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
+                          >
+                            <div className="p-1">
+                              <div 
+                                className="flex flex-col items-center justify-center py-2"
+                                onClick={() => handleColorSelection(color)}
+                              >
+                                <div className="relative mb-2">
+                                  {/* Subtle glow effect for selected color */}
+                                  {selectedColor === color && (
+                                    <div 
+                                      className="absolute inset-0 rounded-md blur-sm -z-10 opacity-50"
+                                      style={{ backgroundColor: getColorHex(color) }}
+                                    />
+                                  )}
+                                  
+                                  <div
+                                    className={`
+                                      cursor-pointer 
+                                      transition-all duration-300
+                                      shadow-md hover:shadow-lg
+                                      ${selectedColor === color 
+                                        ? "ring-4 ring-primary ring-opacity-70 scale-105" 
+                                        : "hover:scale-105 opacity-90 hover:opacity-100"
+                                      }
+                                      ${centerColorIndex === index 
+                                        ? "w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 z-10" 
+                                        : "w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 opacity-80"
+                                      }
+                                      rounded-md
+                                    `}
+                                    style={{
+                                      backgroundColor: getColorHex(color),
+                                      border: getColorBorder(color),
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium text-center mt-1">{color}</span>
+                              </div>
+                            </div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious />
+                      <CarouselNext />
+                    </Carousel>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0}
+                className="sm:flex-1"
+                size="lg"
+              >
+                {product.stock === 0
+                  ? "Out of Stock"
+                  : `Add to Cart - $${(product.price * quantity).toFixed(2)}`}
+              </Button>
+              <Link href="/checkout" className="sm:flex-1">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
+                >
+                  Buy Now
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <Tabs defaultValue="description">
+              <TabsList className="w-full justify-start border-b rounded-none">
+                <TabsTrigger value="description" className="text-base">
+                  Description
+                </TabsTrigger>
+                <TabsTrigger value="specifications" className="text-base">
+                  Specifications
+                </TabsTrigger>
+                {product.features && product.features.length > 0 && (
+                  <TabsTrigger value="features" className="text-base">
+                    Features
+                  </TabsTrigger>
+                )}
+              </TabsList>{" "}
+              <TabsContent value="description" className="mt-6">
+                <div className="prose max-w-none">
+                  {product.description &&
+                  product.description !== "No description available" ? (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: product.description
+                          .replace(/\n/g, "<br />")
+                          .replace(/• /g, "&bull; ")
+                          .replace(/•/g, "&bull;")
+                          .replace(/\* /g, "&bull; ")
+                          .replace(/\*/g, "&bull;")
+                          .replace(/-\s+/g, "&ndash; ")
+                          .split("<br />")
+                          .map((line) =>
+                            line.trim().startsWith("&bull;") ||
+                            line.trim().startsWith("&ndash;")
+                              ? `<div class="flex items-start mb-2">
+                              <span class="inline-block w-4 mr-2 text-primary flex-shrink-0">${
+                                line.trim().startsWith("&bull;") ? "•" : "-"
+                              }</span>
+                              <span>${line.replace(
+                                /^(&bull;|&ndash;)\s*/,
+                                ""
+                              )}</span>
+                             </div>`
+                              : `<p class="mb-3">${line}</p>`
+                          )
+                          .join(""),
+                      }}
+                      className="space-y-2"
+                    />
+                  ) : (
+                    <p>
+                      This premium construction material is designed to meet the
+                      highest industry standards and is suitable for both
+                      professional and DIY construction projects. Built with
+                      durability in mind, it will withstand the test of time and
+                      environmental conditions.
+                    </p>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="specifications" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">
+                      Technical Specifications
+                    </h3>
+                    <div className="space-y-2">
+                      {Object.entries(product.specifications).map(
+                        ([key, value]) => (
+                          <div
+                            key={key}
+                            className="grid grid-cols-2 border-b pb-2"
+                          >
+                            <span className="text-muted-foreground capitalize">
+                              {key}
+                            </span>
+                            <span>{value as unknown as string}</span>
+                          </div>
+                        )
+                      )}
+                      {Object.keys(product.specifications).length === 0 && (
+                        <div className="text-muted-foreground">
+                          No specifications available
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">
+                      Packaging Information
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 border-b pb-2">
+                        <span className="text-muted-foreground">
+                          Package Contents
+                        </span>
+                        <span>1 unit</span>
+                      </div>
+                      <div className="grid grid-cols-2 border-b pb-2">
+                        <span className="text-muted-foreground">
+                          Package Weight
+                        </span>
+                        <span>{product.weight || "N/A"} Kg</span>
+                      </div>
+                      <div className="grid grid-cols-2 border-b pb-2">
+                        <span className="text-muted-foreground">
+                          Country of Origin
+                        </span>
+                        <span>
+                          {product.countryOfOrigin || "Not specified"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              {product.features && product.features.length > 0 && (
+                <TabsContent value="features" className="mt-6">
+                  <ul className="grid gap-3 md:grid-cols-2">
+                    {product.features.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center space-x-2 text-base"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </TabsContent>
+              )}
+            </Tabs>
+          </div>
+        </div>
+      </div>
+
+      {isFeatured && <RelatedProducts currentProductId={product.id} />}
+    </div>
+  );
+}

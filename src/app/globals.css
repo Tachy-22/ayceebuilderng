@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import product description styles */
-@import './product-description.css';
-
 @layer base {
   :root {
     --background: 0 0% 100%;

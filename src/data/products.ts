@@ -23,7 +23,7 @@ export interface Product {
     verified: boolean;
   };
   weight: number;
-  colors?: string[]; // Array of available colors
+  colors?: boolean; // Array of available colors
   selectedColor?: string; // Selected color
 }
 
@@ -299,7 +299,7 @@ export function mapNewProductToProduct(
         verified: true,
       },
       weight: product.weight || 0, // Default weight since no weight info
-      colors: colors, // Add colors array
+      colors: product.inStock === false ? false : true, // Add colors array
     };
   } catch (error) {
     console.error("Error mapping product:", error, product);
@@ -326,7 +326,7 @@ export function mapNewProductToProduct(
         verified: false,
       },
       weight: 0,
-      colors: [], // Empty colors array for fallback product
+      colors: true, // Empty colors array for fallback product
     };
   }
 }
@@ -380,7 +380,7 @@ export function mapNewProductsToProducts(products: ProductNew[]): Product[] {
           verified: false,
         },
         weight: 0,
-        colors: [], // Empty colors array for fallback product
+        colors: true, // Empty colors array for fallback product
       };
     }
   });
