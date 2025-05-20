@@ -21,10 +21,52 @@ export const metadata: Metadata = {
   },
 };
 
-const TradesmenPage = () => {
+// Define the API response type for Tradesmen
+interface TradesmanData {
+  id: string;
+  name: string;
+  photo: string;
+  trade: string;
+  location: string;
+  rating: number;
+  reviews: number;
+  experience: string;
+  description: string;
+  verified: boolean;
+  completedProjects: number;
+  whatsappNumber?: string; // Optional WhatsApp number for direct contact
+}
+
+interface TradesmenResponse {
+  data: TradesmanData[];
+}
+
+const TradesmenPage = async () => {
+  // API URL for fetching tradesmen
+  const apiUrl =
+    "https://script.google.com/macros/s/AKfycbzUsB2MEeJbuniHKzBo0yduXu5pRQ0IbcSyCDcsGyzpqZZRifv4WOKdK_p2ajfA5DgZ/exec?sheet=tradesmen";
+  // Fetch tradesmen data
+  let tradesmenData: TradesmanData[] = [];
+
+  try {
+    const res = await fetch(apiUrl, { next: { revalidate: 0 } }); // Revalidate once per hour
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch tradesmen: ${res.status}`);
+    }
+
+    const response: TradesmenResponse = await res.json();
+    tradesmenData = response.data || [];
+  } catch (error) {
+    console.error("Error fetching tradesmen data:", error);
+    // Fallback data will be used from the component
+  }
+
+  console.log({ res: tradesmenData });
+
   return (
     <div>
-      <Tradesmen />
+      <Tradesmen fetchedTradesmen={tradesmenData || []} />
     </div>
   );
 };
