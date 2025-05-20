@@ -8,6 +8,7 @@ import {
   Clock,
   Briefcase,
   Award,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -223,8 +224,6 @@ const Tradesmen = ({ fetchedTradesmen = [] }: TradesmenProps) => {
   console.log({ tradesmen });
   const [filteredTradesmen, setFilteredTradesmen] = useState(tradesmen);
   const [searchQuery, setSearchQuery] = useState("");
-  const [tradeFilter, setTradeFilter] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false); // Form state
   //
@@ -251,34 +250,22 @@ const Tradesmen = ({ fetchedTradesmen = [] }: TradesmenProps) => {
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
   }, []);
-
   useEffect(() => {
     let results = [...tradesmen];
 
     if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       results = results.filter(
         (tradesman) =>
-          tradesman.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          tradesman.description
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (tradeFilter) {
-      results = results.filter((tradesman) =>
-        tradesman.trade.toLowerCase().includes(tradeFilter.toLowerCase())
-      );
-    }
-
-    if (locationFilter) {
-      results = results.filter((tradesman) =>
-        tradesman.location.toLowerCase().includes(locationFilter.toLowerCase())
+          tradesman.name.toLowerCase().includes(query) ||
+          tradesman.description.toLowerCase().includes(query) ||
+          tradesman.trade.toLowerCase().includes(query) ||
+          tradesman.location.toLowerCase().includes(query)
       );
     }
 
     setFilteredTradesmen(results);
-  }, [searchQuery, tradeFilter, locationFilter, tradesmen]);
+  }, [searchQuery, tradesmen]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -428,30 +415,20 @@ const Tradesmen = ({ fetchedTradesmen = [] }: TradesmenProps) => {
                 <TabsTrigger value="register">
                   Register as Tradesman
                 </TabsTrigger>
-              </TabsList>
-
+              </TabsList>{" "}
               <TabsContent value="browse">
                 <form onSubmit={handleSearch} className="max-w-4xl">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Input
-                      placeholder="Search tradesmen..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full"
-                    />
-                    <Input
-                      placeholder="Filter by trade..."
-                      value={tradeFilter}
-                      onChange={(e) => setTradeFilter(e.target.value)}
-                      className="w-full"
-                    />
-                    <Input
-                      placeholder="Filter by location..."
-                      value={locationFilter}
-                      onChange={(e) => setLocationFilter(e.target.value)}
-                      className="w-full"
-                    />
-                    <Button type="submit" className="w-full md:col-span-3">
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="relative">
+                      <Input
+                        placeholder="Search by name, trade, location..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10"
+                      />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <Button type="submit" className="w-full">
                       Search
                     </Button>
                   </div>
@@ -578,16 +555,14 @@ const Tradesmen = ({ fetchedTradesmen = [] }: TradesmenProps) => {
               <div className="text-center py-12">
                 <h3 className="text-lg font-medium mb-2">No tradesmen found</h3>
                 <p className="text-muted-foreground mb-6">
-                  Try adjusting your search, trade, or location filters
+                  Try adjusting your search query
                 </p>
                 <Button
                   onClick={() => {
                     setSearchQuery("");
-                    setTradeFilter("");
-                    setLocationFilter("");
                   }}
                 >
-                  Clear Filters
+                  Clear Search
                 </Button>
               </div>
             )

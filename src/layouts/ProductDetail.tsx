@@ -609,7 +609,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                             return (
                               <CarouselItem
                                 key={color}
-                                className="pl-4 md:basis-1/5 lg:basis-1/7"
+                                className="pl-4 md: basis-1/5 lg:basis-1/7"
                               >
                                 <div
                                   className={`flex flex-col items-center transition-all duration-300 ${
