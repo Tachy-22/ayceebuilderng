@@ -6,6 +6,7 @@ const nextConfig = {
       "media.istockphoto.com",
       "5.imimg.com",
       "www.julius-berger.com",
+      "res.cloudinary.com", // Added Cloudinary domain
     ],
   },
 };
