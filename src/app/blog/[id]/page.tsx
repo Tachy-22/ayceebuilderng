@@ -9,7 +9,18 @@ import RelatedBlogs from "@/components/RelatedBlogs";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { optimizeBlogImage } from "@/lib/imageUtils";
+import dynamic from "next/dynamic";
 
+// Use dynamic import for client components
+const BlogEngagement = dynamic(
+  () => import("@/components/comments/BlogEngagement"),
+  { ssr: false }
+);
+
+const CommentCount = dynamic(
+  () => import("@/components/comments/CommentCount"),
+  { ssr: false }
+);
 
 // Generate metadata for SEO
 export async function generateMetadata({
@@ -67,10 +78,10 @@ const BlogPostPage = async ({ params }: { params: { id: string } }) => {
     // In a real app, you could check for admin privileges here
     // For now, we'll just show a not found page for unpublished blogs
     notFound();
-  }
-
-  // Fetch related blogs in the same category
-  const allBlogs = await fetchCollection<BlogT>("blogs");
+  } // Fetch related blogs in the same category
+  const allBlogs = await fetchCollection<BlogT>("blogs", {
+    filters: [{ field: "isPublished", operator: "==", value: true }],
+  });
 
   return (
     <div className="container mx-auto py-10 px-4">
@@ -86,7 +97,6 @@ const BlogPostPage = async ({ params }: { params: { id: string } }) => {
         </Link>
         <article>
           <Blog blogData={blog} />
-
           {/* Display tags if available */}
           {blog.tags && blog.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t border-gray-200">
@@ -103,13 +113,9 @@ const BlogPostPage = async ({ params }: { params: { id: string } }) => {
                 ))}
               </div>
             </div>
-          )}
-
+          )}{" "}
           {/* Display view count */}
           <div className="text-sm text-gray-500 mt-8 flex items-center justify-between border-t border-gray-200 pt-4">
-            <div>
-              {blog.views ? `${blog.views.toLocaleString()} views` : "0 views"}
-            </div>
             <div>
               Published:{" "}
               {new Date(blog.date).toLocaleDateString("en-US", {
@@ -126,10 +132,10 @@ const BlogPostPage = async ({ params }: { params: { id: string } }) => {
           currentBlogId={blog.id}
           category={blog.category}
         />
-        {/* Admin analytics (only visible to admin users) */}
+        {/* Comments and engagement section */}
+        <BlogEngagement blogId={blog.id as string} title={blog.title} />
+        {/* Admin analytics (only visible to admin users) */}{" "}
       </div>
-
-      {/* Analytics tracking */}
     </div>
   );
 };

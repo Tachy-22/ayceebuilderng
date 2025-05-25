@@ -32,7 +32,7 @@ const Blog = ({ blogData }: { blogData: BlogT }) => {
         </div>
         <div className="h-[20rem] w-full relative">
           <img
-            src={imageUrls[0]}
+            src={imageUrls[0]|| "https://images.pexels.com/photos/1463917/pexels-photo-1463917.jpeg"}
             alt={title}
             sizes={getResponsiveSizes("hero")}
             className="object-cover bg-gray-300 w-full h-[20rem]"

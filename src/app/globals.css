@@ -101,6 +101,23 @@
   .card-hover {
     @apply transition-all duration-500 hover:bg-secondary/40;
   }
+
+  /* Animation for clap button +1 */
+  @keyframes float-up {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    100% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+
+  .animate-float-up {
+    animation: float-up 0.8s ease-out forwards;
+  }
 }
 
 /* Import Google Font */

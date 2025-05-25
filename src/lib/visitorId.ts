@@ -1,0 +1,47 @@
+/**
+ * Utility functions for handling anonymous visitor identification
+ */
+
+// Generate a random ID
+function generateId(): string {
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
+}
+
+// Get or create a visitor ID that persists in localStorage
+export function getVisitorId(): string {
+  if (typeof window === "undefined") {
+    return generateId(); // For SSR, generate a temporary ID
+  }
+
+  let visitorId = localStorage.getItem("visitor_id");
+
+  if (!visitorId) {
+    visitorId = generateId();
+    localStorage.setItem("visitor_id", visitorId);
+  }
+
+  return visitorId;
+}
+
+// Save user's comment information for future comments
+export function saveCommenterInfo(name: string, email: string): void {
+  if (typeof window === "undefined") return;
+
+  localStorage.setItem("commenter_name", name);
+  localStorage.setItem("commenter_email", email);
+}
+
+// Get saved commenter information
+export function getCommenterInfo(): { name: string; email: string } {
+  if (typeof window === "undefined") {
+    return { name: "", email: "" };
+  }
+
+  return {
+    name: localStorage.getItem("commenter_name") || "",
+    email: localStorage.getItem("commenter_email") || "",
+  };
+}

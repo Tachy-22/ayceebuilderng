@@ -242,7 +242,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
     <div className="h-full min-h-[90vh] flex flex-col gap-3">
       {!update && (
         <Button
-          className={`w-fit py-3 font-medium rounded-xl ${
+          className={`w-full h-full py-3 font-medium rounded-xl ${
             isFormOpen
               ? "border-black border text-black hover:bg-black hover:text-white"
               : "bg-black hover:bg-gray-800 text-white"
@@ -348,11 +348,22 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="Uncategorized">Uncategorized</option>
-                    <option value="Family">Family</option>
-                    <option value="Love">Love</option>
-                    <option value="Community">Community</option>
-                    <option value="Power">Power</option>
+                    <option value="General">General</option>
+                    <option value="Construction Tips">Construction Tips</option>
+                    <option value="Home Improvement">Home Improvement</option>
+                    <option value="Product Highlights">
+                      Product Highlights
+                    </option>
+                    <option value="Sustainable Building">
+                      Sustainable Building
+                    </option>
+                    <option value="Innovation & Trends">
+                      Innovation & Trends
+                    </option>
+                    <option value="Customer Stories">Customer Stories</option>
+                    <option value="Partnerships & Projects">
+                      Partnerships & Projects
+                    </option>
                   </select>
                 </div>
                 <div className="flex items-center space-x-2 mb-4">
@@ -372,7 +383,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
                   <FileInput
                     multiple={true}
                     accept="image/*"
-                    maxFileSize={2}
+                    maxFileSize={10}
                     onUploadComplete={handleUploadComplete}
                     initialFiles={blogData?.imageUrls || []}
                   />

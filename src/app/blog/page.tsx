@@ -38,19 +38,26 @@ const BlogPage = async ({
   // Fetch all blogs with optional category filter
   const fetchOptions: any = {
     orderBy: [{ field: "date", direction: "desc" }],
-    where: [],
+    filters: [
+      {
+        field: "isPublished",
+        operator: "==",
+        value: true,
+      },
+    ],
   };
-
   // Only show published blogs
-  fetchOptions.where.push({
-    field: "isPublished",
-    operator: "==",
-    value: true,
-  });
+  // fetchOptions.filters = [
+  //   {
+  //     field: "isPublished",
+  //     operator: "==",
+  //     value: true,
+  //   },
+  // ];
 
-  // Add category filter if provided
+  // // Add category filter if provided
   if (categoryFilter) {
-    fetchOptions.where.push({
+    fetchOptions.filters.push({
       field: "category",
       operator: "==",
       value: categoryFilter,
@@ -73,10 +80,12 @@ const BlogPage = async ({
               tag.toLowerCase().includes(searchQuery.toLowerCase())
             ))
       )
-    : blogs;
+    : blogs; // Extract unique categories from all published blogs for the
 
-  // Extract unique categories from all blogs for the filter
-  const allBlogs = await fetchCollection<BlogT>("blogs");
+  console.log({ filteredBlogs, blogs });
+  const allBlogs = await fetchCollection<BlogT>("blogs", {
+    filters: [{ field: "isPublished", operator: "==", value: true }],
+  });
 
   const categories = Array.from(new Set(allBlogs.map((blog) => blog.category)));
 
@@ -87,16 +96,13 @@ const BlogPage = async ({
         <p className="text-muted-foreground mb-8">
           Latest articles, insights and updates from Ayceebuilder
         </p>
-
         {/* Search bar */}
         <BlogSearch />
-
         {/* Category filter */}
         <BlogCategories
           categories={categories}
           activeCategoryName={categoryFilter}
         />
-
         {/* Display search information if searching */}
         {searchQuery && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -114,7 +120,6 @@ const BlogPage = async ({
             )}
           </div>
         )}
-
         {filteredBlogs.length === 0 && !searchQuery ? (
           <div className="text-center py-10 bg-gray-50 rounded-lg">
             <h2 className="text-xl font-medium mb-2">No blog posts found</h2>
@@ -198,7 +203,7 @@ const BlogPage = async ({
                     {" "}
                     <div className="relative h-48 w-full bg-gray-100">
                       <Image
-                        src={optimizeBlogImage(blog.imageUrls?.[0], "medium")}
+                        src={optimizeBlogImage(blog.thumbnailUrl, "medium")}
                         alt={blog.title}
                         fill
                         className="object-cover"
@@ -230,10 +235,8 @@ const BlogPage = async ({
               )}
             </div>{" "}
           </>
-        )}
+        )}{" "}
       </div>
-
-      {/* Analytics tracking */}
     </div>
   );
 };

@@ -13,26 +13,25 @@ interface AdminProps {
 }
 
 const Admin = ({ blogs }: AdminProps) => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("blogs");
 
   // Calculate stats for blogs
   const publishedBlogs = blogs.filter((blog) => blog.isPublished).length;
   const unpublishedBlogs = blogs.length - publishedBlogs;
 
   // Calculate percent change for views (mock data for demonstration)
-  const percentChange = 12.5; // Positive value means increase
 
   return (
     <div className="container mx-auto py-20 px-4 max-w-7xl">
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
       <Tabs
-        defaultValue="dashboard"
+        defaultValue="blogs"
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid grid-cols-3 max-w-[600px]">
+        <TabsList className="grid grid-cols-2 max-w-[400px]">
           <TabsTrigger value="blogs">Manage Blogs</TabsTrigger>
           <TabsTrigger value="create">Create Blog</TabsTrigger>{" "}
         </TabsList>
