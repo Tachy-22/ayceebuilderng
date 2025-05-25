@@ -9,6 +9,7 @@ import RelatedBlogs from "@/components/RelatedBlogs";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { optimizeBlogImage } from "@/lib/imageUtils";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 // Generate metadata for SEO
 export async function generateMetadata({
@@ -123,11 +124,13 @@ const BlogPostPage = async ({ params }: { params: { id: string } }) => {
 
         {/* Related blog posts */}
         <RelatedBlogs
-          blogs={allBlogs}
-          currentBlogId={blog.id}
+          blogs={allBlogs}          currentBlogId={blog.id}
           category={blog.category}
         />
       </div>
+      
+      {/* Analytics tracking */}
+      <AnalyticsTracker blogId={blog.id} pageType="blog" />
     </div>
   );
 };

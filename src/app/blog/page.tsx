@@ -9,6 +9,7 @@ import BlogSearch from "@/components/BlogSearch";
 import { ArrowRight, Eye } from "lucide-react";
 import { optimizeBlogImage } from "@/lib/imageUtils";
 import formatToMonthDayYear from "@/lib/formatToMonthDayYear";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
   title: "Blog | Ayceebuilder",
