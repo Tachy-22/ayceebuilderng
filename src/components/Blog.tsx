@@ -17,7 +17,7 @@ const Blog = ({ blogData }: { blogData: BlogT }) => {
   return (
     <article className="max-w-[65rem] mx-auto px-2 sm:px-4 py-6 sm:py-12 bg-white">
       <header className="mb-8 sm:mb-12 flex flex-col gap-5">
-        <h2 className="text-lg text-orange-500 font-bold uppercase max-w-[30rem] mx-auto text-center">
+        <h2 className="text-lg text-gray-400 font-bold uppercase max-w-[30rem] mx-auto text-center">
           {category}{" "}
         </h2>
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-gray-900 text-center mx-auto max-w-[90%] w-fit">
