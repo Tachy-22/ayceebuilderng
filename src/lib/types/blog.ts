@@ -3,7 +3,7 @@
 export interface CommentT {
   id: string;
   blogId: string;
-  blogTitle:string;
+  blogTitle: string;
   parentId?: string; // For nested comments (replies)
   content: string;
   author: string; // Name provided by commenter
@@ -13,6 +13,7 @@ export interface CommentT {
   userName: string;
   // For anonymous identification, we'll use a visitorId
   visitorId: string;
+  userId:string
 }
 
 export interface ClapT {
