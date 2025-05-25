@@ -1,7 +1,7 @@
 "use server";
 
-import { db } from "@/lib/firebase-server";
 import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { FirebaseError } from "./addDocument";
 import { revalidatePath } from "next/cache";
 
@@ -20,7 +20,8 @@ export async function updateDocument<T extends { [key: string]: unknown }>(
 
     // Make sure updatedAt is a proper timestamp
     const updateData = {
-      ...data,      updatedAt: new Date(),
+      ...data,
+      updatedAt: new Date(),
     };
 
     await updateDoc(docRef, updateData);

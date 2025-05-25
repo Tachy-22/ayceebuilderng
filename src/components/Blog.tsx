@@ -2,11 +2,9 @@
 
 import React from "react";
 import parse from "html-react-parser";
-import Image from "next/image";
 import formatToMonthDayYear from "@/lib/formatToMonthDayYear";
 import {
-  optimizeBlogImage,
-  getImageDimensions,
+ 
   getResponsiveSizes,
 } from "@/lib/imageUtils";
 

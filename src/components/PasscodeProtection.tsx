@@ -9,7 +9,9 @@ interface PasscodeProtectionProps {
   children: React.ReactNode;
 }
 
-const PasscodeProtection: React.FC<PasscodeProtectionProps> = ({ children }) => {
+const PasscodeProtection: React.FC<PasscodeProtectionProps> = ({
+  children,
+}) => {
   const [passcode, setPasscode] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState("");
@@ -18,12 +20,12 @@ const PasscodeProtection: React.FC<PasscodeProtectionProps> = ({ children }) => 
   useEffect(() => {
     const adminAuth = localStorage.getItem("admin-auth");
     const authTimestamp = localStorage.getItem("admin-auth-timestamp");
-    
+
     if (adminAuth === "authenticated" && authTimestamp) {
       const timestampValue = parseInt(authTimestamp, 10);
       const now = new Date().getTime();
       const twentyFourHoursInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-      
+
       if (now - timestampValue < twentyFourHoursInMs) {
         // Authentication is still valid (less than 24 hours old)
         setIsAuthenticated(true);
@@ -36,13 +38,16 @@ const PasscodeProtection: React.FC<PasscodeProtectionProps> = ({ children }) => 
   }, []);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passcode === "AYCEEBUILDER") {
       setIsAuthenticated(true);
-      
+
       // Store authentication status and current timestamp
       localStorage.setItem("admin-auth", "authenticated");
-      localStorage.setItem("admin-auth-timestamp", new Date().getTime().toString());
+      localStorage.setItem(
+        "admin-auth-timestamp",
+        new Date().getTime().toString()
+      );
       setError("");
     } else {
       setError("Invalid passcode. Please try again.");
@@ -61,7 +66,9 @@ const PasscodeProtection: React.FC<PasscodeProtectionProps> = ({ children }) => 
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
           <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Admin Access</h2>
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+              Admin Access
+            </h2>
             <p className="mt-2 text-sm text-gray-600">
               Please enter the passcode to access the admin area
             </p>
@@ -101,9 +108,9 @@ const PasscodeProtection: React.FC<PasscodeProtectionProps> = ({ children }) => 
   return (
     <div>
       <div className="bg-gray-100 p-2 flex justify-end">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={handleLogout}
           className="text-sm"
         >

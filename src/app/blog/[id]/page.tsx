@@ -9,7 +9,7 @@ import RelatedBlogs from "@/components/RelatedBlogs";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { optimizeBlogImage } from "@/lib/imageUtils";
-import AnalyticsTracker from "@/components/AnalyticsTracker";
+
 
 // Generate metadata for SEO
 export async function generateMetadata({
@@ -84,7 +84,6 @@ const BlogPostPage = async ({ params }: { params: { id: string } }) => {
         >
           <ChevronLeft className="h-4 w-4 mr-1" /> Back to all blogs
         </Link>
-
         <article>
           <Blog blogData={blog} />
 
@@ -120,17 +119,17 @@ const BlogPostPage = async ({ params }: { params: { id: string } }) => {
               })}
             </div>
           </div>
-        </article>
-
+        </article>{" "}
         {/* Related blog posts */}
         <RelatedBlogs
-          blogs={allBlogs}          currentBlogId={blog.id}
+          blogs={allBlogs}
+          currentBlogId={blog.id}
           category={blog.category}
         />
+        {/* Admin analytics (only visible to admin users) */}
       </div>
-      
+
       {/* Analytics tracking */}
-      <AnalyticsTracker blogId={blog.id} pageType="blog" />
     </div>
   );
 };

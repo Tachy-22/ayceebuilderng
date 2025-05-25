@@ -9,7 +9,6 @@ import BlogSearch from "@/components/BlogSearch";
 import { ArrowRight, Eye } from "lucide-react";
 import { optimizeBlogImage } from "@/lib/imageUtils";
 import formatToMonthDayYear from "@/lib/formatToMonthDayYear";
-import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const metadata: Metadata = {
   title: "Blog | Ayceebuilder",
@@ -187,7 +186,6 @@ const BlogPage = async ({
                 </Link>
               </div>
             )}
-
             {/* Blog grid (skip the first one if featured and not searching) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(searchQuery ? filteredBlogs : filteredBlogs.slice(1)).map(
@@ -230,13 +228,14 @@ const BlogPage = async ({
                   </Link>
                 )
               )}
-            </div>
+            </div>{" "}
           </>
         )}
       </div>
+
+      {/* Analytics tracking */}
     </div>
   );
 };
 
 export default BlogPage;
-
