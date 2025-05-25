@@ -14,30 +14,44 @@ const PasscodeProtection: React.FC<PasscodeProtectionProps> = ({ children }) => 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-
   // Check if the user has already authenticated
   useEffect(() => {
     const adminAuth = localStorage.getItem("admin-auth");
-    if (adminAuth === "authenticated") {
-      setIsAuthenticated(true);
+    const authTimestamp = localStorage.getItem("admin-auth-timestamp");
+    
+    if (adminAuth === "authenticated" && authTimestamp) {
+      const timestampValue = parseInt(authTimestamp, 10);
+      const now = new Date().getTime();
+      const twentyFourHoursInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+      
+      if (now - timestampValue < twentyFourHoursInMs) {
+        // Authentication is still valid (less than 24 hours old)
+        setIsAuthenticated(true);
+      } else {
+        // Authentication has expired
+        localStorage.removeItem("admin-auth");
+        localStorage.removeItem("admin-auth-timestamp");
+      }
     }
   }, []);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (passcode === "AYCEEBUILDER") {
       setIsAuthenticated(true);
+      
+      // Store authentication status and current timestamp
       localStorage.setItem("admin-auth", "authenticated");
+      localStorage.setItem("admin-auth-timestamp", new Date().getTime().toString());
       setError("");
     } else {
       setError("Invalid passcode. Please try again.");
       setPasscode("");
     }
   };
-
   const handleLogout = () => {
     localStorage.removeItem("admin-auth");
+    localStorage.removeItem("admin-auth-timestamp");
     setIsAuthenticated(false);
     router.push("/");
   };
