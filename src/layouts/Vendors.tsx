@@ -26,7 +26,7 @@ interface Vendor {
   photo: string;
   category: string;
   location: string;
-  rating?: number;
+  rating: number;
   reviews: number;
   established: string;
   description: string;
@@ -160,7 +160,7 @@ const Vendors = ({ fetchedVendors = [] }: VendorsProps) => {
       const filtered = vendors.filter((vendor) => {
         return (
           vendor.name.toLowerCase().includes(lowerCaseQuery) ||
-          vendor.category.toLowerCase().includes(lowerCaseQuery) ||
+          vendor.description.toLowerCase().includes(lowerCaseQuery) ||
           vendor.location.toLowerCase().includes(lowerCaseQuery) ||
           (vendor.products &&
             vendor.products.some((product) =>
@@ -297,7 +297,7 @@ const Vendors = ({ fetchedVendors = [] }: VendorsProps) => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-[7rem]">
+    <div className="max-w-7xl mx-auto px-4 py-[7rem]">
       <h1 className="text-3xl font-bold text-center mb-2">
         Building Material Vendors
       </h1>
@@ -431,36 +431,36 @@ const Vendors = ({ fetchedVendors = [] }: VendorsProps) => {
                       <MapPin className="w-4 h-4 mr-1" />
                       {vendor.location}
                     </div>
-
+                    {/* 
                     <div className="flex items-center text-sm text-gray-500 mt-1">
                       <Package className="w-4 h-4 mr-1" />
                       {vendor.category}
-                    </div>
+                    </div> */}
 
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
+                    {/* <div className="flex items-center text-sm text-gray-500 mt-1">
                       <Calendar className="w-4 h-4 mr-1" />
                       Est. {vendor.established}
-                    </div>
+                    </div> */}
 
-                    {vendor.rating && (
+                    {
                       <div className="flex items-center mt-2">
                         <div className="flex items-center">
                           <Star className="w-4 h-4 text-yellow-500 fill-current" />
                           <span className="ml-1 text-sm font-medium">
-                            {vendor.rating.toFixed(1)}
+                            rating: {vendor.rating.toFixed(1)}
                           </span>
                         </div>
                         <span className="text-sm text-gray-500 ml-2">
-                          ({vendor.reviews} reviews)
+                          reviews: ({vendor.reviews} reviews)
                         </span>
                       </div>
-                    )}
+                    }
 
                     <div className="mt-2 text-sm text-gray-600 line-clamp-2">
                       {vendor.description}
                     </div>
 
-                    {vendor.products && (
+                    {/* {vendor.products && (
                       <div className="mt-3">
                         <p className="text-xs text-gray-500 mb-1">Products:</p>
                         <div className="flex flex-wrap gap-1">
@@ -479,7 +479,7 @@ const Vendors = ({ fetchedVendors = [] }: VendorsProps) => {
                           )}
                         </div>
                       </div>
-                    )}
+                    )} */}
 
                     <div className="mt-4 flex justify-between">
                       <span className="text-xs text-gray-500">
