@@ -44,7 +44,7 @@ interface TradesmenResponse {
 const TradesmenPage = async () => {
   // API URL for fetching tradesmen
   const apiUrl =
-    "https://script.google.com/macros/s/AKfycbzUsB2MEeJbuniHKzBo0yduXu5pRQ0IbcSyCDcsGyzpqZZRifv4WOKdK_p2ajfA5DgZ/exec?sheet=tradesmen";
+    "https://script.google.com/macros/s/AKfycbyGAOxbMYE975ofGeJcJderdFq8MnIrgsRUU84S6jnSH76evqmMNhTeTLUe8RTBwsqF/exec?sheet=tradesmen";
   // Fetch tradesmen data
   let tradesmenData: TradesmanData[] = [];
 

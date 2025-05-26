@@ -6,7 +6,7 @@ const GOOGLE_SCRIPT_URL =
 export async function POST(request: NextRequest) {
   try {
     // Parse the incoming request body
-    const tradesmanData = await request.json();
+    const vendorData = await request.json();
 
     // Forward the request to the Google Script API
     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(tradesmanData),
+      body: JSON.stringify(vendorData),
     });
 
     // Check if the request was successful
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error in tradesman API route:", error);
+    console.error("Error in vendor API route:", error);
     return NextResponse.json(
       {
         success: false,
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error in tradesman API route:", error);
+    console.error("Error in vendor API route:", error);
     return NextResponse.json(
       {
         success: false,

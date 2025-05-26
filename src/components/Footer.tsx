@@ -20,19 +20,18 @@ const footerLinks = [
     title: "Company",
     links: [
       { name: "About Us", href: "/about" },
-      { name: "Building Quotation tool", href: "/building-quotation" },
+      { name: "Products", href: "/products" },
+      { name: "Blog", href: "/blog" },
     ],
   },
-  // {
-  //   title: "Support",
-  //   links: [
-  //     { name: "Contact Us", href: "/#" },
-  //     // { name: "FAQ", href: "/faq" },
-  //     // { name: "Returns", href: "/returns" },
-  //     // { name: "Order Status", href: "/orders" },
-  //     // { name: "Payment Methods", href: "/payment" },
-  //   ],
-  // // },
+  {
+    title: "Tools",
+    links: [
+      { name: "Building Quotation", href: "/building-quotation" },
+      { name: "Tradesmen", href: "/tradesmen" },
+      { name: "Vendors", href: "/vendors" },
+    ],
+  },
   // {
   //   title: "Legal",
   //   links: [

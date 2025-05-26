@@ -78,6 +78,8 @@ const Navbar = () => {
 
     { name: "Building Quotation", path: "/building-quotation" },
     { name: "Tradesmen", path: "/tradesmen" },
+    { name: "Vendors", path: "/vendors" },
+
 
     { name: "About", path: "/about" },
   ];
