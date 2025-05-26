@@ -21,13 +21,13 @@ export const metadata: Metadata = {
 };
 
 // Define the API response type for Vendors
-interface VendorData {
+interface Vendor {
   id: string;
   name: string;
   photo: string;
   category: string;
   location: string;
-  rating?: number;
+  rating: number;
   reviews: number;
   established: string;
   description: string;
@@ -38,7 +38,7 @@ interface VendorData {
 }
 
 interface VendorsResponse {
-  data: VendorData[];
+  data: Vendor[];
 }
 
 const VendorsPage = async () => {
@@ -47,7 +47,7 @@ const VendorsPage = async () => {
   "https://script.google.com/macros/s/AKfycbyGAOxbMYE975ofGeJcJderdFq8MnIrgsRUU84S6jnSH76evqmMNhTeTLUe8RTBwsqF/exec?sheet=vendors";
 
   // Fetch vendors data
-  let vendorsData: VendorData[] = [];
+  let vendorsData: Vendor[] = [];
   try {
     const res = await fetch(apiUrl, {
       next: { revalidate: 3600 }, // Revalidate once per hour
@@ -78,7 +78,7 @@ const VendorsPage = async () => {
 
   return (
     <div>
-      <Vendors fetchedVendors={vendorsData || []} />
+      <Vendors fetchedVendors={vendorsData  || []} />
     </div>
   );
 };
