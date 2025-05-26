@@ -11,6 +11,8 @@ import {
   generateRandomName,
   generateUserIdentifier,
 } from "@/lib/userIdentification";
+import { getVisitorId } from "@/lib/visitorId";
+import RefreshNameButton from "./RefreshNameButton";
 
 interface CommentFormProps {
   blogId: string;
@@ -33,30 +35,38 @@ const CommentForm: React.FC<CommentFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userIdentifier, setUserIdentifier] = useState("");
   const [userName, setUserName] = useState("");
-  const { toast } = useToast();
-
-  // Set up user identity based on IP
+  const { toast } = useToast(); // Set up user identity based on IP
   useEffect(() => {
     const setupUserIdentity = async () => {
-      const ip = await getUserIP();
-      const identifier = generateUserIdentifier(ip);
-      setUserIdentifier(identifier);
+      try {
+        // Get the visitor ID using the shared function
+        const visitorId = getVisitorId();
+        setUserIdentifier(visitorId);
 
-      // If we already have a stored name for this user, use it
-      const storedName = localStorage.getItem(`user_name_${identifier}`);
-      if (storedName) {
-        setUserName(storedName);
-      } else {
-        // Otherwise generate a new random name
+        // Make sure the visitor_id and ip_based_id are in sync
+        localStorage.setItem("ip_based_id", visitorId);
+
+        // If we already have a stored name for this user, use it
+        const storedName = localStorage.getItem(`user_name_${visitorId}`);
+        if (storedName) {
+          setUserName(storedName);
+          return;
+        }
+
+        // Generate a new random name if we don't have one
         const randomName = generateRandomName();
         setUserName(randomName);
-        localStorage.setItem(`user_name_${identifier}`, randomName);
+        localStorage.setItem(`user_name_${visitorId}`, randomName);
+      } catch (error) {
+        console.error("Error in user identity setup:", error);
+        // Fallback to a basic random name if there's an error
+        const fallbackName = generateRandomName();
+        setUserName(fallbackName);
       }
     };
 
     setupUserIdentity();
   }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -70,14 +80,17 @@ const CommentForm: React.FC<CommentFormProps> = ({
     }
 
     setIsSubmitting(true);
-
     try {
+      const visitorId = getVisitorId(); // Get the visitor ID using the shared function
+      console.log("Submitting comment with visitorId:", visitorId);
+      console.log("Submitting comment with userIdentifier:", userIdentifier);
+
       const result = await addComment(
         blogId,
         content,
-        userName,          // Use the generated username
-        userIdentifier,    // Use the user identifier as email (won't be displayed)
-        userIdentifier,    // Use the same identifier as visitorId
+        userName, // Use the generated username as author
+        visitorId, // Use the visitor ID as the user ID
+        visitorId, // Use the same visitor ID as visitorId
         parentId
       );
 
@@ -113,12 +126,21 @@ const CommentForm: React.FC<CommentFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {" "}
       <div>
         {userName && (
-          <div className="text-sm text-gray-500 mb-2">
-            Posting anonymously as{" "}
-            <span className="font-medium">{userName}</span>
-         
+          <div className="text-sm text-gray-500 mb-2 flex items-center">
+            <span>
+              Posting anonymously as{" "}
+              <span className="font-medium">{userName}</span>
+            </span>
+            <RefreshNameButton
+              userIdentifier={userIdentifier}
+              onNameRefreshed={(newName) => setUserName(newName)}
+            />
+            <span className="ml-2 text-xs text-gray-400">
+              (No account or email required)
+            </span>
           </div>
         )}
         <Textarea
@@ -129,7 +151,6 @@ const CommentForm: React.FC<CommentFormProps> = ({
           className="resize-none"
         />
       </div>
-
       <div className="flex justify-end gap-2">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>

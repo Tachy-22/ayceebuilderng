@@ -22,7 +22,7 @@ export async function addComment(
   blogId: string,
   content: string,
   author: string,
-  email: string,
+  userId: string,
   visitorId: string,
   parentId?: string
 ): Promise<{ success: boolean; comment?: CommentT; error?: string }> {
@@ -34,16 +34,13 @@ export async function addComment(
     if (!author.trim()) {
       return { success: false, error: "Name cannot be empty" };
     }
-    if (!email.trim() || !email.includes("@")) {
-      return { success: false, error: "Please provide a valid email" };
-    }
 
     // Create the comment object
     const commentData = {
       blogId,
       content: content.trim(),
       author: author.trim(),
-      email: email.trim(),
+      userId, // Using userId instead of email
       visitorId,
       createdAt: serverTimestamp(),
       likes: 0,
@@ -162,10 +159,23 @@ export async function deleteComment(
     if (!commentSnap.exists()) {
       return { success: false, error: "Comment not found" };
     }
-
     const commentData = commentSnap.data();
-    if (commentData.visitorId !== visitorId) {
-      return { success: false, error: "You can only delete your own comments" };
+
+    console.log("Server received request to delete comment:");
+    console.log("Comment ID:", commentId);
+    console.log("Provided visitorId:", visitorId);
+    console.log("Comment visitorId:", commentData.visitorId);
+    console.log("Comment userId:", commentData.userId);
+
+    // Server-side check - compare both userId and visitorId
+    const isAuthor =
+      commentData.visitorId === visitorId || commentData.userId === visitorId;
+
+    if (!isAuthor) {
+      return {
+        success: false,
+        error: "You can only delete your own comments",
+      };
     }
 
     // Delete the comment

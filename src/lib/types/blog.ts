@@ -6,14 +6,12 @@ export interface CommentT {
   blogTitle: string;
   parentId?: string; // For nested comments (replies)
   content: string;
-  author: string; // Name provided by commenter
-  email: string; // Email provided by commenter (not displayed publicly)
+  author: string; // Name provided by commenter (random name)
+  userId: string; // Anonymous user identifier based on IP
   createdAt: any; // Firestore timestamp
   likes: number;
-  userName: string;
   // For anonymous identification, we'll use a visitorId
   visitorId: string;
-  userId:string
 }
 
 export interface ClapT {

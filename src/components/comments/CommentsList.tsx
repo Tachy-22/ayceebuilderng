@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { getComments } from "@/app/actions/comments";
 import { getVisitorId } from "@/lib/visitorId";
 import { CommentT } from "@/lib/types/blog";
-import CommentItem from "./CommentItem";
+import Comment from "./Comment";
 import CommentForm from "./CommentForm";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw } from "lucide-react";
@@ -44,7 +44,6 @@ const CommentsList: React.FC<CommentsListProps> = ({ blogId }) => {
     },
     [blogId, toast]
   );
-
   useEffect(() => {
     fetchComments();
 
@@ -52,6 +51,9 @@ const CommentsList: React.FC<CommentsListProps> = ({ blogId }) => {
     const refreshInterval = setInterval(() => {
       fetchComments(false); // Don't show loading state for auto-refresh
     }, 60000);
+
+    // Set up the visitor ID for identifying user's comments
+    const visitorId = getVisitorId();
 
     return () => clearInterval(refreshInterval);
   }, [fetchComments]);
@@ -78,15 +80,34 @@ const CommentsList: React.FC<CommentsListProps> = ({ blogId }) => {
   const handleAddReply = (parentId: string, reply: CommentT) => {
     setComments((prevComments) => [...prevComments, reply]);
   };
-
   // Handle deleting a comment
   const handleDeleteComment = (commentId: string) => {
-    // Remove the comment and any replies
+    // Find the comment and its replies
+    const commentToDelete = comments.find((c) => c.id === commentId);
+
+    // If no comment found, do nothing
+    if (!commentToDelete) return;
+
+    // Get all reply IDs to this comment
+    const replyIds = comments
+      .filter((c) => c.parentId === commentId)
+      .map((c) => c.id);
+
+    // Create an array of IDs to remove (the comment and all its replies)
+    const idsToRemove = [commentId, ...replyIds];
+
+    // Remove the comment and any replies from the state
     setComments((prevComments) =>
-      prevComments.filter(
-        (comment) => comment.id !== commentId && comment.parentId !== commentId
-      )
+      prevComments.filter((comment) => !idsToRemove.includes(comment.id))
     );
+
+    // Show a toast message
+    toast({
+      title: "Comment deleted",
+      description: `Comment ${
+        replyIds.length > 0 ? "and all replies have" : "has"
+      } been removed.`,
+    });
   };
 
   // Handle liking a comment
@@ -142,11 +163,11 @@ const CommentsList: React.FC<CommentsListProps> = ({ blogId }) => {
         </Button>
       </div>
 
-      {/* {lastRefreshed && (
+      {lastRefreshed && (
         <p className="text-xs text-gray-500 mb-4">
           Last updated: {lastRefreshed.toLocaleTimeString()}
         </p>
-      )} */}
+      )}
 
       {/* Comment form */}
       <div className="mb-8">
@@ -173,7 +194,7 @@ const CommentsList: React.FC<CommentsListProps> = ({ blogId }) => {
                 : comment.createdAt;
 
             return (
-              <CommentItem
+              <Comment
                 key={comment.id}
                 comment={comment}
                 replies={getReplies(comment.id)}
