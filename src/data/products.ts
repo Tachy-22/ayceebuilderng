@@ -35,7 +35,7 @@ export const categories = [
   { id: "sanitaryware", name: "Sanitary Ware", icon: "🚰", itemCount: 12 },
   { id: "cladding", name: "Cladding", icon: "🧱", itemCount: 14 },
   {
-    id: "adhesiveandadmix",
+    id: "adhesive and admix",
     name: "Adhesive and Admix",
     icon: "🧪",
     itemCount: 9,
