@@ -36,7 +36,7 @@ export const categories = [
   { id: "cladding", name: "Cladding", icon: "🧱", itemCount: 14 },
   {
     id: "adhesiveandadmix",
-    name: "Adhesives & Admixtures",
+    name: "Adhesive and Admix",
     icon: "🧪",
     itemCount: 9,
   },
