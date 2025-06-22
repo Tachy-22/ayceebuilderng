@@ -80,7 +80,6 @@ const Navbar = () => {
     { name: "Tradesmen", path: "/tradesmen" },
     { name: "Vendors", path: "/vendors" },
 
-
     { name: "About", path: "/about" },
   ];
 
@@ -222,25 +221,21 @@ const Navbar = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="md:hidden text-muted-foreground"
+                  className="md:hidden text-muted-foreground "
                   aria-label="Open mobile menu"
                 >
                   <Menu size={20} />
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[350px]">
-                <div className="flex flex-col h-full">
-                  <div className="flex items-center justify-between py-4 border-b">
+              </SheetTrigger>{" "}
+              <SheetContent
+                side="left"
+                className="w-[300px] sm:w-[350px] overflow-hidden flex flex-col p-0"
+              >
+                <div className="flex flex-col h-full max-h-full">
+                  <div className="flex items-center justify-between py-4 border-b px-6 flex-shrink-0">
                     <span className="text-xl font-bold text-primary">
                       Ayceebuilder
                     </span>
-                    {/* <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <X size={18} />
-                    </Button> */}
                   </div>
                   <nav className="flex flex-col py-4 space-y-1">
                     {navLinks.map((link) => (
@@ -269,17 +264,22 @@ const Navbar = () => {
                           showMobileCategories ? "rotate-180" : ""
                         }`}
                       />
-                    </button>
+                    </button>{" "}
                     {showMobileCategories && (
-                      <div className="pl-4 space-y-1">
+                      <div className="pl-4 space-y-1 max-h-[40vh] overflow-y-auto overscroll-contain pr-2 pb-1">
                         {categories.map((category) => (
                           <button
                             key={category.id}
                             onClick={() => handleCategoryClick(category.id)}
-                            className="flex items-center px-4 py-3 rounded-md text-sm font-medium transition-colors hover:bg-secondary/5 w-full"
+                            className="flex items-center px-4 py-3 rounded-md text-sm font-medium transition-colors hover:bg-secondary/5 w-full text-left"
                           >
-                            <ChevronRight size={18} className="mr-2" />
-                            {category.name}
+                            <ChevronRight
+                              size={18}
+                              className="mr-2 flex-shrink-0"
+                            />
+                            <span className="line-clamp-2">
+                              {category.name}
+                            </span>
                           </button>
                         ))}
                       </div>
