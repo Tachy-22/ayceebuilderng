@@ -5,6 +5,7 @@ import "./animations.css";
 import Providers from "./providers";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
     url: "https://ayceebuilder.com",
     images: [
       {
-        url: "/og-image.png", // Update this path to your actual image
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "ayceebuilder",
@@ -63,20 +64,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-      <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSKZ57GTQP"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-ZSKZ57GTQP');
-</script>
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-ZSKZ57GTQP"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-ZSKZ57GTQP');
+          `}
+        </Script>
       </head>
       <body className={inter.className}>
         <Providers>
           <div className="overflow-x-hidden">
-            {" "}
             <Navbar />
             {children}
             <Footer />
