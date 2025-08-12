@@ -294,10 +294,23 @@ const Tradesmen = ({ fetchedTradesmen = [] }: TradesmenProps) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // Define the required fields according to the API
+      // Prepare the submission data with proper field names and defaults first
+      const submissionData: { [key: string]: any } = {
+        ...tradesmanForm,
+        // Set default values for fields that aren't directly input by user
+        photo:
+          tradesmanForm.photo ||
+          "", // Default empty string for photo
+        location: `${tradesmanForm.city}, ${tradesmanForm.state}, Nigeria`,
+        rating: 0, // Default starting rating
+        reviews: 0, // This is the correct field name for the API
+        verified: false, // Default verification status
+        completedProjects: 0, // Default completed projects
+      };
+      
+      // Define the required fields according to the API (photo is not required since we have a default)
       const requiredFields = [
         "name",
-        "photo",
         "trade",
         "location",
         "rating",
@@ -307,19 +320,7 @@ const Tradesmen = ({ fetchedTradesmen = [] }: TradesmenProps) => {
         "verified",
         "completedProjects",
         "whatsAppNumber",
-      ]; // Prepare the submission data with proper field names
-      const submissionData: { [key: string]: any } = {
-        ...tradesmanForm,
-        // Set default values for fields that aren't directly input by user
-        photo:
-          tradesmanForm.photo ||
-          "https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671142.jpg?semt=ais_hybrid&w=740", // Default photo
-        location: `${tradesmanForm.city}, ${tradesmanForm.state}, Nigeria`,
-        rating: 0, // Default starting rating
-        reviews: 0, // This is the correct field name for the API
-        verified: false, // Default verification status
-        completedProjects: 0, // Default completed projects      }; // Create a trimmed version of the submission data with only required fields
-      };
+      ];
       const tradesmanData: { [key: string]: any } = {};
       requiredFields.forEach((field) => {
         // Ensure each required field exists in the data we send
