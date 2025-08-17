@@ -28,12 +28,15 @@ import { toast } from "@/hooks/use-toast";
 import { getPaystackConfig } from "@/lib/paystack";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
+import GooglePlacesAutocomplete from "@/components/ui/GooglePlacesAutocomplete";
+import { geocodeAddress, calculateHaversineDistance } from "@/lib/googlePlaces";
 
-// Interface for geocoding response
-interface GeocodingResult {
-  lat: string;
-  lon: string;
-  display_name: string;
+// Interface for place coordinates
+interface PlaceCoordinates {
+  lat: number;
+  lng: number;
+  address: string;
+  placeId: string;
 }
 
 // Dynamically import PaystackButton with SSR disabled:
@@ -92,13 +95,9 @@ const Cart = () => {
     phone: "",
   });
 
-  // New state for address autocomplete
+  // State for Google Places address autocomplete
   const [addressInput, setAddressInput] = useState("");
-  const [addressSuggestions, setAddressSuggestions] = useState<
-    Array<{ display_name: string; place_id: string }>
-  >([]);
-  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedPlaceCoordinates, setSelectedPlaceCoordinates] = useState<PlaceCoordinates | null>(null);
 
   // State for distance calculation
   const [calculatedDistance, setCalculatedDistance] = useState<number | null>(
@@ -224,61 +223,14 @@ const Cart = () => {
     }
   }, []);
 
-  // Function to fetch address suggestions
-  const fetchAddressSuggestions = async (query: string) => {
-    if (query.length < 3) {
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    setIsLoadingAddresses(true);
-    try {
-      const response = await fetch(
-        `https://api.locationiq.com/v1/autocomplete?key=${
-          process.env.NEXT_PUBLIC_LOCATION_IQ_API_KEY
-        }&q=${encodeURIComponent(query)}&limit=5&dedupe=1`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch address suggestions");
-      }
-
-      const data = await response.json();
-      setAddressSuggestions(data || []);
-      setShowSuggestions(true);
-    } catch (error) {
-      console.error("Error fetching address suggestions:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load address suggestions",
-      });
-      setAddressSuggestions([]);
-    } finally {
-      setIsLoadingAddresses(false);
-    }
-  };
-
-  // Debounce function for address input
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (addressInput) {
-        fetchAddressSuggestions(addressInput);
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [addressInput]);
-
-  // Handle selecting an address from suggestions
-  const handleSelectAddress = (address: string) => {
-    setAddressInput(address);
+  // Handle Google Places selection
+  const handlePlaceSelect = (place: PlaceCoordinates) => {
+    setAddressInput(place.address);
     setNewUserDetails({
       ...newUserDetails,
-      address,
+      address: place.address,
     });
-    setShowSuggestions(false);
+    setSelectedPlaceCoordinates(place);
   };
 
   // Calculate product location based on cart items
@@ -292,56 +244,6 @@ const Cart = () => {
     }
   }, [cartItems]);
 
-  // Function to geocode an address using LocationIQ
-  const geocodeAddress = async (
-    address: string
-  ): Promise<GeocodingResult | null> => {
-    try {
-      const response = await fetch(
-        `https://us1.locationiq.com/v1/search.php?key=${
-          process.env.NEXT_PUBLIC_LOCATION_IQ_API_KEY
-        }&q=${encodeURIComponent(address)}&format=json`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to geocode address");
-      }
-
-      const data = await response.json();
-      if (data && data.length > 0) {
-        return {
-          lat: data[0].lat,
-          lon: data[0].lon,
-          display_name: data[0].display_name,
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error("Error geocoding address:", error);
-      return null;
-    }
-  };
-
-  // Calculate distance between two points using Haversine formula
-  const calculateHaversineDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in km
-    return distance;
-  };
 
   // Calculate the actual distance between product location and delivery address
   const calculateActualDistance = async () => {
@@ -357,19 +259,24 @@ const Cart = () => {
     setIsCalculatingDistance(true);
 
     try {
+      // Use selected place coordinates if available, otherwise geocode the address
+      let userCoords: PlaceCoordinates | null = selectedPlaceCoordinates;
+      
+      if (!userCoords) {
+        // Fallback to geocoding if no coordinates available
+        userCoords = await geocodeAddress(selectedUser.address);
+      }
+
       // Geocode the product location
       const productCoords = await geocodeAddress(productLocation);
 
-      // Geocode the user's address
-      const userCoords = await geocodeAddress(selectedUser.address);
-
       if (productCoords && userCoords) {
-        // Calculate distance
+        // Calculate distance using Google Places coordinates
         const distance = calculateHaversineDistance(
-          parseFloat(productCoords.lat),
-          parseFloat(productCoords.lon),
-          parseFloat(userCoords.lat),
-          parseFloat(userCoords.lon)
+          productCoords.lat,
+          productCoords.lng,
+          userCoords.lat,
+          userCoords.lng
         );
 
         // Round to nearest integer
@@ -608,6 +515,9 @@ const Cart = () => {
     localStorage.setItem("savedUsers", JSON.stringify(updatedUsers));
     setShowUserForm(false);
     setSelectedUser(newUserDetails);
+    // Reset address input when user is saved
+    setAddressInput("");
+    setSelectedPlaceCoordinates(null);
   };
 
   const handleSelectUser = (user: any) => {
@@ -616,6 +526,8 @@ const Cart = () => {
     setShowUserForm(false);
     // Reset calculated distance so it can be recalculated
     setCalculatedDistance(null);
+    // Reset place coordinates when selecting existing user
+    setSelectedPlaceCoordinates(null);
   };
 
   // Effect to auto-calculate distance when a user is selected
@@ -1048,6 +960,7 @@ const Cart = () => {
                                       phone: "",
                                     });
                                     setAddressInput("");
+                                    setSelectedPlaceCoordinates(null);
                                   }}
                                 >
                                   <X className="h-4 w-4" />
@@ -1095,44 +1008,13 @@ const Cart = () => {
                                   })
                                 }
                               />
-                              <Label className="text-black/80">Address</Label>
-                              <div className="relative">
-                                <div className="flex">
-                                  <Input
-                                    placeholder="Start typing your address"
-                                    value={addressInput}
-                                    onChange={(e) =>
-                                      setAddressInput(e.target.value)
-                                    }
-                                    className="w-full"
-                                  />
-                                  {isLoadingAddresses && (
-                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                    </div>
-                                  )}
-                                </div>
-
-                                {showSuggestions &&
-                                  addressSuggestions.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
-                                      {addressSuggestions.map((suggestion) => (
-                                        <div
-                                          key={suggestion.place_id}
-                                          className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-start"
-                                          onClick={() =>
-                                            handleSelectAddress(
-                                              suggestion.display_name
-                                            )
-                                          }
-                                        >
-                                          <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                                          <span>{suggestion.display_name}</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                              </div>
+                              <GooglePlacesAutocomplete
+                                value={addressInput}
+                                onChange={setAddressInput}
+                                onPlaceSelect={handlePlaceSelect}
+                                label="Address"
+                                placeholder="Start typing your address in Nigeria"
+                              />
                             </div>
                             <Button
                               className="mt-3 w-full"

@@ -10,6 +10,8 @@ import { Truck, Package, MapPin, Calculator } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "@/hooks/use-toast";
+import GooglePlacesAutocomplete from "@/components/ui/GooglePlacesAutocomplete";
+import { calculateHaversineDistance, geocodeAddress } from "@/lib/googlePlaces";
 
 const DeliveryEstimator = () => {
   const [distance, setDistance] = useState(5);
@@ -19,7 +21,71 @@ const DeliveryEstimator = () => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [estimatedCost, setEstimatedCost] = useState<number | null>(null);
+  const [originCoords, setOriginCoords] = useState<{lat: number, lng: number} | null>(null);
+  const [destinationCoords, setDestinationCoords] = useState<{lat: number, lng: number} | null>(null);
+  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
   
+  const calculateActualDistance = async () => {
+    if (!origin || !destination) {
+      toast({
+        title: "Missing information",
+        description: "Please enter both origin and destination addresses.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCalculatingDistance(true);
+
+    try {
+      // Use coordinates if available, otherwise geocode
+      let originCoordinates = originCoords;
+      let destinationCoordinates = destinationCoords;
+
+      if (!originCoordinates) {
+        const geocodedOrigin = await geocodeAddress(origin);
+        if (geocodedOrigin) {
+          originCoordinates = { lat: geocodedOrigin.lat, lng: geocodedOrigin.lng };
+        }
+      }
+
+      if (!destinationCoordinates) {
+        const geocodedDestination = await geocodeAddress(destination);
+        if (geocodedDestination) {
+          destinationCoordinates = { lat: geocodedDestination.lat, lng: geocodedDestination.lng };
+        }
+      }
+
+      if (originCoordinates && destinationCoordinates) {
+        const calculatedDistance = calculateHaversineDistance(
+          originCoordinates.lat,
+          originCoordinates.lng,
+          destinationCoordinates.lat,
+          destinationCoordinates.lng
+        );
+
+        // Update the distance slider
+        setDistance(Math.round(calculatedDistance));
+
+        toast({
+          title: "Distance calculated",
+          description: `Actual distance: ${Math.round(calculatedDistance)} km.`,
+        });
+      } else {
+        throw new Error("Could not geocode addresses");
+      }
+    } catch (error) {
+      console.error("Error calculating distance:", error);
+      toast({
+        variant: "destructive",
+        title: "Error calculating distance",
+        description: "Could not calculate the actual distance. Please check your addresses.",
+      });
+    } finally {
+      setIsCalculatingDistance(false);
+    }
+  };
+
   const calculateDeliveryCost = () => {
     if (!origin || !destination) {
       toast({
@@ -90,32 +156,37 @@ const DeliveryEstimator = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="origin">Pickup Location (Depot/Warehouse)</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                      <Input 
-                        id="origin" 
-                        placeholder="Enter pickup address" 
-                        className="pl-10"
-                        value={origin}
-                        onChange={(e) => setOrigin(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                  <GooglePlacesAutocomplete
+                    value={origin}
+                    onChange={setOrigin}
+                    onPlaceSelect={(place) => {
+                      setOrigin(place.address);
+                      setOriginCoords({ lat: place.lat, lng: place.lng });
+                    }}
+                    label="Pickup Location (Depot/Warehouse)"
+                    placeholder="Enter pickup address in Nigeria"
+                  />
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="destination">Delivery Location</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                      <Input 
-                        id="destination" 
-                        placeholder="Enter delivery address" 
-                        className="pl-10"
-                        value={destination}
-                        onChange={(e) => setDestination(e.target.value)}
-                      />
-                    </div>
+                  <GooglePlacesAutocomplete
+                    value={destination}
+                    onChange={setDestination}
+                    onPlaceSelect={(place) => {
+                      setDestination(place.address);
+                      setDestinationCoords({ lat: place.lat, lng: place.lng });
+                    }}
+                    label="Delivery Location"
+                    placeholder="Enter delivery address in Nigeria"
+                  />
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={calculateActualDistance}
+                      disabled={!origin || !destination || isCalculatingDistance}
+                      className="flex-1"
+                    >
+                      {isCalculatingDistance ? "Calculating..." : "Calculate Actual Distance"}
+                    </Button>
                   </div>
                   
                   <div className="space-y-2">
