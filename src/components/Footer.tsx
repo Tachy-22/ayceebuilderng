@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useSettings } from "@/contexts/SettingsContext";
 //import { cn } from "@/lib/utils";
 import { Instagram, Twitter, Facebook, Globe, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,8 @@ const footerLinks = [
 ];
 
 const Footer = () => {
+  const { settings } = useSettings();
+
   return (
     <footer className="bg-secondary mt-16">
       <div className="max-w-7xl w-full mx-auto px-4 pt-16 pb-8">
@@ -50,24 +53,22 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <Link
               href="/"
-              aria-label="Go to Ayceebuilder homepage"
+              aria-label={`Go to ${settings?.siteName || 'Ayceebuilder'} homepage`}
               className="inline-block mb-4 w-full"
             >
               {/* <h2 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
                 Ayceebuilder
               </h2> */}
-              <Image
+              <img
                 width={1383}
                 height={196}
                 src="/aycee-logo.png"
-                alt="Ayceebuilder logo"
+                alt={`${settings?.siteName || 'Ayceebuilder'} logo`}
                 className="h-[2rem] w-fit flex "
-                priority
               />
             </Link>
             <p className="text-white/60 mb-6 max-w-md">
-              Your one-stop shop for all construction materials. Quality
-              products at competitive prices.
+              {settings?.siteDescription || 'Your one-stop shop for all construction materials. Quality products at competitive prices.'}
             </p>
             <h3 className="font-medium mb-3 text-white/50">
               Subscribe to our newsletter
@@ -171,21 +172,21 @@ Facebook: https://www.facebook.com/profile.php?id=100083060214875 */}{" "}
               <div className="flex items-center">
                 <Mail size={16} className="mr-2 text-white/50" />
                 <a
-                  href="mailto:aaycee54@gmail.com"
+                  href={`mailto:${settings?.contactEmail || 'aaycee54@gmail.com'}`}
                   className="text-sm text-white/50 hover:underline"
                 >
-                  aaycee54@gmail.com{" "}
+                  {settings?.contactEmail || 'aaycee54@gmail.com'}
                 </a>
               </div>
               <div className="flex items-center">
                 <Phone size={16} className="mr-2 text-white/50" />
                 <span className="text-sm text-white/50">
-                  +234 (0) 703 952 0579
+                  {settings?.supportPhone || '+234 (0) 703 952 0579'}
                 </span>
               </div>
             </div>
             <p className="text-sm text-white/50">
-              © {new Date().getFullYear()} Ayceebuilder Nigeria. All rights
+              © {new Date().getFullYear()} {settings?.siteName || 'Ayceebuilder Nigeria'}. All rights
               reserved.
             </p>
           </div>

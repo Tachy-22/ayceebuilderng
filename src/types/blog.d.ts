@@ -9,15 +9,19 @@ interface CommentT {
 }
 
 interface BlogT {
-  id: string;
+  id?: string;
   title: string;
   content: string;
   excerpt?: string;
+  description?: string; // For compatibility
   author: string;
-  date: Date | string;
+  date: Date | string | number;
+  createdAt: Date | string | number;
+  updatedAt: Date | string | number;
   category: string;
   tags?: string[];
   imageUrls?: string[];
+  image?: string; // Main image for compatibility
   thumbnailUrl?: string;
   views?: number;
   isPublished: boolean;

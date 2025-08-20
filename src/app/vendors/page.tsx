@@ -20,65 +20,53 @@ export const metadata: Metadata = {
   },
 };
 
-// Define the API response type for Vendors
+// Vendor interface matching the layout component
 interface Vendor {
   id: string;
   name: string;
-  photo: string;
-  category: string;
+  businessName: string;
+  photo?: string;
+  profileImage?: string;
+  businessType: string;
   location: string;
   rating: number;
-  reviews: number;
-  established: string;
+  reviewCount: number;
+  yearsOfExperience: number;
   description: string;
   verified: boolean;
-  completedTransactions: number;
+  featured: boolean;
   whatsAppNumber?: string;
-  products?: string[];
-}
-
-interface VendorsResponse {
-  data: Vendor[];
+  email: string;
+  phone: string;
+  services: string[];
+  specializations: string[];
+  priceRange: 'budget' | 'mid-range' | 'premium';
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
 }
 
 const VendorsPage = async () => {
-  // API URL for fetching vendors - use our local API endpoint
-  const apiUrl =
-  "https://script.google.com/macros/s/AKfycbyGAOxbMYE975ofGeJcJderdFq8MnIrgsRUU84S6jnSH76evqmMNhTeTLUe8RTBwsqF/exec?sheet=vendors";
-
-  // Fetch vendors data
+  // Fetch vendors data from our Firebase API
   let vendorsData: Vendor[] = [];
   try {
-    const res = await fetch(apiUrl, {
-      next: { revalidate: 3600 }, // Revalidate once per hour
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/vendors`, {
+      next: { revalidate: 0 }, // Revalidate once per hour
     });
 
     if (!res.ok) {
       throw new Error(`Failed to fetch vendors: ${res.status}`);
     }
-    const response: VendorsResponse = await res.json();
-    vendorsData = response.data || [];
+    const response = await res.json();
 
-    // Process products from string to array if needed
-    vendorsData = vendorsData.map((vendor) => {
-      if (typeof vendor.products === "string") {
-        return {
-          ...vendor,
-          products: (vendor.products as string)
-            .split(",")
-            .map((item) => item.trim()),
-        };
-      }
-      return vendor;
-    });
+    console.log({ vendorsData })
+    vendorsData = response.success ? response.data : [];
   } catch (error) {
     console.error("Error fetching vendors data:", error);
-    // Fallback data will be used from the component
+    // Component will show empty state
   }
 
   return (
     <div>
-      <Vendors fetchedVendors={vendorsData  || []} />
+      <Vendors fetchedVendors={vendorsData || []} />
     </div>
   );
 };

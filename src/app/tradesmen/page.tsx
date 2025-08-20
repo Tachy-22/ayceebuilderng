@@ -21,49 +21,56 @@ export const metadata: Metadata = {
   },
 };
 
-// Define the API response type for Tradesmen
-interface TradesmanData {
+// Tradesman interface matching the layout component
+interface Tradesman {
   id: string;
   name: string;
-  photo: string;
+  email: string;
+  phone: string;
   trade: string;
-  location: string;
-  rating: number;
-  reviews: number;
-  experience: string;
   description: string;
+  location: string;
+  profileImage?: string;
+  workImages?: string[];
+  licenseDocuments: string[];
+  rating: number;
+  reviewCount: number;
   verified: boolean;
-  completedProjects: number;
-  whatsappNumber?: string; // Optional WhatsApp number for direct contact
-}
-
-interface TradesmenResponse {
-  data: TradesmanData[];
+  featured: boolean;
+  skills: string[];
+  yearsOfExperience: number;
+  certifications: string[];
+  availability: 'available' | 'busy' | 'unavailable';
+  hourlyRate?: number;
+  projectRate?: number;
+  preferredPayment: string[];
+  emergencyAvailable: boolean;
+  travelDistance: number;
+  languages: string[];
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
 }
 
 const TradesmenPage = async () => {
-  // API URL for fetching tradesmen
-  const apiUrl =
-    "https://script.google.com/macros/s/AKfycbyGAOxbMYE975ofGeJcJderdFq8MnIrgsRUU84S6jnSH76evqmMNhTeTLUe8RTBwsqF/exec?sheet=tradesmen";
-  // Fetch tradesmen data
-  let tradesmenData: TradesmanData[] = [];
+  // Fetch tradesmen data from our Firebase API
+  let tradesmenData: Tradesman[] = [];
 
   try {
-    const res = await fetch(apiUrl, { next: { revalidate: 0 } }); // Revalidate once per hour
-
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/tradesmen`, {
+      next: { revalidate: 0 }, // Revalidate once per hour
+    });
+    console.log({ res })
     if (!res.ok) {
       throw new Error(`Failed to fetch tradesmen: ${res.status}`);
     }
 
-    const response: TradesmenResponse = await res.json();
-    tradesmenData = response.data || [];
+    const response = await res.json();
+    tradesmenData = response.success ? response.data : [];
   } catch (error) {
     console.error("Error fetching tradesmen data:", error);
-    // Fallback data will be used from the component
+    // Component will show empty state
   }
 
-  console.log({ res: tradesmenData });
-
+  console.log({ tradesmenData })
   return (
     <div>
       <Tradesmen fetchedTradesmen={tradesmenData || []} />

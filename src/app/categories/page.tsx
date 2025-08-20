@@ -22,30 +22,33 @@ const page = async ({ searchParams }: PageProps) => {
   // Get parameters from URL or use defaults
   const categoryId = searchParams.category || null;
   const currentPage = parseInt(searchParams.page || "1", 10);
-  const limit = parseInt(searchParams.limit || "8", 10); // Showing fewer products per category
+  const limit = parseInt(searchParams.limit || "8", 10);
 
-  // API URL for fetching products
-  const apiUrl =
-    "https://script.google.com/macros/s/AKfycbyUI4V2K5upEtuvk4lYLqgl7_2JNAECT8mUTDPGY8k_Gajia1v1YDjHfeKwBmzMo6T3/exec";
+  // Use Firebase API for fetching products
+  const apiUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/products`;
 
   // Fetch products for selected category if any
   let products: ProductNew[] = [];
   let hasMore = false;
   
   if (categoryId) {
-    // Build query string
-    const queryParams = `?page=${currentPage}&limit=${limit}&sheet=${categoryId}`;
-    const url = `${apiUrl}${queryParams}`;
-    
-    // Fetch data
-    const res = await fetch(url, { cache: "no-store" }); // Ensure fresh data
-    const response = await res.json();
-    
-    // Extract products from the response
-    products = Array.isArray(response.data) ? response.data : [];
-    
-    // Determine if there are more products to load
-    hasMore = products.length >= limit;
+    try {
+      // Build query string for Firebase API
+      const queryParams = `?page=${currentPage}&limit=${limit}&category=${categoryId}`;
+      const url = `${apiUrl}${queryParams}`;
+      
+      // Fetch data from Firebase
+      const res = await fetch(url, { cache: "no-store" });
+      const response = await res.json();
+      
+      // Extract products from the response
+      products = response.success ? response.data : [];
+      hasMore = products.length >= limit;
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      products = [];
+      hasMore = false;
+    }
   }
 
   return (

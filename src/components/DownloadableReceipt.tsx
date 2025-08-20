@@ -17,6 +17,7 @@ const styles = StyleSheet.create({
     padding: 30,
     backgroundColor: "#ffffff",
     fontFamily: "Helvetica",
+    lineHeight: 1.5,
   },
   header: {
     marginBottom: 20,
@@ -29,95 +30,109 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#065F46",
     marginBottom: 5,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#065F46",
     marginBottom: 15,
+    fontWeight: "normal",
   },
   section: {
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: 10,
     backgroundColor: "#F0FDF4",
-    padding: 8,
+    padding: 10,
     color: "#065F46",
+    letterSpacing: 0.3,
   },
   userDetails: {
     marginBottom: 20,
-    padding: 10,
+    padding: 12,
     backgroundColor: "#F9FAFB",
-    borderRadius: 5,
+    borderRadius: 4,
   },
   row: {
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   headerRow: {
     flexDirection: "row",
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     borderBottomColor: "#D1D5DB",
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingTop: 10,
+    paddingBottom: 10,
     backgroundColor: "#F0FDF4",
     fontWeight: "bold",
     color: "#065F46",
   },
   col1: {
     flex: 3,
-    paddingRight: 5,
+    paddingRight: 8,
+    fontSize: 11,
   },
   col2: {
     flex: 1,
     textAlign: "center",
+    fontSize: 11,
   },
   col3: {
     flex: 1,
     textAlign: "center",
+    fontSize: 11,
   },
   col4: {
     flex: 1,
     textAlign: "right",
+    fontSize: 11,
   },
   totalRow: {
     flexDirection: "row",
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: 15,
+    paddingBottom: 10,
+    borderTopWidth: 2,
+    borderTopColor: "#065F46",
+    marginTop: 8,
   },
   totalText: {
     flex: 1,
     fontWeight: "bold",
     textAlign: "right",
-    paddingRight: 8,
+    paddingRight: 10,
+    fontSize: 13,
+    color: "#065F46",
   },
   totalAmount: {
     flex: 1,
     fontWeight: "bold",
     textAlign: "right",
-    fontSize: 14,
+    fontSize: 15,
+    color: "#065F46",
   },
   footer: {
     marginTop: 30,
     textAlign: "center",
     fontSize: 10,
     color: "#6B7280",
+    lineHeight: 1.4,
   },
   orderInfo: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 15,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 12,
+    paddingBottom: 12,
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
     borderBottomWidth: 1,
@@ -130,19 +145,26 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#6B7280",
     marginBottom: 3,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   value: {
     fontSize: 12,
+    color: "#1F2937",
+    fontWeight: "500",
   },
   thankyou: {
     marginTop: 30,
     fontSize: 12,
     color: "#065F46",
     textAlign: "center",
+    lineHeight: 1.6,
   },
   inline: {
     flexDirection: "row",
-    marginBottom: 5,
+    marginBottom: 6,
+    alignItems: "flex-start",
   },
   metadata: {
     flex: 1,
@@ -198,7 +220,7 @@ const ReceiptDocument = ({ orderData }: { orderData: any }) => {
             <View style={styles.inline}>
               <Text style={[styles.label, { width: 80 }]}>Name:</Text>
               <Text style={styles.value}>{orderData.user.name}</Text>
-            </View>{" "}
+            </View>
             <View style={styles.inline}>
               <Text style={[styles.label, { width: 80 }]}>Email:</Text>
               <Text style={styles.value}>{orderData.user.email}</Text>
@@ -336,13 +358,16 @@ interface DownloadableReceiptProps {
     distance?: number;
     weight?: number;
   };
+  buttonProps?: {
+    className?: string;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+    children?: React.ReactNode;
+  };
 }
 
-const DownloadableReceipt = ({ orderData }: DownloadableReceiptProps) => {
-  // Generate a safe filename
-  const fileName = `ayceebuilder-receipt-${
-    orderData.reference || new Date().getTime()
-  }.pdf`;
+const DownloadableReceipt = ({ orderData, buttonProps }: DownloadableReceiptProps) => {
+  // Generate a safe filename with current date
+  const fileName = `ayceebuilder-receipt-${orderData.reference || new Date().getTime()}.pdf`;
 
   // Ensure we have all required data in the correct format
   const safeOrderData = {
@@ -361,9 +386,17 @@ const DownloadableReceipt = ({ orderData }: DownloadableReceiptProps) => {
       style={{ textDecoration: "none" }}
     >
       {({ blob, url, loading, error }) => (
-        <Button variant="outline" className="w-full mt-4" disabled={loading}>
-          <FileDown className="mr-2 h-4 w-4" />
-          {loading ? "Generating receipt..." : "Download Receipt"}
+        <Button 
+          variant={buttonProps?.variant || "outline"} 
+          className={buttonProps?.className || "w-full"} 
+          disabled={loading}
+        >
+          {buttonProps?.children || (
+            <>
+              <FileDown className="mr-2 h-4 w-4" />
+              {loading ? "Generating Receipt..." : "Download Official Receipt"}
+            </>
+          )}
         </Button>
       )}
     </PDFDownloadLink>

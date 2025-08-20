@@ -5,8 +5,6 @@ import {
   Search,
   ShoppingCart,
   Heart,
-  User,
-  X,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
@@ -16,16 +14,19 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  // DropdownMenuItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { categories } from "@/data/products";
+import { User, LogOut } from "lucide-react";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -35,6 +36,8 @@ const Navbar = () => {
   const pathname = usePathname();
   const { getItemCount } = useCart();
   const { wishlistItems } = useWishlist();
+  const { user, userProfile, logout, loading } = useAuth();
+  const { settings } = useSettings();
   const router = useRouter();
 
   const cartItemCount = getItemCount();
@@ -66,7 +69,7 @@ const Navbar = () => {
   };
 
   const handleCategoryClick = (categoryId: string) => {
-    router.push(`/products?sheet=${categoryId}&page=1&limit=12`);
+    router.push(`/products?category=${categoryId}&page=1&limit=12`);
     setIsMobileMenuOpen(false);
   };
 
@@ -85,30 +88,29 @@ const Navbar = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white shadow-md py-2"
-          : "bg-white/80 backdrop-blur-md py-3"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+        ? "bg-white shadow-md py-2"
+        : "bg-white/80 backdrop-blur-md py-3"
+        }`}
     >
       <div className="max-w-7xl mx-auto w-full px-4 ">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center">
             {/* <span className="text-xl font-bold text-primary">Ayceebuilder</span> */}
-            <Image
+            <img
               width={1383}
               height={196}
               src="/aycee-logo.png"
-              alt="Ayceebuilder logo"
-              className="h-[2rem] w-fit lg:flex hidden"
+              alt={`${settings?.siteName || 'Ayceebuilder'} logo`}
+              className="h-[2rem] w-fit max-w-[10rem] lg:flex hidden"
               loading="lazy"
             />
-            <Image
+            <img
               width={206}
               height={196}
               src="/aycee-icon.png"
-              alt="Ayceebuilder icon"
+              alt={`${settings?.siteName || 'Ayceebuilder'} icon`}
               className="h-[2rem] w-fit lg:hidden flex"
               loading="lazy"
             />
@@ -120,11 +122,10 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 href={link.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname === link.path
-                    ? "text-primary"
-                    : "text-foreground hover:text-primary"
-                }`}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === link.path
+                  ? "text-primary"
+                  : "text-foreground hover:text-primary"
+                  }`}
               >
                 {link.name}
               </Link>
@@ -205,15 +206,59 @@ const Navbar = () => {
             </Link>
 
             {/* Account */}
-            {/* <Link href="/auth">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground"
-              >
-                <User size={20} />
-              </Button>
-            </Link> */}
+            {!loading && (
+              user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground"
+                    >
+                      <User size={20} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <div className="px-3 py-2 border-b">
+                      <p className="text-sm font-medium">{userProfile?.name || user.displayName || 'User'}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                    <div className="py-1">
+                      <Link href="/dashboard" className="block px-3 py-2 text-sm hover:bg-gray-50">
+                        Dashboard
+                      </Link>
+                      <Link href="/dashboard/orders" className="block px-3 py-2 text-sm hover:bg-gray-50">
+                        Order History
+                      </Link>
+                      <Link href="/dashboard/profile" className="block px-3 py-2 text-sm hover:bg-gray-50">
+                        Profile Settings
+                      </Link>
+                      <hr className="my-1" />
+                      <button
+                        onClick={logout}
+                        className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut size={16} className="mr-2" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <div className="hidden md:flex items-center space-x-2">
+                  <Link href="/login">
+                    <Button variant="ghost" size="sm">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button size="sm">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
+              )
+            )}
 
             {/* Mobile Menu Trigger */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -242,11 +287,10 @@ const Navbar = () => {
                       <Link
                         key={link.path}
                         href={link.path}
-                        className={`px-4 py-3 rounded-md text-sm font-medium transition-colors ${
-                          pathname === link.path
-                            ? "bg-secondary/10 text-primary"
-                            : "hover:bg-secondary/5"
-                        }`}
+                        className={`px-4 py-3 rounded-md text-sm font-medium transition-colors ${pathname === link.path
+                          ? "bg-secondary/10 text-primary"
+                          : "hover:bg-secondary/5"
+                          }`}
                       >
                         {link.name}
                       </Link>
@@ -260,9 +304,8 @@ const Navbar = () => {
                       Categories
                       <ChevronDown
                         size={18}
-                        className={`transition-transform ${
-                          showMobileCategories ? "rotate-180" : ""
-                        }`}
+                        className={`transition-transform ${showMobileCategories ? "rotate-180" : ""
+                          }`}
                       />
                     </button>{" "}
                     {showMobileCategories && (

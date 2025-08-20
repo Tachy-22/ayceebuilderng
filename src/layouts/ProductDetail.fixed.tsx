@@ -266,7 +266,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
             </Link>
             <ChevronRight size={14} className="mx-2" />
             <Link
-              href={`/products?sheet=${product.category}&page=1&limit=12`}
+              href={`/products?category=${product.category}&page=1&limit=12`}
               className="hover:text-foreground"
             >
               {product.category.charAt(0).toUpperCase() +

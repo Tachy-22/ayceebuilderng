@@ -1,0 +1,235 @@
+import { 
+  collection, 
+  doc, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where,
+  onSnapshot,
+  writeBatch,
+  increment,
+  Timestamp
+} from 'firebase/firestore';
+import { db } from './firebase';
+import { Product } from '@/data/products';
+
+export interface CartItem {
+  id: string;
+  userId: string;
+  productId: string;
+  quantity: number;
+  color?: string;
+  addedAt: Date;
+  updatedAt: Date;
+  // Product details stored for faster access
+  product: Product
+
+}
+
+// Add item to cart
+export const addToCart = async (userId: string, productData: any, quantity: number = 1, color?: string) => {
+  try {
+    // Check if item already exists in cart
+    const cartRef = collection(db, 'carts');
+    let existingItemQuery;
+    
+    if (color) {
+      existingItemQuery = query(
+        cartRef,
+        where('userId', '==', userId),
+        where('productId', '==', productData.id),
+        where('color', '==', color)
+      );
+    } else {
+      existingItemQuery = query(
+        cartRef,
+        where('userId', '==', userId),
+        where('productId', '==', productData.id)
+      );
+    }
+    
+    const existingItems = await getDocs(existingItemQuery);
+    
+    // Find exact match (considering color field presence)
+    let matchingItem = null;
+    if (!existingItems.empty) {
+      if (color) {
+        // Looking for item with specific color
+        matchingItem = existingItems.docs.find(doc => doc.data().color === color);
+      } else {
+        // Looking for item without color field or with null/undefined color
+        matchingItem = existingItems.docs.find(doc => !doc.data().color);
+      }
+    }
+    
+    if (matchingItem) {
+      // Update existing item quantity
+      await updateDoc(matchingItem.ref, {
+        quantity: increment(quantity),
+        updatedAt: Timestamp.fromDate(new Date())
+      });
+      return { id: matchingItem.id, ...matchingItem.data() };
+    } else {
+      // Add new item to cart
+      const cartItem: any = {
+        userId,
+        productId: productData.id,
+        quantity,
+        addedAt: new Date(),
+        updatedAt: new Date(),
+        product: {
+          id: productData.id,
+          name: productData.name,
+          price: productData.price,
+          discountPrice: productData.discountPrice,
+          image: productData.image,
+          category: productData.category,
+          inStock: productData.inStock,
+          weight: productData.weight,
+          vendor: productData.vendor
+        }
+      };
+
+      // Only add color field if it has a value
+      if (color) {
+        cartItem.color = color;
+      }
+
+      const docRef = await addDoc(cartRef, {
+        ...cartItem,
+        addedAt: Timestamp.fromDate(cartItem.addedAt),
+        updatedAt: Timestamp.fromDate(cartItem.updatedAt)
+      });
+
+      return { id: docRef.id, ...cartItem };
+    }
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    throw error;
+  }
+};
+
+// Remove item from cart
+export const removeFromCart = async (cartItemId: string) => {
+  try {
+    await deleteDoc(doc(db, 'carts', cartItemId));
+  } catch (error) {
+    console.error('Error removing from cart:', error);
+    throw error;
+  }
+};
+
+// Update item quantity
+export const updateCartItemQuantity = async (cartItemId: string, quantity: number) => {
+  try {
+    if (quantity <= 0) {
+      await removeFromCart(cartItemId);
+      return;
+    }
+    
+    await updateDoc(doc(db, 'carts', cartItemId), {
+      quantity,
+      updatedAt: Timestamp.fromDate(new Date())
+    });
+  } catch (error) {
+    console.error('Error updating cart item quantity:', error);
+    throw error;
+  }
+};
+
+// Get user's cart items
+export const getUserCart = async (userId: string): Promise<CartItem[]> => {
+  try {
+    const cartRef = collection(db, 'carts');
+    const cartQuery = query(cartRef, where('userId', '==', userId));
+    const cartSnapshot = await getDocs(cartQuery);
+    
+    const cartItems: CartItem[] = [];
+    cartSnapshot.forEach((doc) => {
+      const data = doc.data();
+      cartItems.push({
+        id: doc.id,
+        ...data,
+        addedAt: data.addedAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      } as CartItem);
+    });
+    
+    return cartItems.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
+  } catch (error) {
+    console.error('Error fetching user cart:', error);
+    throw error;
+  }
+};
+
+// Clear entire cart
+export const clearUserCart = async (userId: string) => {
+  try {
+    const cartRef = collection(db, 'carts');
+    const cartQuery = query(cartRef, where('userId', '==', userId));
+    const cartSnapshot = await getDocs(cartQuery);
+    
+    const batch = writeBatch(db);
+    cartSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+  } catch (error) {
+    console.error('Error clearing cart:', error);
+    throw error;
+  }
+};
+
+// Subscribe to cart changes (real-time updates)
+export const subscribeToUserCart = (userId: string, callback: (cartItems: CartItem[]) => void) => {
+  const cartRef = collection(db, 'carts');
+  const cartQuery = query(cartRef, where('userId', '==', userId));
+  
+  return onSnapshot(cartQuery, (snapshot) => {
+    const cartItems: CartItem[] = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      cartItems.push({
+        id: doc.id,
+        ...data,
+        addedAt: data.addedAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      } as CartItem);
+    });
+    
+    callback(cartItems.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime()));
+  });
+};
+
+// Get cart item count
+export const getCartItemCount = (cartItems: CartItem[]): number => {
+  return cartItems.reduce((total, item) => total + item.quantity, 0);
+};
+
+// Get cart total
+export const getCartTotal = (cartItems: CartItem[]): number => {
+  return cartItems.reduce((total, item) => {
+    const price = item.product.discountPrice || item.product.price;
+    return total + (price * item.quantity);
+  }, 0);
+};
+
+// Merge guest cart with user cart (for when user logs in)
+export const mergeGuestCartWithUserCart = async (userId: string, guestCartItems: any[]) => {
+  try {
+    for (const guestItem of guestCartItems) {
+      await addToCart(
+        userId, 
+        guestItem.product, 
+        guestItem.quantity, 
+        guestItem.color
+      );
+    }
+  } catch (error) {
+    console.error('Error merging guest cart:', error);
+    throw error;
+  }
+};

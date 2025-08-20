@@ -47,7 +47,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
   const [blogData, setBlogData] = useState<BlogT>(
     update && blog ? { ...blog } : defaultBlogData
   );
-  const [isFormOpen, setIsFormOpen] = useState(update);
+  const [isFormOpen, setIsFormOpen] = useState(true); // Always open when used in dialogs
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -210,7 +210,6 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
         if ("success" in result && result.success) {
           toast.success("Blog post updated successfully");
           onClose?.();
-          setIsFormOpen(false);
           router.refresh();
         } else {
           toast.error(
@@ -222,7 +221,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
         if ("success" in result && result.success) {
           toast.success("Blog post created successfully");
           setBlogData(defaultBlogData);
-          setIsFormOpen(false);
+          onClose?.();
           router.refresh();
         } else {
           toast.error(
@@ -239,33 +238,14 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
   };
 
   return (
-    <div className="h-full min-h-[90vh] flex flex-col gap-3">
-      {!update && (
-        <Button
-          className={`w-full h-full py-3 font-medium rounded-xl ${
-            isFormOpen
-              ? "border-black border text-black hover:bg-black hover:text-white"
-              : "bg-black hover:bg-gray-800 text-white"
-          }`}
-          onClick={() => setIsFormOpen((prev) => !prev)}
-        >
-          {!isFormOpen ? (
-            <span className="flex items-center justify-between gap-2">
-              Add New Blog <Plus />
-            </span>
-          ) : (
-            <span className="flex items-center justify-between gap-2">
-              Close <X />
-            </span>
-          )}
-        </Button>
-      )}
+    <div className="h-full flex flex-col">
       {isFormOpen && (
-        <form className="flex flex-col gap-6 pt-[3rem]" onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[70vh] gap-4">
+        <form className="flex flex-col gap-6 h-full" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
             {/* Blog Form */}
-            <div className="bg-white overflow-hidden h-full rounded-l-xl flex flex-col min-h-full">
-              <div className="flex flex-col gap-4 px-4">
+            <div className="bg-gray-50 rounded-lg p-6 overflow-y-auto">
+              <h3 className="text-lg font-semibold mb-4 text-gray-800">Blog Details</h3>
+              <div className="flex flex-col gap-4">
                 <div>
                   <label
                     htmlFor="title"
@@ -279,9 +259,8 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
                     name="title"
                     value={blogData.title}
                     onChange={handleChange}
-                    className={`w-full border ${
-                      errors.title ? "border-red-500" : "border-gray-300"
-                    } rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    className={`w-full border ${errors.title ? "border-red-500" : "border-gray-300"
+                      } rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                     placeholder="Enter blog title"
                   />
                   {errors.title && (
@@ -301,9 +280,8 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
                     name="author"
                     value={blogData.author}
                     onChange={handleChange}
-                    className={`w-full border ${
-                      errors.author ? "border-red-500" : "border-gray-300"
-                    } rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    className={`w-full border ${errors.author ? "border-red-500" : "border-gray-300"
+                      } rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                     placeholder="Enter author name"
                   />
                   {errors.author && (
@@ -323,9 +301,8 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
                     value={blogData.excerpt}
                     onChange={handleChange}
                     rows={3}
-                    className={`w-full border ${
-                      errors.excerpt ? "border-red-500" : "border-gray-300"
-                    } rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    className={`w-full border ${errors.excerpt ? "border-red-500" : "border-gray-300"
+                      } rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                     placeholder="Enter brief excerpt"
                   />
                   {errors.excerpt && (
@@ -410,11 +387,10 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
                               thumbnailUrl: imageUrl,
                             }));
                           }}
-                          className={`relative cursor-pointer rounded-lg overflow-hidden border-2 h-24 ${
-                            (blogData.thumbnailUrl || thumbnailUrl) === imageUrl
+                          className={`relative cursor-pointer rounded-lg overflow-hidden border-2 h-24 ${(blogData.thumbnailUrl || thumbnailUrl) === imageUrl
                               ? "border-blue-500 ring-2 ring-blue-300"
                               : "border-gray-200 hover:border-gray-300"
-                          }`}
+                            }`}
                         >
                           <Image
                             src={imageUrl}
@@ -426,12 +402,12 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
                           />
                           {(blogData.thumbnailUrl || thumbnailUrl) ===
                             imageUrl && (
-                            <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
-                              <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                                Thumbnail
-                              </span>
-                            </div>
-                          )}
+                              <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
+                                <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                                  Thumbnail
+                                </span>
+                              </div>
+                            )}
                         </div>
                       ))}
                     </div>
@@ -500,20 +476,39 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
             </div>
 
             {/* Blog Preview */}
-            <div className="bg-white px-2 rounded-r-xl border-gray-400 border overflow-auto h-full">
-              <h3 className="text-lg font-semibold my-3 text-center">
-                Preview
-              </h3>
-              <Blog blogData={blogData} />
+            <div className="bg-white rounded-lg border border-gray-200 overflow-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-4">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Preview
+                </h3>
+              </div>
+              <div className="p-4">
+                <Blog blogData={blogData} />
+              </div>
             </div>
           </div>
-          <SubmitButton
-            disabled={isSubmitting}
-            loadingtext="Saving..."
-            className="w-full bg-black text-white py-6 rounded text-sm font-semibold hover:bg-gray-800 transition"
-          >
-            {update ? "Update Blog Post" : "Create Blog Post"}
-          </SubmitButton>
+          
+          {/* Submit Button */}
+          <div className="flex gap-4 pt-4 border-t border-gray-200">
+            {onClose && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            )}
+            <SubmitButton
+              disabled={isSubmitting}
+              loadingtext="Saving..."
+              className="flex-1 bg-primary text-white py-3 rounded font-medium hover:bg-primary/90 transition"
+            >
+              {update ? "Update Blog Post" : "Create Blog Post"}
+            </SubmitButton>
+          </div>
         </form>
       )}
     </div>

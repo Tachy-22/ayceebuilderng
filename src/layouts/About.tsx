@@ -128,13 +128,13 @@ const About = () => {
               variants={fadeIn}
             >
               <div className="rounded-lg overflow-hidden shadow-xl">
-                <Image
+                <img
                   src="https://media.istockphoto.com/id/1178452628/photo/attractive-black-businessman-being-encouraged-by-diverse-multi-ethnic-group-of-coworkers.jpg?s=612x612&w=0&k=20&c=0CseKVV2CEx7jCgdfwpFwcNbnVfPpsF32EKVsyAB-ik="
                   alt="Aycee Builder Team"
                   width={600}
                   height={400}
                   className="w-full h-auto object-cover"
-               
+
                 />
               </div>
               <div className="absolute -z-10 -bottom-10 -right-10 w-64 h-64 bg-primary/10 rounded-full" />
@@ -524,7 +524,7 @@ const About = () => {
         </div>
       </section>
 
-    
+
 
       {/* CTA Section explore our */}
       <section className="py-16 md:py-24 bg-primary relative overflow-hidden">

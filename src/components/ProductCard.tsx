@@ -82,7 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     // Navigate to product detail page with search parameter
     router.push(
-      `/products/${product.id}?searchTitle=${encodedTitle}&sheet=${product.category}`
+      `/products/${product.id}?searchTitle=${encodedTitle}&category=${product.category}`
     );
   };
 

@@ -162,7 +162,7 @@ const Categories = ({
                   {categories.find((c) => c.id === selectedCategory)?.name}{" "}
                   Products
                 </h2>
-                <Link href={`/products?sheet=${selectedCategory}`}>
+                <Link href={`/products?category=${selectedCategory}`}>
                   <Button variant="ghost" className="gap-1">
                     View All
                     <ArrowRight size={16} />

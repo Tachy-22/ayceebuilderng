@@ -26,61 +26,142 @@ interface PageProps {
   searchParams: {
     page?: string;
     limit?: string;
-    sheet?: string;
+    category?: string;
     search?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    sortBy?: string;
+    sortDirection?: string;
+    inStock?: string;
+    sheet?:string
   };
 }
 
-// Define the API response type
-interface ProductResponse {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+// Define the Firebase API response type
+interface FirebaseProductResponse {
+  success: boolean;
   data: ProductNew[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+  filters: {
+    category?: string;
+    searchTerm?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: string;
+    sortDirection?: string;
+    inStock?: boolean;
+  };
 }
 
 const page = async ({ searchParams }: PageProps) => {
   // Get parameters from the URL or use defaults
   const currentPage = parseInt(searchParams.page || "1", 10);
   const limit = parseInt(searchParams.limit || "12", 10);
-  const sheet = searchParams.sheet || "all";
+  // Support both new 'category' parameter and legacy 'sheet' parameter for backward compatibility
+  const category = searchParams.category || searchParams.sheet || "all";
   const search = searchParams.search || "";
+  const minPrice = searchParams.minPrice || "";
+  const maxPrice = searchParams.maxPrice || "";
+  const sortBy = searchParams.sortBy || "createdAt";
+  const sortDirection = searchParams.sortDirection || "desc";
+  const inStock = searchParams.inStock || "";
 
-  // API URL for fetching products
-  const apiUrl =
-    "https://script.google.com/macros/s/AKfycbwT0TdiN9b9pa7ihupog_ztKDe9C3KK2BvGef4X_Zpy1W-pRJf7vupnqAXQB8cQuw-W/exec";
-
+  // Build API URL - use search endpoint if we have search term or filters
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const useSearchEndpoint = search || minPrice || maxPrice || inStock;
+  const apiPath = useSearchEndpoint ? '/api/products/search' : '/api/products';
+  
   // Build query string for the API request
-  let queryParams = `?page=${currentPage}&limit=${limit}&sheet=${sheet}`;
+  const queryParams = new URLSearchParams({
+    page: currentPage.toString(),
+    limit: limit.toString(),
+    category,
+    sortBy,
+    sortDirection
+  });
 
-  // Add search parameter if it exists
-  if (search) {
-    queryParams += `&search=${encodeURIComponent(search)}`;
+  // Add optional parameters
+  if (search) queryParams.append('search', search);
+  if (minPrice) queryParams.append('minPrice', minPrice);
+  if (maxPrice) queryParams.append('maxPrice', maxPrice);
+  if (inStock) queryParams.append('inStock', inStock);
+
+  const url = `${baseUrl}${apiPath}?${queryParams.toString()}`;
+  console.log('Fetching products from Firebase:', url);
+
+  try {
+    const res = await fetch(url, { 
+      next: { revalidate: 60 }, // Cache for 1 minute
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const response: FirebaseProductResponse = await res.json();
+
+    if (!response.success) {
+      console.error('API returned error:', response);
+      // Fallback to empty state
+      return (
+        <ProductsProvider products={[]}>
+          <ProductsPage
+            currentPage={currentPage}
+            limit={limit}
+            category={category}
+            search={search}
+            hasMore={false}
+            totalItems={0}
+            totalPages={1}
+          />
+        </ProductsProvider>
+      );
+    }
+
+    console.log(`Loaded ${response.data.length} products from Firebase`);
+
+    return (
+      <ProductsProvider products={response.data || []}>
+        <ProductsPage
+          currentPage={response.pagination.currentPage}
+          limit={response.pagination.itemsPerPage}
+          category={category}
+          search={search}
+          hasMore={response.pagination.hasNextPage}
+          totalItems={response.pagination.totalItems}
+          totalPages={response.pagination.totalPages}
+        />
+      </ProductsProvider>
+    );
+
+  } catch (error) {
+    console.error('Error fetching products from Firebase:', error);
+    
+    // Fallback to empty state on error
+    return (
+      <ProductsProvider products={[]}>
+        <ProductsPage
+          currentPage={currentPage}
+          limit={limit}
+          category={category}
+          search={search}
+          hasMore={false}
+          totalItems={0}
+          totalPages={1}
+        />
+      </ProductsProvider>
+    );
   }
-
-  const url = `${apiUrl}${queryParams}`;
-  console.log({url})
-  const res = await fetch(url, { next: { revalidate: 1 } });
-  const response: ProductResponse = await res.json();
-
-  // console.log(response);
-
-  return (
-    <ProductsProvider products={response.data || []}>
-      <ProductsPage
-        //  fetchedProducts={response.data || []}
-        apiUrl={apiUrl}
-        currentPage={currentPage}
-        limit={limit}
-        sheet={sheet}
-        search={search}
-        hasMore={currentPage < response.totalPages}
-        totalItems={response.total}
-        totalPages={response.totalPages}
-      />
-    </ProductsProvider>
-  );
 };
 
 export default page;

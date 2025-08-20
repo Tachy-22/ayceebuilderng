@@ -32,7 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import ProductCard from "@/components/ProductCard";
 import {
-  categories,
+  categories as staticCategories,
   Product,
   ProductNew,
   mapNewProductsToProducts,
@@ -52,7 +52,7 @@ interface ProductsPageProps {
   apiUrl?: string;
   currentPage?: number;
   limit?: number;
-  sheet?: string;
+  category?: string;
   search?: string;
   hasMore?: boolean;
   totalItems?: number; // New prop for total number of products
@@ -63,7 +63,7 @@ const ProductsPage = ({
   apiUrl = "",
   currentPage = 1,
   limit = 12,
-  sheet = "all",
+  category = "all",
   search = "",
   hasMore = false,
   totalItems = 0, // Default to 0 if not provided
@@ -83,6 +83,8 @@ const ProductsPage = ({
   const [mappedProducts, setMappedProducts] = useState<Product[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [pageInput, setPageInput] = useState<string>(currentPage.toString());
+  const [categories, setCategories] = useState(staticCategories); // Dynamic categories
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   // Use the totalPages from API instead of calculating it
   const [displayedTotalPages, setDisplayedTotalPages] = useState<number>(
@@ -95,6 +97,40 @@ const ProductsPage = ({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // Fetch categories from Firebase
+  const fetchCategories = async () => {
+    if (typeof window === 'undefined') return; // Only run on client side
+    
+    setLoadingCategories(true);
+    try {
+      const response = await fetch('/api/products/categories');
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Transform Firebase categories to match our expected format
+          const transformedCategories = data.data.map((cat: any) => ({
+            id: cat.id,
+            name: cat.name || cat.id.charAt(0).toUpperCase() + cat.id.slice(1),
+            icon: staticCategories.find(sc => sc.id === cat.id)?.icon || "📦",
+            itemCount: cat.count
+          }));
+          setCategories(transformedCategories);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      // Keep static categories as fallback
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  // Load categories from Firebase on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   // Listen for route changes to update action loading state
   useEffect(() => {
@@ -136,9 +172,9 @@ const ProductsPage = ({
     // Set search query from URL
     setSearchQuery(search);
 
-    // Set selected category from sheet parameter
-    if (sheet && sheet !== "all") {
-      setSelectedCategories([sheet]);
+    // Set selected category from category parameter
+    if (category && category !== "all") {
+      setSelectedCategories([category]);
     } else {
       setSelectedCategories([]);
     }
@@ -154,7 +190,7 @@ const ProductsPage = ({
     // Data has arrived, turn off loading states
     setActionLoading(false);
     setIsLoadingMore(false);
-  }, [search, sheet, currentPage, hasMore, fetchedProducts, totalPages]);
+  }, [search, category, currentPage, hasMore, fetchedProducts, totalPages]);
 
   // Map fetched products to the Product format
   useEffect(() => {
@@ -223,13 +259,13 @@ const ProductsPage = ({
     setActionLoading(true);
 
     // If this category is already selected, remove the filter (set to "all")
-    // Otherwise, set the sheet parameter to this category
-    const newSheet = selectedCategories.includes(categoryId)
+    // Otherwise, set the category parameter to this category
+    const newCategory = selectedCategories.includes(categoryId)
       ? "all"
       : categoryId;
 
     // Update selected categories for UI
-    setSelectedCategories(newSheet === "all" ? [] : [categoryId]);
+    setSelectedCategories(newCategory === "all" ? [] : [categoryId]);
 
     // Close the mobile filter drawer if it's open
     if (isMobileFilterOpen) {
@@ -240,7 +276,7 @@ const ProductsPage = ({
     // Update URL to fetch products for this category
     router.push(
       `${pathname}?${createQueryString({
-        sheet: newSheet,
+        category: newCategory,
         page: "1", // Reset to first page when changing category
       })}`
     );
@@ -265,7 +301,7 @@ const ProductsPage = ({
     // Reset URL parameters and fetch all products
     router.push(
       `${pathname}?${createQueryString({
-        sheet: "all",
+        category: "all",
         search: "",
         page: "1",
       })}`

@@ -262,10 +262,10 @@ export function FileInput({
           prev.map((f) =>
             f.file === fileData.file
               ? {
-                  ...f,
-                  url: data.secure_url,
-                  progress: 100,
-                }
+                ...f,
+                url: data.secure_url,
+                progress: 100,
+              }
               : f
           )
         );
@@ -322,9 +322,8 @@ export function FileInput({
   return (
     <div className="space-y-4">
       <div
-        className={` border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${className} ${
-          isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
-        }`}
+        className={` border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${className} ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+          }`}
         onClick={() => fileInputRef.current?.click()}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -362,13 +361,11 @@ export function FileInput({
                 {" "}
                 {isImageType(file.file.type) && file.url ? (
                   <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-50 relative">
-                    <Image
+                    <img
                       src={file.url}
                       alt={file.file.name}
-                      fill
                       sizes="64px"
                       className="object-cover"
-                      unoptimized
                     />
                   </div>
                 ) : (

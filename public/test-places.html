@@ -27,17 +27,12 @@
     <script>
         const API_KEY = 'AIzaSyDPWtEX75mkFeui4yBfIWEnOpso-32_dZk';
         let autocompleteService;
-        let placesService;
 
         function initMap() {
             console.log('Initializing Google Places...');
             
             if (window.google && window.google.maps && window.google.maps.places) {
                 autocompleteService = new google.maps.places.AutocompleteService();
-                
-                // Create a dummy div for PlacesService
-                const dummyDiv = document.createElement('div');
-                placesService = new google.maps.places.PlacesService(dummyDiv);
                 
                 document.getElementById('results').innerHTML = '<div class="result success">Google Places API loaded successfully!</div>';
                 console.log('Google Places initialized successfully');

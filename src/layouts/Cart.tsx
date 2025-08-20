@@ -24,12 +24,19 @@ import { Input } from "@/components/ui/input";
 
 
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { toast } from "@/hooks/use-toast";
 import { getPaystackConfig } from "@/lib/paystack";
+import { createOrder, updateUserProfile } from "@/lib/firestore";
+import { OrderItem, OrderStatus } from "@/types/order";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import GooglePlacesAutocomplete from "@/components/ui/GooglePlacesAutocomplete";
 import { geocodeAddress, calculateHaversineDistance } from "@/lib/googlePlaces";
+import { getAllStateNames, getCitiesForState, validateStateCity } from "@/lib/nigerianLocations";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Interface for place coordinates
 interface PlaceCoordinates {
@@ -55,7 +62,26 @@ const DownloadableReceipt = dynamic(
 );
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart, loading: cartLoading } = useCart();
+  const { settings } = useSettings();
+
+  // Wrapper functions to handle async cart operations
+  const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
+    try {
+      await updateQuantity(itemId, newQuantity);
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    }
+  };
+
+  const handleRemoveFromCart = async (itemId: string) => {
+    try {
+      await removeFromCart(itemId);
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+    }
+  };
+  const { user, userProfile } = useAuth();
   const [isLoaded, setIsLoaded] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
@@ -69,11 +95,11 @@ const Cart = () => {
   const [confirmedTotal, setConfirmedTotal] = useState(0);
   const [savedUsers, setSavedUsers] = useState<
     | {
-        name: string;
-        email: string;
-        address: string;
-        phone:string
-      }[]
+      name: string;
+      email: string;
+      address: string;
+      phone: string
+    }[]
     | []
   >([]);
   const [selectedUser, setSelectedUser] = useState<{
@@ -104,6 +130,16 @@ const Cart = () => {
     null
   );
   const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
+
+  // New state for address management
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
+  const [showQuickAddressForm, setShowQuickAddressForm] = useState(false);
+  const [quickAddressForm, setQuickAddressForm] = useState({
+    name: '',
+    street: '',
+    city: '',
+    state: ''
+  });
   const [productLocation, setProductLocation] = useState(
     "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja"
   );
@@ -225,6 +261,7 @@ const Cart = () => {
 
   // Handle Google Places selection
   const handlePlaceSelect = (place: PlaceCoordinates) => {
+    console.log('Place selected:', place);
     setAddressInput(place.address);
     setNewUserDetails({
       ...newUserDetails,
@@ -247,6 +284,12 @@ const Cart = () => {
 
   // Calculate the actual distance between product location and delivery address
   const calculateActualDistance = async () => {
+    console.log('calculateActualDistance called', {
+      selectedUser: selectedUser?.address,
+      productLocation,
+      selectedPlaceCoordinates
+    });
+
     if (!selectedUser?.address) {
       toast({
         variant: "destructive",
@@ -261,14 +304,20 @@ const Cart = () => {
     try {
       // Use selected place coordinates if available, otherwise geocode the address
       let userCoords: PlaceCoordinates | null = selectedPlaceCoordinates;
-      
+
+      console.log('User coordinates:', userCoords);
+
       if (!userCoords) {
+        console.log('No coordinates available, geocoding address:', selectedUser.address);
         // Fallback to geocoding if no coordinates available
         userCoords = await geocodeAddress(selectedUser.address);
+        console.log('Geocoded user coordinates:', userCoords);
       }
 
       // Geocode the product location
+      console.log('Geocoding product location:', productLocation);
       const productCoords = await geocodeAddress(productLocation);
+      console.log('Product coordinates:', productCoords);
 
       if (productCoords && userCoords) {
         // Calculate distance using Google Places coordinates
@@ -279,6 +328,8 @@ const Cart = () => {
           userCoords.lng
         );
 
+        console.log('Calculated distance:', distance);
+
         // Round to nearest integer
         const roundedDistance = Math.round(distance);
         setCalculatedDistance(roundedDistance);
@@ -286,11 +337,14 @@ const Cart = () => {
         // Update delivery distance for cost calculation
         setDeliveryDistance(roundedDistance);
 
+        console.log('Distance calculation complete:', roundedDistance);
+
         toast({
           title: "Distance calculated",
           description: `Delivery distance: ${roundedDistance} km.`,
         });
       } else {
+        console.error('Missing coordinates:', { productCoords, userCoords });
         throw new Error("Could not geocode addresses");
       }
     } catch (error) {
@@ -301,6 +355,10 @@ const Cart = () => {
         description:
           "Could not calculate the delivery distance. Using default estimate.",
       });
+
+      // Set a default distance to prevent cost calculation from breaking
+      setCalculatedDistance(10);
+      setDeliveryDistance(10);
     } finally {
       setIsCalculatingDistance(false);
     }
@@ -308,7 +366,16 @@ const Cart = () => {
 
   // Calculate delivery cost based on the new pricing structure with fixed values
   const calculateDeliveryCost = () => {
-    if (!selectedUser || calculatedDistance === null) return 0;
+    console.log('calculateDeliveryCost called', {
+      selectedAddress: !!selectedAddress,
+      calculatedDistance,
+      deliveryWeight
+    });
+
+    if (!selectedAddress || calculatedDistance === null) {
+      console.log('Delivery cost calculation skipped - using default shipping fee from settings');
+      return settings?.shippingFee || 1500; // Use default shipping fee from settings
+    }
 
     // Base fare
     const baseFare = 750;
@@ -345,16 +412,29 @@ const Cart = () => {
       waitTimeCost +
       weightCost;
 
-    // Service fee (7.5%)
-    const serviceFee = subtotalDeliveryCost * 0.075;
+    // Service fee (use tax rate from settings)
+    const serviceFee = subtotalDeliveryCost * ((settings?.taxRate || 7.5) / 100);
 
     // Total delivery cost
-    return subtotalDeliveryCost + serviceFee;
+    const totalCost = subtotalDeliveryCost + serviceFee;
+    console.log('Delivery cost calculated:', {
+      baseFare,
+      timeCost,
+      distanceCost,
+      surgeCost,
+      tollsCost,
+      waitTimeCost,
+      weightCost,
+      subtotalDeliveryCost,
+      serviceFee,
+      totalCost
+    });
+    return totalCost;
   };
 
   // Calculate delivery cost breakdown for display
   const getDeliveryBreakdown = () => {
-    if (!selectedUser || calculatedDistance === null) return null;
+    if (!selectedAddress || calculatedDistance === null) return null;
 
     const baseFare = 750;
     const estimatedTimeHours = Math.max(0.5, calculatedDistance * 0.0033);
@@ -385,7 +465,7 @@ const Cart = () => {
       tollsCost +
       waitTimeCost +
       weightCost;
-    const serviceFee = subtotalDeliveryCost * 0.075;
+    const serviceFee = subtotalDeliveryCost * ((settings?.taxRate || 7.5) / 100);
 
     return {
       baseFare,
@@ -424,9 +504,19 @@ const Cart = () => {
     return sum + price * item.quantity;
   }, 0);
 
-  const tax = subtotal * 0.075; // 7.5% VAT
+  const tax = subtotal * ((settings?.taxRate || 7.5) / 100); // VAT from settings
   const deliveryCost = calculateDeliveryCost();
   const total = subtotal + tax + deliveryCost - discountAmount;
+
+  console.log('Cart totals:', {
+    subtotal,
+    tax,
+    deliveryCost,
+    discountAmount,
+    total,
+    calculatedDistance,
+    selectedAddress: !!selectedAddress
+  });
 
   const applyPromoCode = () => {
     if (promoCode.toUpperCase() === "WELCOME10") {
@@ -450,7 +540,7 @@ const Cart = () => {
 
   const handlePaystackSuccess = async (reference: any) => {
     try {
-      if (selectedUser) {
+      if (selectedAddress && user && userProfile) {
         const itemsForReceipt = cartItems.map((item) => ({
           productName: item.product.name,
           unitPrice: item.product.discountPrice || item.product.price,
@@ -458,38 +548,107 @@ const Cart = () => {
           color: item.color,
         }));
 
+        // Create order items for Firestore
+        const orderItems: OrderItem[] = cartItems.map((item) => ({
+          productId: item.product.id,
+          name: item.product.name,
+          quantity: item.quantity,
+          price: item.product.discountPrice || item.product.price,
+          image: item.product.image,
+          category: item.product.category,
+          vendor: item.product.vendor?.name,
+        }));
+
+        // Use the selected address for shipping
+        const shippingAddress = {
+          id: selectedAddress.id,
+          type: selectedAddress.type,
+          name: selectedAddress.name,
+          street: selectedAddress.street,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          country: selectedAddress.country || 'Nigeria',
+          phone: selectedAddress.phone || userProfile.phone,
+          isDefault: selectedAddress.isDefault,
+        };
+
+        // Create order in Firestore
+        try {
+          const order = await createOrder({
+            userId: user.uid,
+            orderNumber: '', // Will be generated automatically
+            status: 'confirmed' as OrderStatus,
+            items: orderItems,
+            totalAmount: total,
+            shippingAddress,
+            notes: `Payment Reference: ${reference.reference}`,
+          });
+
+          console.log('Order created:', order);
+        } catch (firestoreError) {
+          console.error('Error creating order in Firestore:', firestoreError);
+          // Continue with the original flow even if Firestore fails
+        }
+
+        // Continue with original payment flow
         const res = await fetch("/api/paystack", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            reference: reference.reference, // Extract the reference string
+            reference: reference.reference,
             user: {
-              email: selectedUser.email,
-              name: selectedUser.name,
-              address: selectedUser.address,
-              phone: selectedUser?.phone || "",
+              email: user.email,
+              name: userProfile.name,
+              address: selectedAddress.street,
+              phone: selectedAddress.phone || userProfile.phone || "",
             },
             items: itemsForReceipt,
             totalAmount: total,
-            location: selectedUser.address,
+            location: selectedAddress.street,
             transportFare: deliveryCost,
             distance: deliveryDistance,
             weight: deliveryWeight,
           }),
         });
-
+        console.log({ res })
         if (res.ok) {
-          console.log({ res });
-          setOrderReference(reference.reference); // Store just the reference string
-          // Save items and total for the receipt before clearing cart
+          console.log('Payment verification successful:', { res });
+          setOrderReference(reference.reference);
           setConfirmedItems(itemsForReceipt);
           setConfirmedTotal(total);
           clearCart();
           setPaymentConfirmed(true);
+
+          // Show success message
+          toast({
+            title: "Order placed successfully!",
+            description: "Your order has been created and you can track it in your dashboard.",
+          });
+        } else {
+          console.error('Payment verification failed:', res.status, res.statusText);
+          const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+          console.error('Error details:', errorData);
+
+          toast({
+            variant: "destructive",
+            title: "Payment verification failed",
+            description: errorData.error || "Please contact support if payment was deducted.",
+          });
         }
+      } else if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please log in to place an order.",
+        });
       }
     } catch (error) {
-      console.error("Error sending payment data:", error);
+      console.error("Error processing order:", error);
+      toast({
+        variant: "destructive",
+        title: "Order failed",
+        description: error instanceof Error ? error.message : "There was an error processing your order. Please try again.",
+      });
     }
   };
 
@@ -515,9 +674,9 @@ const Cart = () => {
     localStorage.setItem("savedUsers", JSON.stringify(updatedUsers));
     setShowUserForm(false);
     setSelectedUser(newUserDetails);
-    // Reset address input when user is saved
+    // Reset address input when user is saved, but keep coordinates for this session
     setAddressInput("");
-    setSelectedPlaceCoordinates(null);
+    // Don't reset selectedPlaceCoordinates here since we want to use them for distance calculation
   };
 
   const handleSelectUser = (user: any) => {
@@ -530,14 +689,142 @@ const Cart = () => {
     setSelectedPlaceCoordinates(null);
   };
 
-  // Effect to auto-calculate distance when a user is selected
+  // Effect to auto-calculate distance when a user is selected or coordinates change (legacy system)
   useEffect(() => {
     if (selectedUser && selectedUser.address && productLocation) {
+      console.log('Auto-calculating distance due to useEffect (legacy)');
       calculateActualDistance();
     }
-  }, [selectedUser, productLocation]);
+  }, [selectedUser, productLocation, selectedPlaceCoordinates]);
 
-  // Function to remove a saved user
+  // Effect to auto-calculate distance when address is selected (new system)
+  useEffect(() => {
+    if (selectedAddress && selectedAddress.street && productLocation) {
+      console.log('Auto-calculating distance for selected address');
+      calculateAddressDistance(selectedAddress.street);
+    }
+  }, [selectedAddress, productLocation]);
+
+  // New address management functions
+  const handleAddressSelect = (address: any) => {
+    setSelectedAddress(address);
+    setCalculatedDistance(null);
+    // Auto-calculate distance when address is selected
+    if (address.street && productLocation) {
+      calculateAddressDistance(address.street);
+    }
+  };
+
+  const calculateAddressDistance = async (addressStr: string) => {
+    try {
+      setIsCalculatingDistance(true);
+      // Use geocoding first, then calculate distance
+      const originCoords = await geocodeAddress(productLocation);
+      const destCoords = await geocodeAddress(addressStr);
+
+      if (originCoords && destCoords) {
+        const distance = calculateHaversineDistance(
+          originCoords.lat,
+          originCoords.lng,
+          destCoords.lat,
+          destCoords.lng
+        );
+        setCalculatedDistance(distance);
+      } else {
+        setCalculatedDistance(10); // fallback distance
+      }
+    } catch (error) {
+      console.error('Error calculating distance:', error);
+      setCalculatedDistance(10); // fallback distance
+    } finally {
+      setIsCalculatingDistance(false);
+    }
+  };
+
+  const handleQuickAddressSave = async () => {
+    if (!user || !userProfile) return;
+
+    // Validate all fields are filled
+    if (!quickAddressForm.name.trim() || !quickAddressForm.street.trim() || 
+        !quickAddressForm.city.trim() || !quickAddressForm.state.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Incomplete address",
+        description: "Please fill in all address fields.",
+      });
+      return;
+    }
+
+    // Validate state-city combination
+    if (!validateStateCity(quickAddressForm.state, quickAddressForm.city)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid location",
+        description: `${quickAddressForm.city} is not a valid city in ${quickAddressForm.state} state.`,
+      });
+      return;
+    }
+
+    // Basic validation for street address
+    if (quickAddressForm.street.trim().length < 10) {
+      toast({
+        variant: "destructive",
+        title: "Invalid street address",
+        description: "Please enter a complete street address (minimum 10 characters).",
+      });
+      return;
+    }
+
+    try {
+      const newAddress = {
+        id: Date.now().toString(),
+        type: 'other' as const,
+        name: quickAddressForm.name,
+        street: quickAddressForm.street,
+        city: quickAddressForm.city,
+        state: quickAddressForm.state,
+        country: 'Nigeria',
+        isDefault: false,
+      };
+
+      const updatedAddresses = [...(userProfile.addresses || []), newAddress];
+
+      await updateUserProfile(user.uid, {
+        addresses: updatedAddresses,
+      });
+
+      setSelectedAddress(newAddress);
+      setShowQuickAddressForm(false);
+      setQuickAddressForm({ name: '', street: '', city: '', state: '' });
+
+      toast({
+        title: "Address saved",
+        description: "Your new address has been added and selected for delivery.",
+      });
+
+      // Calculate distance for the new address
+      if (newAddress.street && productLocation) {
+        calculateAddressDistance(`${newAddress.street}, ${newAddress.city}, ${newAddress.state}, Nigeria`);
+      }
+    } catch (error) {
+      console.error('Error saving address:', error);
+      toast({
+        variant: "destructive",
+        title: "Error saving address",
+        description: "Please try again.",
+      });
+    }
+  };
+
+  // Auto-select default address when user profile loads
+  useEffect(() => {
+    if (userProfile && userProfile.addresses && userProfile.addresses.length > 0 && !selectedAddress) {
+      const defaultAddress = userProfile.addresses.find(addr => addr.isDefault) || userProfile.addresses[0];
+      handleAddressSelect(defaultAddress);
+    }
+  }, [userProfile]);
+
+  // Function to remove a saved user (keeping for backward compatibility)
   const handleRemoveUser = (email: string) => {
     const updatedUsers = savedUsers.filter((user) => user.email !== email);
     setSavedUsers(updatedUsers);
@@ -555,7 +842,11 @@ const Cart = () => {
     });
   };
 
-  const config = getPaystackConfig(selectedUser?.email as string, total * 100);
+  const config = getPaystackConfig(
+    selectedUser?.email || user?.email as string,
+    total * 100,
+    settings?.paystackPublicKey
+  );
 
   // Animation variants
   const containerVariants = {
@@ -619,9 +910,8 @@ const Cart = () => {
         </div>
 
         <motion.div
-          className={`container mx-auto px-4 py-10 transition-opacity duration-500 ${
-            isLoaded ? "opacity-100" : "opacity-0"
-          }`}
+          className={`container mx-auto px-4 py-10 transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"
+            }`}
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -700,11 +990,10 @@ const Cart = () => {
                               </div>
                               <div>
                                 <Link
-                                  href={`/products/${
-                                    item.product.id
-                                  }?searchTitle=${encodeURIComponent(
-                                    item.product.name
-                                  )}`}
+                                  href={`/products/${item.product.id
+                                    }?searchTitle=${encodeURIComponent(
+                                      item.product.name
+                                    )}`}
                                   className="font-medium hover:text-primary"
                                 >
                                   {" "}
@@ -762,7 +1051,7 @@ const Cart = () => {
                                 size="icon"
                                 className="h-8 w-8 rounded-none"
                                 onClick={() =>
-                                  updateQuantity(item.id, item.quantity - 1)
+                                  handleUpdateQuantity(item.id, item.quantity - 1)
                                 }
                                 disabled={item.quantity <= 1}
                               >
@@ -773,7 +1062,7 @@ const Cart = () => {
                                 min="1"
                                 value={item.quantity}
                                 onChange={(e) =>
-                                  updateQuantity(
+                                  handleUpdateQuantity(
                                     item.id,
                                     parseInt(e.target.value) || 1
                                   )
@@ -785,7 +1074,7 @@ const Cart = () => {
                                 size="icon"
                                 className="h-8 w-8 rounded-none"
                                 onClick={() =>
-                                  updateQuantity(item.id, item.quantity + 1)
+                                  handleUpdateQuantity(item.id, item.quantity + 1)
                                 }
                               >
                                 <Plus size={14} />
@@ -805,7 +1094,7 @@ const Cart = () => {
                               variant="ghost"
                               size="sm"
                               className="h-7 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => removeFromCart(item.id)}
+                              onClick={() => handleRemoveFromCart(item.id)}
                             >
                               <Trash2 size={14} className="mr-1" />
                               Remove
@@ -860,217 +1149,226 @@ const Cart = () => {
                       </div>
                     )}
 
-                    {/* Delivery Options */}
+                    {/* Delivery Options - New Clean Design */}
                     <div className="pt-3 pb-1 border-t">
                       <h3 className="font-medium mb-2">Delivery Information</h3>
 
-                      <div className="space-y-3">
-                        {/* Updated User Selection UI - Modified logic to handle empty savedUsers */}
-                        {savedUsers.length > 0 &&
-                        (showAddressSelection ||
-                          (!selectedUser && !showUserForm)) ? (
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <Label className="text-sm font-medium">
-                                {selectedUser
-                                  ? "Change delivery address"
-                                  : "Select a saved address"}
-                              </Label>
-                              <Button
-                                variant="link"
-                                className="text-xs p-0 h-auto"
-                                onClick={() => {
-                                  setSelectedUser(null);
-                                  setShowUserForm(true);
-                                  setShowAddressSelection(false);
-                                }}
-                              >
-                                Add new
-                              </Button>
-                            </div>
+                      {userProfile ? (
+                        <div className="space-y-3">
+                          {/* User Info Display */}
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <div className="text-sm font-medium">{userProfile.name}</div>
+                            <div className="text-sm text-gray-600">{user?.email}</div>
+                            {userProfile.phone && (
+                              <div className="text-sm text-gray-600">{userProfile.phone}</div>
+                            )}
+                          </div>
 
-                            {/* User Cards */}
-                            <div className="spangce-y-3">
-                              {savedUsers.map((user, idx) => (
-                                <div
-                                  key={idx}
-                                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                                    selectedUser &&
-                                    selectedUser.email === user.email
+                          {/* Address Selection */}
+                          {userProfile.addresses && userProfile.addresses.length > 0 ? (
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <Label className="text-sm font-medium">Delivery Address</Label>
+                                <Link href="/dashboard/profile">
+                                  <Button variant="link" className="text-xs p-0 h-auto">
+                                    Manage addresses
+                                  </Button>
+                                </Link>
+                              </div>
+
+                              <div className="space-y-2">
+                                {userProfile.addresses.map((address) => (
+                                  <div
+                                    key={address.id}
+                                    className={`p-3 border rounded-lg cursor-pointer transition-all ${selectedAddress?.id === address.id
                                       ? "border-primary bg-primary/5"
                                       : "hover:border-gray-400"
-                                  }`}
-                                  onClick={() => handleSelectUser(user)}
-                                >
-                                  <div className="flex justify-between">
-                                    <div className="font-medium">
-                                      {user.name}
+                                      }`}
+                                    onClick={() => handleAddressSelect(address)}
+                                  >
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex-1">
+                                        <div className="flex items-center space-x-2">
+                                          <span className="font-medium text-sm">{address.name}</span>
+                                          <Badge variant={address.type === 'home' ? 'default' : 'secondary'} className="text-xs">
+                                            {address.type}
+                                          </Badge>
+                                          {address.isDefault && (
+                                            <Badge variant="outline" className="text-xs">Default</Badge>
+                                          )}
+                                        </div>
+                                        <div className="text-sm text-gray-600 mt-1">
+                                          {address.street}
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                          {address.city}, {address.state}
+                                        </div>
+                                        {address.phone && (
+                                          <div className="text-xs text-gray-500 mt-1">
+                                            📞 {address.phone}
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
+
+                                    {selectedAddress?.id === address.id && calculatedDistance !== null && (
+                                      <div className="mt-2 pt-2 border-t border-gray-200">
+                                        <div className="flex items-center text-sm text-primary">
+                                          <Truck size={14} className="mr-1" />
+                                          <span>Distance: {calculatedDistance.toFixed()} km</span>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Quick Add Address Option */}
+                              <div
+                                className="p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary transition-colors"
+                                onClick={() => setShowQuickAddressForm(true)}
+                              >
+                                <div className="flex items-center justify-center space-x-2 text-gray-600">
+                                  <Plus size={16} />
+                                  <span className="text-sm">Add new delivery address</span>
+                                </div>
+                              </div>
+
+                              {/* Quick Address Form */}
+                              {showQuickAddressForm && (
+                                <div className="border border-primary/20 rounded-lg p-4 bg-primary/5">
+                                  <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-medium text-sm">Add New Address</h4>
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleRemoveUser(user.email);
+                                      onClick={() => {
+                                        setShowQuickAddressForm(false);
+                                        setQuickAddressForm({ name: '', street: '', city: '', state: '' });
                                       }}
                                     >
-                                      <UserX size={14} />
+                                      <X className="h-4 w-4" />
                                     </Button>
-                                  </div>{" "}
-                                  <div className="text-sm text-muted-foreground">
-                                    {user.email}
                                   </div>
-                                  {user.phone && (
-                                    <div className="text-sm text-muted-foreground">
-                                      {user.phone}
-                                    </div>
-                                  )}
-                                  <div className="text-sm mt-1 break-words">
-                                    {user.address}
-                                  </div>
-                                  {selectedUser &&
-                                    selectedUser.email === user.email &&
-                                    calculatedDistance !== null && (
-                                      <div className="mt-2 text-sm flex items-center text-primary">
-                                        <Truck size={14} className="mr-1" />
-                                        <span>
-                                          Distance: {calculatedDistance} km
-                                        </span>
+
+                                  <div className="space-y-3">
+                                    <Input
+                                      placeholder="Address label (e.g., Home, Office)"
+                                      value={quickAddressForm.name}
+                                      onChange={(e) => setQuickAddressForm(prev => ({ ...prev, name: e.target.value }))}
+                                    />
+                                    <GooglePlacesAutocomplete
+                                      value={quickAddressForm.street}
+                                      onChange={(value) => setQuickAddressForm(prev => ({ ...prev, street: value }))}
+                                      onPlaceSelect={(place) => {
+                                        // Validate address before accepting it
+                                        if (!place.address || place.address.trim().length < 10) {
+                                          toast({
+                                            variant: "destructive",
+                                            title: "Invalid address",
+                                            description: "Please enter a complete, valid address in Nigeria (e.g., '123 Allen Avenue, Ikeja, Lagos').",
+                                          });
+                                          return;
+                                        }
+                                        
+                                        const addressStr = place.address || place.formatted_address || place.name || '';
+                                        setQuickAddressForm(prev => ({ ...prev, street: addressStr }));
+                                        setSelectedPlaceCoordinates({
+                                          lat: place.lat,
+                                          lng: place.lng,
+                                          address: addressStr,
+                                          placeId: place.placeId
+                                        });
+                                        
+                                        toast({
+                                          title: "Address validated",
+                                          description: "Valid address selected for delivery.",
+                                        });
+                                      }}
+                                      placeholder="Start typing your address"
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <Select
+                                          value={quickAddressForm.state}
+                                          onValueChange={(value) => setQuickAddressForm(prev => ({ ...prev, state: value, city: '' }))}
+                                        >
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Select State" />
+                                          </SelectTrigger>
+                                          <SelectContent className="max-h-48 overflow-y-auto">
+                                            {getAllStateNames().map((state) => (
+                                              <SelectItem key={state} value={state}>
+                                                {state}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
                                       </div>
-                                    )}
+                                      <div>
+                                        <Select
+                                          value={quickAddressForm.city}
+                                          onValueChange={(value) => setQuickAddressForm(prev => ({ ...prev, city: value }))}
+                                          disabled={!quickAddressForm.state}
+                                        >
+                                          <SelectTrigger>
+                                            <SelectValue placeholder={quickAddressForm.state ? "Select City" : "Select State first"} />
+                                          </SelectTrigger>
+                                          <SelectContent className="max-h-48 overflow-y-auto">
+                                            {quickAddressForm.state && getCitiesForState(quickAddressForm.state).map((city) => (
+                                              <SelectItem key={city} value={city}>
+                                                {city}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+                                    <Button
+                                      className="w-full"
+                                      onClick={handleQuickAddressSave}
+                                      disabled={!quickAddressForm.name || !quickAddressForm.street || !quickAddressForm.city || !quickAddressForm.state}
+                                    >
+                                      Save & Select Address
+                                    </Button>
+                                  </div>
                                 </div>
-                              ))}
+                              )}
                             </div>
-                          </div>
-                        ) : showUserForm || savedUsers.length === 0 ? (
-                          // User form - shown by default if no saved users
-                          <div className="flex flex-col gap-4">
-                            {savedUsers.length > 0 && (
-                              <div className="flex justify-end">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setShowUserForm(false);
-                                    setNewUserDetails({
-                                      name: "",
-                                      email: "",
-                                      address: "",
-                                      phone: "",
-                                    });
-                                    setAddressInput("");
-                                    setSelectedPlaceCoordinates(null);
-                                  }}
-                                >
-                                  <X className="h-4 w-4" />
+                          ) : (
+                            <div className="text-center py-6">
+                              <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                              <p className="text-sm text-gray-600 mb-3">No delivery addresses saved</p>
+                              <Link href="/dashboard/profile">
+                                <Button variant="outline" size="sm">
+                                  Add Address in Profile
                                 </Button>
-                              </div>
-                            )}
-                            <Label className="text-sm font-medium">
-                              {savedUsers.length === 0
-                                ? "Enter delivery details"
-                                : "Enter user details"}
-                            </Label>
-                            <div className="space-y-2">
-                              <Label className="text-black/80">Name</Label>
-                              <Input
-                                placeholder="Jane Doe"
-                                value={newUserDetails.name}
-                                onChange={(e) =>
-                                  setNewUserDetails({
-                                    ...newUserDetails,
-                                    name: e.target.value,
-                                  })
-                                }
-                              />{" "}
-                              <Label className="text-black/80">Email</Label>
-                              <Input
-                                placeholder="janedoe@gmail.com"
-                                value={newUserDetails.email}
-                                onChange={(e) =>
-                                  setNewUserDetails({
-                                    ...newUserDetails,
-                                    email: e.target.value,
-                                  })
-                                }
-                              />
-                              <Label className="text-black/80">
-                                Phone Number
-                              </Label>
-                              <Input
-                                placeholder="+234 800 123 4567"
-                                value={newUserDetails.phone}
-                                onChange={(e) =>
-                                  setNewUserDetails({
-                                    ...newUserDetails,
-                                    phone: e.target.value,
-                                  })
-                                }
-                              />
-                              <GooglePlacesAutocomplete
-                                value={addressInput}
-                                onChange={setAddressInput}
-                                onPlaceSelect={handlePlaceSelect}
-                                label="Address"
-                                placeholder="Start typing your address in Nigeria"
-                              />
+                              </Link>
                             </div>
-                            <Button
-                              className="mt-3 w-full"
-                              onClick={handleSaveNewUser}
-                            >
-                              Save User
+                          )}
+
+                          {/* Distance Calculation Status */}
+                          {selectedAddress && isCalculatingDistance && (
+                            <div className="flex items-center justify-center text-sm text-gray-600 py-2">
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Calculating delivery distance...
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          <UserX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                          <p className="text-sm text-gray-600 mb-3">Complete your profile to continue</p>
+                          <Link href="/dashboard/profile">
+                            <Button size="sm">
+                              Complete Profile
                             </Button>
-                          </div>
-                        ) : selectedUser ? (
-                          // Selected address with change button
-                          <div className="mt-2 bg-secondary/10 p-3 rounded-lg">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="font-medium">
-                                Delivery Address
-                              </span>
-                              <Button
-                                variant="link"
-                                className="text-xs p-0 h-auto"
-                                onClick={() => setShowAddressSelection(true)}
-                              >
-                                Change address
-                              </Button>
-                            </div>{" "}
-                            <div className="text-sm font-medium">
-                              {selectedUser.name}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {selectedUser.email}
-                            </div>
-                            {selectedUser.phone && (
-                              <div className="text-sm text-muted-foreground">
-                                {selectedUser.phone}
-                              </div>
-                            )}
-                            <div className="text-sm mt-1 break-words">
-                              {selectedUser.address}
-                            </div>
-                            {isCalculatingDistance ? (
-                              <div className="flex items-center text-sm mt-2 text-muted-foreground">
-                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                Calculating delivery distance...
-                              </div>
-                            ) : calculatedDistance !== null ? (
-                              <div className="flex items-center text-sm mt-2 text-primary">
-                                <Truck size={14} className="mr-1" />
-                                <span>
-                                  Estimated distance: {calculatedDistance} km
-                                </span>
-                              </div>
-                            ) : null}
-                          </div>
-                        ) : null}
-                      </div>
+                          </Link>
+                        </div>
+                      )}
                     </div>
 
-                    {calculatedDistance !== null && (
+                    {selectedAddress && (
                       <div className="border-t pt-3">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-muted-foreground font-medium">
@@ -1096,7 +1394,7 @@ const Cart = () => {
                                       </div>
                                       <div className="flex justify-between">
                                         <span>
-                                          Distance ({calculatedDistance}km):
+                                          Distance ({calculatedDistance?.toFixed()}km):
                                         </span>
                                         <span>
                                           ₦
@@ -1175,25 +1473,44 @@ const Cart = () => {
                           )}
                         </div>
 
-                        {getDeliveryBreakdown() && (
-                          <div className="text-sm space-y-1.5">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">
-                                Distance
-                              </span>
-                              <span>{calculatedDistance} km</span>
+                        {calculatedDistance !== null ? (
+                          getDeliveryBreakdown() && (
+                            <div className="text-sm space-y-1.5">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Distance
+                                </span>
+                                <span>{calculatedDistance.toFixed()} km</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Weight
+                                </span>
+                                <span>{deliveryWeight} kg</span>
+                              </div>
+                              <div className="flex justify-between font-medium">
+                                <span className="text-muted-foreground">
+                                  Delivery Fee
+                                </span>
+                                <span>₦{deliveryCost.toLocaleString()}</span>
+                              </div>
                             </div>
+                          )
+                        ) : (
+                          <div className="text-sm space-y-2">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">
-                                Weight
-                              </span>
+                              <span className="text-muted-foreground">Weight</span>
                               <span>{deliveryWeight} kg</span>
                             </div>
-                            <div className="flex justify-between font-medium">
-                              <span className="text-muted-foreground">
-                                Delivery Fee
-                              </span>
-                              <span>₦{deliveryCost.toLocaleString()}</span>
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                              <p className="text-xs text-yellow-800">
+                                📍 Distance calculation needed for accurate delivery cost.
+                                Click &quot;Calculate Delivery Distance&quot; above.
+                              </p>
+                            </div>
+                            <div className="flex justify-between font-medium text-muted-foreground">
+                              <span>Delivery Fee</span>
+                              <span>Calculating...</span>
                             </div>
                           </div>
                         )}
@@ -1221,11 +1538,10 @@ const Cart = () => {
                         variant="outline"
                         disabled={!promoCode || promoApplied}
                         onClick={applyPromoCode}
-                        className={`${
-                          promoApplied
-                            ? "bg-green-500 text-white cursor-not-allowed"
-                            : "bg-primary text-white"
-                        } px-4 py-2 rounded-xl shadow hover:bg-primary/80 transition-all `}
+                        className={`${promoApplied
+                          ? "bg-green-500 text-white cursor-not-allowed"
+                          : "bg-primary text-white"
+                          } px-4 py-2 rounded-xl shadow hover:bg-primary/80 transition-all `}
                       >
                         Apply
                       </Button>
@@ -1245,14 +1561,48 @@ const Cart = () => {
                       </Button>
                     </Link>
 
-                    <PaystackButton
-                      text="Proceed to Checkout"
-                      disabled={!selectedUser}
-                      className="w-full bg-primary text-white px-4 py-2 rounded-xl shadow hover:bg-primary/80 transition-all"
-                      {...config}
-                      onSuccess={handlePaystackSuccess}
-                      onClose={handlePaystackClose}
-                    />
+                    {!user ? (
+                      <div className="space-y-3">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-2">
+                            <UserX className="h-5 w-5 text-yellow-600" />
+                            <p className="text-sm text-yellow-800">
+                              Please sign in to place an order
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Link href="/login" className="flex-1">
+                            <Button variant="outline" className="w-full">
+                              Sign In
+                            </Button>
+                          </Link>
+                          <Link href="/register" className="flex-1">
+                            <Button className="w-full">
+                              Sign Up
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <PaystackButton
+                        text={
+                          !selectedAddress
+                            ? "Select delivery address to proceed"
+                            : calculatedDistance === null
+                              ? "Calculate delivery distance to proceed"
+                              : "Proceed to Checkout"
+                        }
+                        disabled={!selectedAddress || calculatedDistance === null}
+                        className={`w-full px-4 py-2 rounded-xl shadow transition-all ${!selectedAddress || calculatedDistance === null
+                          ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                          : "bg-primary text-white hover:bg-primary/80"
+                          }`}
+                        {...config}
+                        onSuccess={handlePaystackSuccess}
+                        onClose={handlePaystackClose}
+                      />
+                    )}
 
                     <div className="mt-4 text-xs text-center text-muted-foreground">
                       By proceeding, you agree to our Terms of Service and

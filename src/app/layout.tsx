@@ -4,8 +4,10 @@ import "./globals.css";
 import "./animations.css";
 import Providers from "./providers";
 import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 import Script from "next/script";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -79,13 +81,15 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={inter.className}>
-        <Providers>
-          <div className="overflow-x-hidden">
-            <Navbar />
-            {children}
-            <Footer />
-          </div>
-        </Providers>
+        <AuthProvider>
+          <SettingsProvider>
+            <Providers>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </Providers>
+          </SettingsProvider>
+        </AuthProvider>
       </body>
     </html>
   );

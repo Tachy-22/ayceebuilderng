@@ -2,8 +2,18 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { Product } from "@/data/products";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "./AuthContext";
+import {
+  addToCart as addToFirebaseCart,
+  removeFromCart as removeFromFirebaseCart,
+  updateCartItemQuantity,
+  clearUserCart,
+  subscribeToUserCart,
+  mergeGuestCartWithUserCart,
+  CartItem as FirebaseCartItem
+} from "@/lib/cart";
 
-type CartItem = {
+type LocalCartItem = {
   id: string;
   product: Product;
   quantity: number;
@@ -11,23 +21,25 @@ type CartItem = {
 };
 
 interface CartContextType {
-  cartItems: CartItem[];
+  cartItems: LocalCartItem[];
   addToCart: (product: Product, quantity: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   getCartTotal: () => number;
   getItemCount: () => number;
+  loading: boolean;
 }
 
 const CartContext = createContext<CartContextType>({
   cartItems: [],
-  addToCart: () => {},
-  removeFromCart: () => {},
-  updateQuantity: () => {},
-  clearCart: () => {},
+  addToCart: () => { },
+  removeFromCart: () => { },
+  updateQuantity: () => { },
+  clearCart: () => { },
   getCartTotal: () => 0,
   getItemCount: () => 0,
+  loading: false,
 });
 
 export const useCart = () => useContext(CartContext);
@@ -35,106 +47,218 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { user } = useAuth();
+  const [cartItems, setCartItems] = useState<LocalCartItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Load cart from localStorage on initial render
-  useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      try {
-        setCartItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error("Error parsing cart from localStorage:", error);
-        localStorage.removeItem("cart");
-      }
-    }
-  }, []);
-
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
-  // Add product to cart
-  const addToCart = (product: Product, quantity: number) => {
-    setCartItems((prevItems) => {
-      // Check if product has a selected color
-      const productColor = product.selectedColor || null;
-
-      // Create a unique ID for the cart item - include color in the ID if present
-      const cartItemId = productColor
-        ? `${product.id}-${productColor}`
-        : product.id;
-
-      // Check if the product with the same color is already in the cart
-      const existingItemIndex = prevItems.findIndex(
-        (item) => item.id === cartItemId
-      );
-
-      if (existingItemIndex !== -1) {
-        // If the item exists, update its quantity
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += quantity;
-
-        toast({
-          title: "Cart updated",
-          description: `${product.name} ${
-            productColor ? `(${productColor})` : ""
-          } quantity updated in your cart`,
-        });
-
-        return updatedItems;
-      } else {
-        // Otherwise, add a new item
-        toast({
-          title: "Added to cart",
-          description: `${product.name} ${
-            productColor ? `(${productColor})` : ""
-          } has been added to your cart`,
-        });
-
-        return [
-          ...prevItems,
-          {
-            id: cartItemId,
-            product,
-            quantity,
-            color: productColor || undefined,
-          },
-        ];
-      }
-    });
+  // Convert Firebase cart item to local cart item format
+  const convertFirebaseToLocal = (firebaseItem: FirebaseCartItem): LocalCartItem => {
+    return {
+      id: firebaseItem.id,
+      product: firebaseItem.product,
+      quantity: firebaseItem.quantity,
+      color: firebaseItem.color,
+    };
   };
 
-  const removeFromCart = (id: string) => {
-    setCartItems((prevItems) => {
-      const item = prevItems.find((item) => item.id === id);
+  // Load cart from localStorage for guest users or Firebase for authenticated users
+  useEffect(() => {
+    if (user) {
+      // User is authenticated - load from Firebase and subscribe to changes
+      setLoading(true);
+
+      const unsubscribe = subscribeToUserCart(user.uid, (firebaseCartItems) => {
+        const localCartItems = firebaseCartItems.map(convertFirebaseToLocal);
+        setCartItems(localCartItems);
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    } else {
+      // Guest user - load from localStorage
+      const savedCart = localStorage.getItem("guestCart");
+      if (savedCart) {
+        try {
+          setCartItems(JSON.parse(savedCart));
+        } catch (error) {
+          console.error("Error parsing guest cart from localStorage:", error);
+          localStorage.removeItem("guestCart");
+        }
+      }
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Handle user login - merge guest cart with user cart
+  useEffect(() => {
+    const handleUserLogin = async () => {
+      if (user && cartItems.length > 0) {
+        const guestCart = localStorage.getItem("guestCart");
+        if (guestCart) {
+          try {
+            const guestCartItems = JSON.parse(guestCart);
+            if (guestCartItems.length > 0) {
+              await mergeGuestCartWithUserCart(user.uid, guestCartItems);
+              localStorage.removeItem("guestCart");
+              toast({
+                title: "Cart merged",
+                description: "Your guest cart has been merged with your account.",
+              });
+            }
+          } catch (error) {
+            console.error("Error merging guest cart:", error);
+          }
+        }
+      }
+    };
+
+    handleUserLogin();
+  }, [user]);
+
+  // Save guest cart to localStorage when user is not authenticated
+  useEffect(() => {
+    if (!user && cartItems.length > 0) {
+      localStorage.setItem("guestCart", JSON.stringify(cartItems));
+    }
+  }, [cartItems, user]);
+  // Add product to cart
+  const addToCart = async (product: Product, quantity: number) => {
+    const productColor = product.selectedColor || undefined;
+
+    try {
+      if (user) {
+        // User is authenticated - add to Firebase
+        await addToFirebaseCart(user.uid, product, quantity, productColor);
+        toast({
+          title: "Added to cart",
+          description: `${product.name} ${productColor ? `(${productColor})` : ""} has been added to your cart`,
+        });
+      } else {
+        // Guest user - add to local state
+        setCartItems((prevItems) => {
+          const cartItemId = productColor
+            ? `${product.id}-${productColor}`
+            : product.id;
+
+          const existingItemIndex = prevItems.findIndex(
+            (item) => item.id === cartItemId
+          );
+
+          if (existingItemIndex !== -1) {
+            const updatedItems = [...prevItems];
+            updatedItems[existingItemIndex].quantity += quantity;
+
+            toast({
+              title: "Cart updated",
+              description: `${product.name} ${productColor ? `(${productColor})` : ""} quantity updated in your cart`,
+            });
+
+            return updatedItems;
+          } else {
+            toast({
+              title: "Added to cart",
+              description: `${product.name} ${productColor ? `(${productColor})` : ""} has been added to your cart`,
+            });
+
+            return [
+              ...prevItems,
+              {
+                id: cartItemId,
+                product,
+                quantity,
+                color: productColor,
+              },
+            ];
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+      });
+    }
+  };
+
+  const removeFromCart = async (id: string) => {
+    const item = cartItems.find((item) => item.id === id);
+
+    try {
+      if (user) {
+        // User is authenticated - remove from Firebase
+        await removeFromFirebaseCart(id);
+      } else {
+        // Guest user - remove from local state
+        setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+      }
+
       if (item) {
         toast({
           title: "Removed from cart",
           description: `${item.product.name} has been removed from your cart`,
         });
       }
-      return prevItems.filter((item) => item.id !== id);
-    });
+    } catch (error) {
+      console.error("Error removing from cart:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to remove item from cart. Please try again.",
+      });
+    }
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = async (id: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(id);
+      await removeFromCart(id);
       return;
     }
 
-    setCartItems((prevItems) =>
-      prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
-    );
+    try {
+      if (user) {
+        // User is authenticated - update in Firebase
+        await updateCartItemQuantity(id, quantity);
+      } else {
+        // Guest user - update local state
+        setCartItems((prevItems) =>
+          prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+        );
+      }
+    } catch (error) {
+      console.error("Error updating cart quantity:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update cart quantity. Please try again.",
+      });
+    }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-    toast({
-      title: "Cart cleared",
-      description: "All items have been removed from your cart",
-    });
+  const clearCart = async () => {
+    try {
+      if (user) {
+        // User is authenticated - clear Firebase cart
+        await clearUserCart(user.uid);
+      } else {
+        // Guest user - clear local state and localStorage
+        setCartItems([]);
+        localStorage.removeItem("guestCart");
+      }
+
+      toast({
+        title: "Cart cleared",
+        description: "All items have been removed from your cart",
+      });
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to clear cart. Please try again.",
+      });
+    }
   };
 
   const getCartTotal = () => {
@@ -158,6 +282,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         clearCart,
         getCartTotal,
         getItemCount,
+        loading,
       }}
     >
       {children}

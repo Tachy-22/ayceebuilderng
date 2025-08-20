@@ -12,7 +12,7 @@ declare global {
     google: any;
     initGooglePlaces: () => void;
   }
-  
+
   namespace google {
     namespace maps {
       namespace places {
@@ -22,17 +22,10 @@ declare global {
             callback: (predictions: PlacePrediction[] | null, status: PlacesServiceStatus) => void
           ): void;
         }
-        
-        class PlacesService {
-          constructor(attrContainer: HTMLDivElement);
-          getPlaceDetails(
-            request: PlaceDetailsRequest,
-            callback: (result: any, status: PlacesServiceStatus) => void
-          ): void;
-        }
-        
-        class AutocompleteSessionToken {}
-        
+
+
+        class AutocompleteSessionToken { }
+
         interface AutocompletionRequest {
           input: string;
           sessionToken: AutocompleteSessionToken;
@@ -40,13 +33,8 @@ declare global {
           types?: string[];
           language?: string;
         }
-        
-        interface PlaceDetailsRequest {
-          placeId: string;
-          sessionToken: AutocompleteSessionToken;
-          fields: string[];
-        }
-        
+
+
         enum PlacesServiceStatus {
           OK = 'OK',
           ZERO_RESULTS = 'ZERO_RESULTS',
@@ -69,22 +57,14 @@ interface PlacePrediction {
   };
 }
 
-interface PlaceDetails {
-  formatted_address: string;
-  geometry: {
-    location: {
-      lat: () => number;
-      lng: () => number;
-    };
-  };
-  place_id: string;
-}
 
 interface GooglePlacesAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
   onPlaceSelect?: (place: {
     address: string;
+    formatted_address?: string;
+    name?: string;
     lat: number;
     lng: number;
     placeId: string;
@@ -109,9 +89,8 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [sessionToken, setSessionToken] = useState<any>(null);
-  
+
   const autocompleteService = useRef<any>(null);
-  const placesService = useRef<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -119,24 +98,25 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
   const initializeGooglePlaces = useCallback(() => {
     if (window.google && window.google.maps && window.google.maps.places) {
       autocompleteService.current = new window.google.maps.places.AutocompleteService();
-      
-      // Create a dummy div for PlacesService
-      const dummyDiv = document.createElement('div');
-      placesService.current = new window.google.maps.places.PlacesService(dummyDiv);
-      
+
+      // We'll use the Geocoding API instead of PlacesService for place details
+      // This avoids the need for a map instance
+
       // Create a new session token
       setSessionToken(new window.google.maps.places.AutocompleteSessionToken());
       setIsGoogleLoaded(true);
+
+      console.log('Google Places initialized with AutocompleteService');
     }
   }, []);
 
   // Load Google Places API script
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
-    
+
     console.log('Google Places API Key available:', !!apiKey);
     console.log('API Key prefix:', apiKey?.substring(0, 10) + '...');
-    
+
     if (!apiKey) {
       console.error('Google Places API key not found in environment variables');
       return;
@@ -160,9 +140,9 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGooglePlaces`;
     script.async = true;
     script.defer = true;
-    
+
     window.initGooglePlaces = initializeGooglePlaces;
-    
+
     script.onerror = () => {
       console.error('Failed to load Google Places API');
     };
@@ -206,7 +186,7 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
         primaryRequest,
         (predictions: any, status: any) => {
           console.log('Primary response:', { predictions, status, count: predictions?.length });
-          
+
           if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions && predictions.length > 0) {
             setIsLoading(false);
             setPredictions(predictions);
@@ -214,7 +194,7 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
           } else {
             // Fallback search without type restrictions
             console.log('Trying fallback search without type restrictions');
-            
+
             const fallbackRequest = {
               input: query,
               sessionToken: sessionToken,
@@ -226,13 +206,13 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
               fallbackRequest,
               (fallbackPredictions: any, fallbackStatus: any) => {
                 setIsLoading(false);
-                
-                console.log('Fallback response:', { 
-                  fallbackPredictions, 
-                  fallbackStatus, 
-                  count: fallbackPredictions?.length 
+
+                console.log('Fallback response:', {
+                  fallbackPredictions,
+                  fallbackStatus,
+                  count: fallbackPredictions?.length
                 });
-                
+
                 if (fallbackStatus === window.google.maps.places.PlacesServiceStatus.OK && fallbackPredictions) {
                   setPredictions(fallbackPredictions);
                   setShowSuggestions(true);
@@ -254,46 +234,62 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
-    
+
     if (isGoogleLoaded) {
       searchPlaces(newValue);
     }
   };
 
-  // Handle place selection
-  const handlePlaceSelect = (prediction: PlacePrediction) => {
-    if (!placesService.current || !sessionToken) return;
-
+  // Handle place selection using Geocoding API
+  const handlePlaceSelect = async (prediction: PlacePrediction) => {
     setIsLoading(true);
     setShowSuggestions(false);
     onChange(prediction.description);
 
-    // Get place details using the same session token
-    const request = {
-      placeId: prediction.place_id,
-      sessionToken: sessionToken,
-      fields: ['formatted_address', 'geometry', 'place_id'],
-    };
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
-    placesService.current.getPlaceDetails(request, (place: any, status: any) => {
-      setIsLoading(false);
-      
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
-        const placeDetails = place as PlaceDetails;
-        
-        if (onPlaceSelect && placeDetails.geometry && placeDetails.geometry.location) {
+      // Use Geocoding API to get place details
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?place_id=${prediction.place_id}&key=${apiKey}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to get place details');
+      }
+
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results && data.results.length > 0) {
+        const place = data.results[0];
+
+        if (onPlaceSelect && place.geometry && place.geometry.location) {
           onPlaceSelect({
-            address: placeDetails.formatted_address,
-            lat: placeDetails.geometry.location.lat(),
-            lng: placeDetails.geometry.location.lng(),
-            placeId: placeDetails.place_id,
+            address: place.formatted_address,
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng,
+            placeId: place.place_id,
           });
         }
-        
-        // Create new session token for future requests
-        setSessionToken(new window.google.maps.places.AutocompleteSessionToken());
+      } else {
+        console.error('Geocoding API error:', data.status);
+        // Don't call onPlaceSelect with invalid coordinates
+        // Let the distance calculation handle geocoding fallback
+        console.log('Geocoding failed, not calling onPlaceSelect with invalid coordinates');
       }
-    });
+
+      // Create new session token for future requests
+      setSessionToken(new window.google.maps.places.AutocompleteSessionToken());
+
+    } catch (error) {
+      console.error('Error getting place details:', error);
+
+      // Don't call onPlaceSelect with invalid coordinates
+      // Let the distance calculation handle geocoding fallback
+      console.log('Error getting coordinates, not calling onPlaceSelect with invalid coordinates');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle clear input
@@ -324,7 +320,7 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
   return (
     <div className={`relative ${className}`}>
       {label && <Label className="text-black/80 mb-2">{label}</Label>}
-      
+
       <div className="relative">
         <div className="relative">
           <Input
@@ -337,14 +333,14 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
             className="pr-8"
             autoComplete="off"
           />
-          
+
           {/* Loading indicator */}
           {isLoading && (
             <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           )}
-          
+
           {/* Clear button */}
           {value && !isLoading && (
             <Button
@@ -398,9 +394,9 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
             <div className="font-medium mb-1">No addresses found</div>
             <div className="text-xs">
               Try searching for:
-              <br />• Major landmarks (e.g., "Shoprite Ikeja")
-              <br />• Street names (e.g., "Allen Avenue Lagos")
-              <br />• Area names (e.g., "Victoria Island Lagos")
+              <br />• Major landmarks (e.g., &quot;Shoprite Ikeja&quot;)
+              <br />• Street names (e.g., &quot;Allen Avenue Lagos&quot;)
+              <br />• Area names (e.g., &quot;Victoria Island Lagos&quot;)
             </div>
           </div>
         )}

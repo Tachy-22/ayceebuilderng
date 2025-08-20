@@ -1,0 +1,32 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+
+export async function GET() {
+  try {
+    const tradesmenRef = collection(db, 'tradesmen');
+    const q = query(tradesmenRef);
+    const snapshot = await getDocs(q);
+    const tradesmenData = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    console.log({ tradesmenData })
+    // Filter approved tradesmen and sort by featured/rating
+    const approvedTradesmen = tradesmenData
+      .filter((tradesman: any) => tradesman.status === 'approved')
+      .sort((a: any, b: any) => {
+        // Featured first, then by rating
+        if (a.featured !== b.featured) return b.featured ? 1 : -1;
+        return b.rating - a.rating;
+      });
+
+    return NextResponse.json({ success: true, data: approvedTradesmen });
+  } catch (error) {
+    console.error('Error fetching tradesmen:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch tradesmen' },
+      { status: 500 }
+    );
+  }
+}

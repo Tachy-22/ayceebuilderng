@@ -1,0 +1,529 @@
+"use client";
+
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { updateUserProfile } from '@/lib/firestore';
+import { Address } from '@/types/user';
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  Save,
+  X
+} from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import GooglePlacesAutocomplete from '@/components/ui/GooglePlacesAutocomplete';
+import { getAllStateNames, getCitiesForState, validateStateCity } from '@/lib/nigerianLocations';
+
+export default function ProfilePage() {
+  const { user, userProfile, updateUserProfile: updateAuthProfile } = useAuth();
+  const { toast } = useToast();
+  
+  // Profile form state
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    phone: '',
+  });
+  
+  // Address management state
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [addressForm, setAddressForm] = useState({
+    type: 'home' as 'home' | 'office' | 'other',
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    country: 'Nigeria',
+    postalCode: '',
+    phone: '',
+    isDefault: false,
+  });
+  
+  const [loading, setLoading] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    if (userProfile) {
+      setProfileForm({
+        name: userProfile.name || '',
+        phone: userProfile.phone || '',
+      });
+      setAddresses(userProfile.addresses || []);
+    }
+  }, [userProfile]);
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      setSavingProfile(true);
+      await updateAuthProfile({
+        name: profileForm.name,
+        phone: profileForm.phone,
+      });
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been saved.",
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Error updating profile",
+        description: "Please try again.",
+      });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleAddressSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    // Validate state-city combination
+    if (addressForm.state && addressForm.city && !validateStateCity(addressForm.state, addressForm.city)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid location",
+        description: `${addressForm.city} is not a valid city in ${addressForm.state} state.`,
+      });
+      return;
+    }
+
+    // Basic validation for required fields
+    if (!addressForm.name.trim() || !addressForm.street.trim() || !addressForm.city.trim() || !addressForm.state.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Incomplete address",
+        description: "Please fill in all required address fields.",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const newAddress: Address = {
+        id: editingAddress?.id || Date.now().toString(),
+        ...addressForm,
+      };
+
+      let updatedAddresses;
+      if (editingAddress) {
+        // Update existing address
+        updatedAddresses = addresses.map(addr => 
+          addr.id === editingAddress.id ? newAddress : addr
+        );
+      } else {
+        // Add new address
+        updatedAddresses = [...addresses, newAddress];
+      }
+
+      // If this is set as default, remove default from others
+      if (newAddress.isDefault) {
+        updatedAddresses = updatedAddresses.map(addr => ({
+          ...addr,
+          isDefault: addr.id === newAddress.id,
+        }));
+      }
+
+      setAddresses(updatedAddresses);
+      
+      await updateAuthProfile({
+        addresses: updatedAddresses,
+      });
+
+      setShowAddressForm(false);
+      setEditingAddress(null);
+      resetAddressForm();
+      
+      toast({
+        title: editingAddress ? "Address updated" : "Address added",
+        description: "Your address has been saved.",
+      });
+    } catch (error) {
+      console.error('Error saving address:', error);
+      toast({
+        variant: "destructive",
+        title: "Error saving address",
+        description: "Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAddress = async (addressId: string) => {
+    if (!user) return;
+
+    try {
+      const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
+      setAddresses(updatedAddresses);
+      
+      await updateAuthProfile({
+        addresses: updatedAddresses,
+      });
+      
+      toast({
+        title: "Address deleted",
+        description: "The address has been removed.",
+      });
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      toast({
+        variant: "destructive",
+        title: "Error deleting address",
+        description: "Please try again.",
+      });
+    }
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address);
+    setAddressForm({
+      type: address.type,
+      name: address.name,
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      country: address.country,
+      postalCode: address.postalCode || '',
+      phone: address.phone || '',
+      isDefault: address.isDefault,
+    });
+    setShowAddressForm(true);
+  };
+
+  const resetAddressForm = () => {
+    setAddressForm({
+      type: 'home',
+      name: '',
+      street: '',
+      city: '',
+      state: '',
+      country: 'Nigeria',
+      postalCode: '',
+      phone: '',
+      isDefault: false,
+    });
+  };
+
+  const handleCancelAddressForm = () => {
+    setShowAddressForm(false);
+    setEditingAddress(null);
+    resetAddressForm();
+  };
+
+  const handlePlaceSelect = (place: any) => {
+    if (place.geometry) {
+      setAddressForm(prev => ({
+        ...prev,
+        street: place.formatted_address || place.name,
+      }));
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+        <p className="text-gray-600">Manage your account information and delivery addresses</p>
+      </div>
+
+      {/* Personal Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <User className="h-5 w-5" />
+            <span>Personal Information</span>
+          </CardTitle>
+          <CardDescription>
+            Update your personal details
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleProfileSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user?.email || ''}
+                  disabled
+                  className="bg-gray-50"
+                />
+                <p className="text-xs text-gray-500">Email cannot be changed</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  value={profileForm.phone}
+                  onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="Enter your phone number"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={savingProfile}>
+                <Save className="h-4 w-4 mr-2" />
+                {savingProfile ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Address Management */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center space-x-2">
+                <MapPin className="h-5 w-5" />
+                <span>Delivery Addresses</span>
+              </CardTitle>
+              <CardDescription>
+                Manage your delivery addresses for faster checkout
+              </CardDescription>
+            </div>
+            <Button
+              onClick={() => setShowAddressForm(true)}
+              disabled={showAddressForm}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Address
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Address Form */}
+          {showAddressForm && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {editingAddress ? 'Edit Address' : 'Add New Address'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleAddressSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="addressType">Address Type</Label>
+                      <Select 
+                        value={addressForm.type} 
+                        onValueChange={(value) => setAddressForm(prev => ({ ...prev, type: value as any }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="home">Home</SelectItem>
+                          <SelectItem value="office">Office</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="addressName">Address Label</Label>
+                      <Input
+                        id="addressName"
+                        value={addressForm.name}
+                        onChange={(e) => setAddressForm(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., John's Home, Office, etc."
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="street">Street Address</Label>
+                    <GooglePlacesAutocomplete
+                      onPlaceSelect={handlePlaceSelect}
+                      placeholder="Enter your address"
+                      value={addressForm.street}
+                      onChange={(value) => setAddressForm(prev => ({ ...prev, street: value }))}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State *</Label>
+                      <Select 
+                        value={addressForm.state} 
+                        onValueChange={(value) => setAddressForm(prev => ({ ...prev, state: value, city: '' }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select State" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-48 overflow-y-auto">
+                          {getAllStateNames().map((state) => (
+                            <SelectItem key={state} value={state}>
+                              {state}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City *</Label>
+                      <Select 
+                        value={addressForm.city} 
+                        onValueChange={(value) => setAddressForm(prev => ({ ...prev, city: value }))}
+                        disabled={!addressForm.state}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={addressForm.state ? "Select City" : "Select State first"} />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-48 overflow-y-auto">
+                          {addressForm.state && getCitiesForState(addressForm.state).map((city) => (
+                            <SelectItem key={city} value={city}>
+                              {city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="postalCode">Postal Code</Label>
+                      <Input
+                        id="postalCode"
+                        value={addressForm.postalCode}
+                        onChange={(e) => setAddressForm(prev => ({ ...prev, postalCode: e.target.value }))}
+                        placeholder="Postal Code"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="addressPhone">Phone Number (Optional)</Label>
+                    <Input
+                      id="addressPhone"
+                      value={addressForm.phone}
+                      onChange={(e) => setAddressForm(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="Phone number for this address"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="isDefault"
+                      checked={addressForm.isDefault}
+                      onChange={(e) => setAddressForm(prev => ({ ...prev, isDefault: e.target.checked }))}
+                      className="rounded"
+                    />
+                    <Label htmlFor="isDefault">Set as default address</Label>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <Button type="submit" disabled={loading}>
+                      <Save className="h-4 w-4 mr-2" />
+                      {loading ? 'Saving...' : editingAddress ? 'Update Address' : 'Save Address'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={handleCancelAddressForm}>
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Address List */}
+          <div className="space-y-4">
+            {addresses.length === 0 ? (
+              <div className="text-center py-8">
+                <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 mb-4">No addresses saved yet</p>
+                <p className="text-sm text-gray-400">Add an address to speed up your checkout process</p>
+              </div>
+            ) : (
+              addresses.map((address) => (
+                <Card key={address.id} className="relative">
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <h4 className="font-medium">{address.name}</h4>
+                          <Badge variant={address.type === 'home' ? 'default' : 'secondary'}>
+                            {address.type}
+                          </Badge>
+                          {address.isDefault && (
+                            <Badge variant="outline">Default</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600">{address.street}</p>
+                        <p className="text-sm text-gray-600">
+                          {address.city}, {address.state}
+                          {address.postalCode && ` ${address.postalCode}`}
+                        </p>
+                        {address.phone && (
+                          <p className="text-sm text-gray-600 flex items-center">
+                            <Phone className="h-3 w-3 mr-1" />
+                            {address.phone}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditAddress(address)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteAddress(address.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

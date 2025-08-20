@@ -1,5 +1,6 @@
 export interface Product {
   id: string;
+  createdAt?: Date;
   name: string;
   category: string;
   subCategory?: string;
@@ -23,7 +24,7 @@ export interface Product {
     verified: boolean;
   };
   weight: number;
-  colors?: boolean; // Array of available colors
+  colors?: string[]; // Array of available colors
   selectedColor?: string; // Selected color
 }
 
@@ -64,10 +65,17 @@ export interface ProductNew {
   Title: string;
   sheetName: string;
   Vendor?: string;
+  features: string[];
   id?: number;
+  specifications: Record<string, string>;
   location?: string; // New location field in raw data
   colors?: string; // Colors as comma-separated string
   Colors?: string; // Alternative capitalization for colors
+  name?: string;
+  price?: number;
+  discountPrice?: number;
+  category?: string;
+  subCategory?: string;
 }
 
 // Helper function to parse specifications string into object
@@ -119,9 +127,9 @@ function parseFeatures(featuresString: string): string[] {
     // Split by comma or handle as single feature
     return featuresString.includes(",")
       ? featuresString
-          .split(",")
-          .map((f) => f.trim())
-          .filter(Boolean)
+        .split(",")
+        .map((f) => f.trim())
+        .filter(Boolean)
       : [featuresString.trim()];
   } catch (error) {
     console.error("Error parsing features:", error);
@@ -141,9 +149,9 @@ function parseColors(colorsString: string): string[] {
     // Split by comma or handle as single color
     return cleanString.includes(",")
       ? cleanString
-          .split(",")
-          .map((c) => c.trim())
-          .filter(Boolean)
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean)
       : [cleanString.trim()];
   } catch (error) {
     console.error("Error parsing colors:", error);
@@ -169,13 +177,21 @@ export function mapNewProductToProduct(
       colors: product.colors || "none",
       Colors: product.Colors || "none",
       specification: product.Specification || "none",
-    }); // Parse specifications and features as before
-    const specifications = product.Specification
-      ? parseSpecifications(product.Specification)
-      : {};
+    }); // Parse specifications - handle both object and string formats
+    let specifications: Record<string, string> = {};
+    if (product.specifications) {
+      specifications = typeof product.specifications === 'object' ? product.specifications : parseSpecifications(product.specifications);
+    } else if (product.Specification) {
+      specifications = typeof product.Specification === 'object' ? product.Specification : parseSpecifications(product.Specification);
+    }
 
-    // Parse features safely
-    const features = product.Features ? parseFeatures(product.Features) : [];
+    // Parse features safely - handle both array and string formats
+    let features: string[] = [];
+    if (product.features) {
+      features = Array.isArray(product.features) ? product.features : parseFeatures(product.features);
+    } else if (product.Features) {
+      features = Array.isArray(product.Features) ? product.Features : parseFeatures(product.Features);
+    }
 
     // Parse colors either from dedicated field or from specifications
     let colors: string[] = [];
@@ -274,32 +290,38 @@ export function mapNewProductToProduct(
 
     return {
       id: product.id?.toString() || index.toString(),
-      name: product.Title || "Untitled Product",
+      createdAt: new Date(),
+      name: product.name || product.Title || "Untitled Product",
       category:
+        product.category?.toLowerCase() ||
         product.sheetName?.toLowerCase() ||
         product.Category?.toLowerCase() ||
         "uncategorized",
-      subCategory: product.SubCategory || undefined,
-      price: Number(product.Price) || 0,
-      discountPrice: Number(product.discountedPrice) || undefined,
+      subCategory: product.subCategory || product.SubCategory || undefined,
+      price: Number(product.price) || Number(product.Price) || 0,
+      discountPrice: Number(product.discountPrice) || Number(product.discountedPrice) || undefined,
       image: imageUrl,
       images: imageArray,
-      rating: product.rating || 4.0, // Default rating
-      reviewCount: product.reviewCount || 0, // Default review count
+      rating: product.rating || 4.0,
+      reviewCount: product.reviewCount || 0,
       description: product.Description || "No description available",
       features: features,
       specifications: specifications,
-      inStock: product.inStock === false ? false : true, // Default to in stock unless explicitly false
+      inStock: product.inStock === false ? false : true,
+      featured: false, // Not available in ProductNew interface
+      bestSeller: false, // Not available in ProductNew interface
+      new: false, // Not available in ProductNew interface
       location:
         product.location ||
-        "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja", // Default location
+        "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja",
       vendor: {
         name: product.Vendor || "Aycee Builder",
-        rating: 4.5,
-        verified: true,
+        rating: 4.5, // Default rating since not in ProductNew
+        verified: true, // Default verified since not in ProductNew
       },
-      weight: product.weight || 0, // Default weight since no weight info
-      colors: product.inStock === false ? false : true, // Add colors array
+      weight: product.weight || 0,
+      colors: colors.length > 0 ? colors : undefined,
+      selectedColor: undefined,
     };
   } catch (error) {
     console.error("Error mapping product:", error, product);
@@ -326,7 +348,7 @@ export function mapNewProductToProduct(
         verified: false,
       },
       weight: 0,
-      colors: true, // Empty colors array for fallback product
+      colors: [], // Empty colors array for fallback product
     };
   }
 }
@@ -380,7 +402,7 @@ export function mapNewProductsToProducts(products: ProductNew[]): Product[] {
           verified: false,
         },
         weight: 0,
-        colors: true, // Empty colors array for fallback product
+        colors: [], // Empty colors array for fallback product
       };
     }
   });

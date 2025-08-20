@@ -1,0 +1,116 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document, admins can read all
+    match /users/{userId} {
+      allow read, write: if request.auth != null && 
+                          (request.auth.uid == userId || hasAdminRole(request.auth.uid));
+    }
+    
+    // Users can read their own orders and create new ones
+    match /orders/{orderId} {
+      allow read: if request.auth != null && 
+                  (request.auth.uid == resource.data.userId ||
+                   hasAdminRole(request.auth.uid));
+      
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId &&
+                    validateOrderData(request.resource.data);
+      
+      allow update: if request.auth != null && 
+                    (request.auth.uid == resource.data.userId ||
+                     hasAdminRole(request.auth.uid)) &&
+                    validateOrderUpdate(request.resource.data, resource.data);
+                    
+      allow delete: if hasAdminRole(request.auth.uid);
+    }
+    
+    // Users can manage their own cart items
+    match /carts/{cartItemId} {
+      allow read, write, delete: if request.auth != null && 
+                                 request.auth.uid == resource.data.userId;
+      
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId &&
+                    validateCartItemData(request.resource.data);
+    }
+    
+    // Admin-only collections (if needed in future)
+    match /admin/{document} {
+      allow read, write: if hasAdminRole(request.auth.uid);
+    }
+    
+    // Public read-only collections (for products, categories, etc.)
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if hasAdminRole(request.auth.uid);
+    }
+    
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if hasAdminRole(request.auth.uid);
+    }
+    
+    // Settings collection - public read, admin write
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if hasAdminRole(request.auth.uid);
+    }
+    
+    // Blog collection - public read, admin write
+    match /blogs/{blogId} {
+      allow read: if true;
+      allow write: if hasAdminRole(request.auth.uid);
+    }
+    
+    // Vendors collection - public read, admin write
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow write: if hasAdminRole(request.auth.uid);
+    }
+    
+    // Tradesmen collection - public read, admin write
+    match /tradesmen/{tradesmanId} {
+      allow read: if true;
+      allow write: if hasAdminRole(request.auth.uid);
+    }
+    
+  }
+  
+  // Helper functions
+  function hasAdminRole(uid) {
+    // Check if user has admin role in their user document
+    return exists(/databases/$(database)/documents/users/$(uid)) &&
+           get(/databases/$(database)/documents/users/$(uid)).data.get('role', '') == 'admin';
+  }
+  
+  function validateOrderData(orderData) {
+    return orderData.keys().hasAll(['userId', 'status', 'items', 'totalAmount', 'shippingAddress']) &&
+           orderData.userId is string &&
+           orderData.status in ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'] &&
+           orderData.items is list &&
+           orderData.items.size() > 0 &&
+           orderData.totalAmount is number &&
+           orderData.totalAmount > 0 &&
+           orderData.shippingAddress is map;
+  }
+  
+  function validateOrderUpdate(newData, oldData) {
+    // Allow updates to status, updatedAt, and notes
+    return newData.userId == oldData.userId &&
+           newData.orderNumber == oldData.orderNumber &&
+           newData.items == oldData.items &&
+           newData.totalAmount == oldData.totalAmount;
+  }
+  
+  function validateCartItemData(cartData) {
+    return cartData.keys().hasAll(['userId', 'productId', 'quantity', 'product']) &&
+           cartData.userId is string &&
+           cartData.productId is string &&
+           cartData.quantity is number &&
+           cartData.quantity > 0 &&
+           cartData.product is map &&
+           cartData.product.keys().hasAll(['id', 'name', 'price', 'image', 'category', 'inStock']);
+  }
+}

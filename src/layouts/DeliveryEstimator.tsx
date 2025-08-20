@@ -21,10 +21,10 @@ const DeliveryEstimator = () => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [estimatedCost, setEstimatedCost] = useState<number | null>(null);
-  const [originCoords, setOriginCoords] = useState<{lat: number, lng: number} | null>(null);
-  const [destinationCoords, setDestinationCoords] = useState<{lat: number, lng: number} | null>(null);
+  const [originCoords, setOriginCoords] = useState<{ lat: number, lng: number } | null>(null);
+  const [destinationCoords, setDestinationCoords] = useState<{ lat: number, lng: number } | null>(null);
   const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
-  
+
   const calculateActualDistance = async () => {
     if (!origin || !destination) {
       toast({
@@ -72,7 +72,25 @@ const DeliveryEstimator = () => {
           description: `Actual distance: ${Math.round(calculatedDistance)} km.`,
         });
       } else {
-        throw new Error("Could not geocode addresses");
+        let errorMessage = "Could not find valid addresses. ";
+        
+        if (!originCoordinates && !destinationCoordinates) {
+          errorMessage += "Both pickup and delivery addresses appear to be invalid or not found in Nigeria.";
+        } else if (!originCoordinates) {
+          errorMessage += "Pickup address appears to be invalid or not found in Nigeria.";
+        } else {
+          errorMessage += "Delivery address appears to be invalid or not found in Nigeria.";
+        }
+        
+        errorMessage += " Please enter real, specific addresses (e.g., '123 Allen Avenue, Ikeja, Lagos' or 'Shoprite Ikeja').";
+        
+        toast({
+          variant: "destructive",
+          title: "Invalid address(es)",
+          description: errorMessage,
+        });
+        
+        throw new Error("Invalid addresses provided");
       }
     } catch (error) {
       console.error("Error calculating distance:", error);
@@ -95,43 +113,53 @@ const DeliveryEstimator = () => {
       });
       return;
     }
-    
+
+    // Check if we have valid coordinates (from successful geocoding)
+    if (!originCoords || !destinationCoords) {
+      toast({
+        title: "Invalid addresses",
+        description: "Please use the 'Calculate Actual Distance' button first to verify your addresses are valid.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Base rates per transport type (in Naira)
     const baseRates = {
       truck: 1000,
       van: 750,
       motorcycle: 300,
     };
-    
+
     // Calculate based on formula: base + (distance * weightFactor * volumeFactor)
     const base = baseRates[transportType as keyof typeof baseRates];
     const distanceFactor = distance * 50; // 50 Naira per km
     const weightFactor = weight * 2; // 2 Naira per kg
     const volumeFactor = volume * 500; // 500 Naira per cubic meter
-    
+
     // Apply transport type multiplier
-    const transportMultiplier = 
-      transportType === "truck" ? 1.0 : 
-      transportType === "van" ? 0.8 : 0.5;
-    
+    const transportMultiplier =
+      transportType === "truck" ? 1.0 :
+        transportType === "van" ? 0.8 : 0.5;
+
     // Calculate total cost
     const cost = (base + distanceFactor + weightFactor + volumeFactor) * transportMultiplier;
-    
+
     // Round to nearest 100 Naira
     const roundedCost = Math.ceil(cost / 100) * 100;
-    
+
     setEstimatedCost(roundedCost);
-    
+
     toast({
       title: "Estimate calculated",
       description: `The estimated delivery cost is ₦${roundedCost.toLocaleString()}.`,
     });
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <main className="flex-grow pt-20">
         <div className="bg-secondary/50 py-10">
           <div className="container mx-auto px-4">
@@ -141,7 +169,7 @@ const DeliveryEstimator = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="container mx-auto px-4 py-10">
           <div className="grid md:grid-cols-2 gap-10">
             <div>
@@ -166,7 +194,7 @@ const DeliveryEstimator = () => {
                     label="Pickup Location (Depot/Warehouse)"
                     placeholder="Enter pickup address in Nigeria"
                   />
-                  
+
                   <GooglePlacesAutocomplete
                     value={destination}
                     onChange={setDestination}
@@ -177,10 +205,10 @@ const DeliveryEstimator = () => {
                     label="Delivery Location"
                     placeholder="Enter delivery address in Nigeria"
                   />
-                  
+
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={calculateActualDistance}
                       disabled={!origin || !destination || isCalculatingDistance}
                       className="flex-1"
@@ -188,11 +216,11 @@ const DeliveryEstimator = () => {
                       {isCalculatingDistance ? "Calculating..." : "Calculate Actual Distance"}
                     </Button>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="distance">Distance (km)</Label>
-                      <span className="text-sm text-muted-foreground">{distance} km</span>
+                      <span className="text-sm text-muted-foreground">{distance.toFixed()} km</span>
                     </div>
                     <Slider
                       id="distance"
@@ -203,7 +231,7 @@ const DeliveryEstimator = () => {
                       onValueChange={(values) => setDistance(values[0])}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="weight">Weight (kg)</Label>
@@ -218,7 +246,7 @@ const DeliveryEstimator = () => {
                       onValueChange={(values) => setWeight(values[0])}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="volume">Volume (cubic meters)</Label>
@@ -233,7 +261,7 @@ const DeliveryEstimator = () => {
                       onValueChange={(values) => setVolume(values[0])}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="transport-type">Transport Type</Label>
                     <Select value={transportType} onValueChange={setTransportType}>
@@ -270,7 +298,7 @@ const DeliveryEstimator = () => {
                 </CardFooter>
               </Card>
             </div>
-            
+
             <div>
               <Card className="bg-secondary/30">
                 <CardHeader>
@@ -286,7 +314,7 @@ const DeliveryEstimator = () => {
                       <div className="text-4xl font-bold text-primary mb-4">
                         ₦{estimatedCost.toLocaleString()}
                       </div>
-                      
+
                       <div className="space-y-2 pt-4 border-t">
                         <div className="flex justify-between">
                           <span>From:</span>
@@ -298,7 +326,7 @@ const DeliveryEstimator = () => {
                         </div>
                         <div className="flex justify-between">
                           <span>Distance:</span>
-                          <span className="font-medium">{distance} km</span>
+                          <span className="font-medium">{distance.toFixed()} km</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Weight:</span>
@@ -313,7 +341,7 @@ const DeliveryEstimator = () => {
                           <span className="font-medium capitalize">{transportType}</span>
                         </div>
                       </div>
-                      
+
                       <div className="mt-6">
                         <Button variant="outline" className="w-full">
                           Save Estimate
@@ -323,7 +351,7 @@ const DeliveryEstimator = () => {
                   ) : (
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium">Factors Affecting Delivery Cost:</h3>
-                      
+
                       <div className="space-y-4">
                         <div className="flex gap-3">
                           <div className="bg-primary/10 p-2 rounded-full">
@@ -336,7 +364,7 @@ const DeliveryEstimator = () => {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="flex gap-3">
                           <div className="bg-primary/10 p-2 rounded-full">
                             <Package className="h-5 w-5 text-primary" />
@@ -348,7 +376,7 @@ const DeliveryEstimator = () => {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="flex gap-3">
                           <div className="bg-primary/10 p-2 rounded-full">
                             <Truck className="h-5 w-5 text-primary" />
@@ -361,10 +389,10 @@ const DeliveryEstimator = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="bg-primary/5 p-4 rounded-lg mt-6">
                         <p className="text-sm">
-                          Enter your delivery details on the left to get an instant cost estimate. 
+                          Enter your delivery details on the left to get an instant cost estimate.
                           This is an approximation and the final cost may vary slightly.
                         </p>
                       </div>
@@ -372,7 +400,7 @@ const DeliveryEstimator = () => {
                   )}
                 </CardContent>
               </Card>
-              
+
               <div className="mt-6 bg-background p-6 rounded-lg border">
                 <h3 className="text-lg font-medium mb-4">Delivery Information</h3>
                 <div className="space-y-4 text-sm">
@@ -386,8 +414,8 @@ const DeliveryEstimator = () => {
                     <span className="font-medium">Delivery Hours:</span> Monday to Saturday, 8am - 6pm
                   </p>
                   <p>
-                    <span className="font-medium">Note:</span> Delivery to some remote areas may take longer 
-                    and incur additional charges. Our customer service will contact you if your location 
+                    <span className="font-medium">Note:</span> Delivery to some remote areas may take longer
+                    and incur additional charges. Our customer service will contact you if your location
                     falls under this category.
                   </p>
                 </div>
@@ -396,7 +424,7 @@ const DeliveryEstimator = () => {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

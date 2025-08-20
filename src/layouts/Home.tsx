@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { getHomePageStats } from "@/lib/firestore";
 import {
   ArrowRight,
   ChevronRight,
@@ -36,6 +37,7 @@ import {
 import Link from "next/link";
 import { whatsappNumber } from "@/lib/utils";
 import Image from "next/image";
+import Footer from "@/components/Footer";
 
 // Animation variants
 const fadeIn = {
@@ -79,9 +81,26 @@ const getCategoryDescription = (categoryName: string) => {
 
 const Home = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [stats, setStats] = useState({
+    products: 0,
+    vendors: 0,
+    customers: 0
+  });
 
   useEffect(() => {
     setIsLoaded(true);
+    
+    // Fetch real-time statistics from Firebase
+    const fetchStats = async () => {
+      try {
+        const homePageStats = await getHomePageStats();
+        setStats(homePageStats);
+      } catch (error) {
+        console.error('Error fetching homepage stats:', error);
+      }
+    };
+
+    fetchStats();
   }, []);
 
   const whatsappMessage =
@@ -97,10 +116,12 @@ const Home = () => {
         <div className="max-w-7xl w-full mx-auto px-4 flex flex-col lg:flex-row gap-6 items-center justify-between ">
           <div className="  w-full lg:w-1/2">
             <Badge variant="outline" className="mb-4 py-1.5">
-              Nigeria&apos;s Premier Construction Marketplace
+              Ayceebuilder
             </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-grey-800">
-              Ayceebuilder, Building Africa, <br />
+            <h1 className="text-4xl md:text-5xl lg:text-6xl flex flex-col gap-3 font-bold leading-tight mb-6 text-grey-800">
+              {/* <span className="text-2xl">Ayceebuilder
+              </span> */}
+              Building Africa, <br />
               One Material at a Time
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
@@ -131,15 +152,15 @@ const Home = () => {
             </div>
             <div className=" items-center mt-10 justify-between md:justify-start  lg:flex hidden gap-4">
               <div className="flex items-center">
-                <span className="font-medium mr-2">20K+</span>
+                <span className="font-medium mr-2">{stats.products.toLocaleString()}+</span>
                 <span className="text-sm text-muted-foreground">Products</span>
               </div>
               <div className="flex items-center">
-                <span className="font-medium mr-2">500+</span>
+                <span className="font-medium mr-2">{stats.vendors.toLocaleString()}+</span>
                 <span className="text-sm text-muted-foreground">Vendors</span>
               </div>
               <div className="flex items-center">
-                <span className="font-medium mr-2">50K+</span>
+                <span className="font-medium mr-2">{stats.customers.toLocaleString()}+</span>
                 <span className="text-sm text-muted-foreground">Customers</span>
               </div>
             </div>
@@ -147,8 +168,8 @@ const Home = () => {
           <div className="lg:w-1/2 w-full mt-10 lg:mt-0 relative">
             <div className="w-full  h-[400px] lg:h-[500px]">
               <div className=" w-full h-full rounded-xl overflow-hidden">
-                <Image
-                  priority
+                <img
+                  
                   width={7495}
                   height={4996}
                   src="/hero-img.webp"
@@ -341,12 +362,12 @@ const Home = () => {
               className="lg:col-span-3 lg:row-span-2 overflow-hidden rounded-xl border"
             >
               <Link
-                href={`/products?sheet=${categories[0].id}&page=1&limit=8`}
+                href={`/products?category=${categories[0].id}&page=1&limit=8`}
                 className="group relative h-full block w-full"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
-                  <Image
+                  <img
                     src={`https://images.unsplash.com/photo-1706629503586-2731f65587ae?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Zmxvb3IlMjB0aWxlc3xlbnwwfHwwfHx8MA%3D%3D`}
                     alt={categories[0].name}
                     width={800}
@@ -375,12 +396,12 @@ const Home = () => {
               className="lg:col-span-4 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
-                href={`/products?sheet=${categories[1].id}&page=1&limit=8`}
+                href={`/products?category=${categories[1].id}&page=1&limit=8`}
                 className="group relative h-full block w-full"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
-                  <Image
+                  <img
                     src={`https://media.istockphoto.com/id/1469656864/photo/electrician-engineer-uses-a-multimeter-to-test-the-electrical-installation-and-power-line.jpg?s=612x612&w=0&k=20&c=h70UOpNbJYT5G2oGT-KUeIE3yXwEgsCpr25yR1rnGtU=`}
                     alt={categories[1].name}
                     width={500}
@@ -409,12 +430,12 @@ const Home = () => {
               className="lg:col-span-2 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
-                href={`/products?sheet=${categories[2].id}&page=1&limit=8`}
+                href={`/products?category=${categories[2].id}&page=1&limit=8`}
                 className="group relative h-full block w-full"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
-                  <Image
+                  <img
                     src={`https://5.imimg.com/data5/IR/AL/PO/SELLER-43531398/sanitary-ware.JPG`}
                     alt={categories[2].name}
                     width={400}
@@ -443,12 +464,12 @@ const Home = () => {
               className="lg:col-span-2 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
-                href={`/products?sheet=${categories[3].id}&page=1&limit=8`}
+                href={`/products?category=${categories[3].id}&page=1&limit=8`}
                 className="group relative h-full block w-full"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
-                  <Image
+                  <img
                     src={`https://media.istockphoto.com/id/2150737447/photo/living-room-designed-in-a-modern-minimalist-style.jpg?s=612x612&w=0&k=20&c=dLISljRiuau099SmQboAzWvnHYQzM6ezn_7XD_WzPS0=`}
                     alt={categories[3].name}
                     width={400}
@@ -477,12 +498,12 @@ const Home = () => {
               className="lg:col-span-2 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
-                href={`/products?sheet=${categories[4].id}&page=1&limit=8`}
+                href={`/products?category=${categories[4].id}&page=1&limit=8`}
                 className="group relative h-full block w-full"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
-                  <Image
+                  <img
                     src={`https://media.istockphoto.com/id/1314469297/photo/pouring-glue-into-glue-container.jpg?s=612x612&w=0&k=20&c=z5biCsx3lpS-g0aNDpRYnLGP5d5yHF705ZQa2uLD3D8=`}
                     alt={categories[4].name}
                     width={400}
@@ -511,12 +532,12 @@ const Home = () => {
               className="lg:col-span-2 lg:row-span-1 overflow-hidden rounded-xl border"
             >
               <Link
-                href={`/products?sheet=${categories[5].id}&page=1&limit=8`}
+                href={`/products?category=${categories[5].id}&page=1&limit=8`}
                 className="group relative h-full block w-full"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
-                  <Image
+                  <img
                     src={`https://media.istockphoto.com/id/1135314838/photo/repair-of-hydraulic-heating-system-in-the-house.jpg?s=612x612&w=0&k=20&c=Z8-BohVX0_Niqp72nroZzeK3m8C69U2xLcvQYE_iHuA=`}
                     alt={categories[5].name}
                     width={800}
@@ -544,12 +565,12 @@ const Home = () => {
               className="lg:col-span-9 lg:row-span-0 overflow-hidden rounded-xl border"
             >
               <Link
-                href={`/products?sheet=${categories[6].id}&page=1&limit=8`}
+                href={`/products?category=${categories[6].id}&page=1&limit=8`}
                 className="group relative h-full block w-full"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
-                  <Image
+                  <img
                     src={`https://media.istockphoto.com/id/1472464806/photo/decorative-antique-edison-style-filament-light-bulbs-hanging-an-electrician-is-installing.jpg?s=612x612&w=0&k=20&c=3wirHrNX0E-pN-UTaAJhQ18jyoCuUM3ZwOaUHwqbls0=`}
                     alt={categories[6].name}
                     width={800}
@@ -1192,6 +1213,9 @@ const Home = () => {
           </motion.div>
         </div>
       </section>
+
+      <Footer />
+
     </div>
   );
 };

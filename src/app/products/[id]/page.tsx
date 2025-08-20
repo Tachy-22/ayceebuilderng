@@ -15,42 +15,69 @@ interface PageProps {
   };
   searchParams: {
     searchTitle?: string;
-    sheet?: string;
+    category?: string;
   };
+}
+
+// Firebase API response interface
+interface FirebaseProductResponse {
+  success: boolean;
+  data: ProductNew;
+  relatedProducts?: ProductNew[];
 }
 
 const page = async ({ params, searchParams }: PageProps) => {
   const { id } = params;
-  const { searchTitle, sheet } = searchParams;
-
-  // Base API URL
-  const apiUrl =
-    "https://script.google.com/macros/s/AKfycbwT0TdiN9b9pa7ihupog_ztKDe9C3KK2BvGef4X_Zpy1W-pRJf7vupnqAXQB8cQuw-W/exec";
+  const { searchTitle, category } = searchParams;
 
   let productData: ProductNew | null = null;
 
-  // If we have a search title, use it to find the product
-  if (searchTitle) {
-    // Build the URL with search parameter
-    const searchUrl = `${apiUrl}?sheet${encodeURIComponent(
-      sheet || "all"
-    )}&search=${encodeURIComponent(searchTitle)}&limit=1`;
+  // Build API URL for Firebase
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-    try {
-      // Fetch product by title
-      const response = await fetch(searchUrl, { next: { revalidate: 1 } });
-      const result = await response.json();
-
-      // If we found a product, use it
-      if (result && Array.isArray(result.data) && result.data.length > 0) {
-        productData = result.data[0];
+  try {
+    if (searchTitle) {
+      // Search for product by title using the search endpoint
+      let searchUrl = `${baseUrl}/api/products/search?search=${encodeURIComponent(searchTitle)}&limit=1`;
+      
+      if (category && category !== 'all') {
+        searchUrl += `&category=${encodeURIComponent(category)}`;
       }
-    } catch (error) {
-      console.error("Error fetching product by title:", error);
-    }
-  }
 
-  // If we didn't find by title or no title was provided, try to fetch by ID
+      const response = await fetch(searchUrl, { 
+        next: { revalidate: 60 },
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const result: any = await response.json();
+        
+        if (result.success && result.data && result.data.length > 0) {
+          productData = result.data[0];
+        }
+      }
+    } else if (id) {
+      // Fetch product by ID from Firebase
+      const response = await fetch(`${baseUrl}/api/products/${id}`, {
+        next: { revalidate: 60 },
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const result: FirebaseProductResponse = await response.json();
+        
+        if (result.success && result.data) {
+          productData = result.data;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching product from Firebase:", error);
+  }
 
   return <ProductDetail rawProduct={(productData as ProductNew) || null} />;
 };

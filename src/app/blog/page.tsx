@@ -70,16 +70,16 @@ const BlogPage = async ({
   // Filter blogs by search query if provided
   const filteredBlogs = searchQuery
     ? blogs.filter(
-        (blog) =>
-          blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          blog.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          blog.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          blog.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (blog.tags &&
-            blog.tags.some((tag) =>
-              tag.toLowerCase().includes(searchQuery.toLowerCase())
-            ))
-      )
+      (blog) =>
+        blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        blog.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        blog.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        blog.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (blog.tags &&
+          blog.tags.some((tag) =>
+            tag.toLowerCase().includes(searchQuery.toLowerCase())
+          ))
+    )
     : blogs; // Extract unique categories from all published blogs for the
 
   console.log({ filteredBlogs, blogs });
@@ -109,9 +109,8 @@ const BlogPage = async ({
             <p className="font-medium">
               {filteredBlogs.length === 0
                 ? `No results found for "${searchQuery}"`
-                : `Found ${filteredBlogs.length} ${
-                    filteredBlogs.length === 1 ? "result" : "results"
-                  } for "${searchQuery}"`}
+                : `Found ${filteredBlogs.length} ${filteredBlogs.length === 1 ? "result" : "results"
+                } for "${searchQuery}"`}
             </p>
             {filteredBlogs.length === 0 && (
               <p className="text-sm text-muted-foreground mt-1">
@@ -146,12 +145,10 @@ const BlogPage = async ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {" "}
                     <div className="relative h-72 md:h-full w-full bg-gray-100">
-                      <Image
+                      <img
                         src={filteredBlogs[0].imageUrls?.[0]}
                         alt={filteredBlogs[0].title}
-                        fill
                         className="object-cover"
-                        priority
                       />
                       <div className="absolute top-4 left-4 bg-black text-white px-3 py-1 text-sm font-medium rounded">
                         Featured
@@ -201,11 +198,10 @@ const BlogPage = async ({
                     className="group flex flex-col h-full border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
                   >
                     {" "}
-                    <div className="relative h-48 w-full bg-gray-100">
-                      <Image
-                        src={optimizeBlogImage(blog.thumbnailUrl, "medium")}
+                    <div className="relative h-48 overflow-hidden w-full bg-gray-100">
+                      <img
+                        src={blog.thumbnailUrl}
                         alt={blog.title}
-                        fill
                         className="object-cover"
                       />
                     </div>

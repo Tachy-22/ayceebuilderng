@@ -28,12 +28,80 @@ export const calculateHaversineDistance = (
   return distance;
 };
 
+// Validate address quality and accuracy
+const validateAddressQuality = (result: any, originalAddress: string): boolean => {
+  // Check if the result has a reasonable accuracy level
+  const locationType = result.geometry?.location_type;
+  const acceptableLocationTypes = ['ROOFTOP', 'RANGE_INTERPOLATED', 'GEOMETRIC_CENTER'];
+  
+  // Reject if location type is too imprecise
+  if (!acceptableLocationTypes.includes(locationType)) {
+    console.log('Address rejected: poor location accuracy -', locationType);
+    return false;
+  }
+  
+  // Check if the formatted address contains meaningful components
+  const formattedAddress = result.formatted_address.toLowerCase();
+  const addressComponents = result.address_components || [];
+  
+  // Must have at least a locality and administrative area
+  const hasLocality = addressComponents.some((comp: any) => 
+    comp.types.includes('locality') || comp.types.includes('sublocality')
+  );
+  
+  const hasAdministrativeArea = addressComponents.some((comp: any) => 
+    comp.types.includes('administrative_area_level_1') || 
+    comp.types.includes('administrative_area_level_2')
+  );
+  
+  if (!hasLocality && !hasAdministrativeArea) {
+    console.log('Address rejected: insufficient location components');
+    return false;
+  }
+  
+  // Check for obviously fake/test addresses
+  const originalLower = originalAddress.toLowerCase();
+  const suspiciousPatterns = [
+    /^test\s*$/,
+    /^other\s*$/,
+    /^fake/,
+    /^invalid/,
+    /^dummy/,
+    /dont.*do/,
+    /^no\.\s*\d+\s*[a-z]+\s*[a-z]+\s*lane\s*$/i, // Pattern like "No. 1 akinyode Nat Lane"
+  ];
+  
+  if (suspiciousPatterns.some(pattern => pattern.test(originalLower))) {
+    console.log('Address rejected: matches suspicious pattern -', originalAddress);
+    return false;
+  }
+  
+  // Ensure the result is actually in Nigeria
+  const isInNigeria = formattedAddress.includes('nigeria') || 
+                     addressComponents.some((comp: any) => 
+                       comp.long_name.toLowerCase() === 'nigeria'
+                     );
+  
+  if (!isInNigeria) {
+    console.log('Address rejected: not in Nigeria');
+    return false;
+  }
+  
+  return true;
+};
+
 // Geocode an address using Google Places API
 export const geocodeAddress = async (address: string): Promise<PlaceCoordinates | null> => {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
   
   if (!apiKey) {
     console.error('Google Places API key not found');
+    return null;
+  }
+
+  // Basic validation before even calling the API
+  if (!address || address.trim().length < 3) {
+    console.log('Address rejected: too short');
     return null;
   }
 
@@ -50,12 +118,22 @@ export const geocodeAddress = async (address: string): Promise<PlaceCoordinates 
     
     if (data.status === 'OK' && data.results && data.results.length > 0) {
       const result = data.results[0];
+      
+      // Validate the quality and accuracy of the geocoded result
+      if (!validateAddressQuality(result, address)) {
+        return null;
+      }
+      
       return {
         lat: result.geometry.location.lat,
         lng: result.geometry.location.lng,
         address: result.formatted_address,
         placeId: result.place_id,
       };
+    } else if (data.status === 'ZERO_RESULTS') {
+      console.log('Address rejected: no results found for -', address);
+    } else {
+      console.log('Geocoding failed with status:', data.status);
     }
 
     return null;

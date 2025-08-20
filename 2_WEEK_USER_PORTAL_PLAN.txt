@@ -1,0 +1,410 @@
+================================================================================
+AYCEEBUILDER NIGERIA - 2 WEEK USER PORTAL IMPLEMENTATION PLAN
+User Authentication + Order History Portal Using Firestore
+================================================================================
+
+OVERVIEW
+================================================================================
+Timeline: 14 days
+Goal: Implement user authentication and order history portal
+Tech Stack: Firebase Auth + Firestore + Next.js (existing codebase)
+Scope: Users can register, login, place orders, and view order history
+
+WEEK 1: AUTHENTICATION & CORE INFRASTRUCTURE
+================================================================================
+
+DAY 1-2: FIREBASE AUTH SETUP
+--------------------------------------------------
+TASKS:
+□ Configure Firebase Authentication in existing project
+□ Add authentication providers (Email/Password + Google)
+□ Update Firebase config with Auth settings
+□ Create auth context and hooks
+
+DELIVERABLES:
+- Firebase Auth configuration
+- AuthContext provider component
+- useAuth() hook for user state management
+- Login/Register forms (basic UI)
+
+FILES TO CREATE/MODIFY:
+- src/lib/firebase.ts (add Auth import)
+- src/contexts/AuthContext.tsx (new)
+- src/hooks/useAuth.ts (new) 
+- src/components/auth/LoginForm.tsx (new)
+- src/components/auth/RegisterForm.tsx (new)
+
+CODE STRUCTURE:
+```
+// AuthContext.tsx
+- User state management
+- Login/logout functions
+- User persistence
+- Loading states
+
+// useAuth.ts
+- Auth hook for components
+- User data access
+- Auth state checking
+```
+
+DAY 3-4: USER AUTHENTICATION FLOW
+--------------------------------------------------
+TASKS:
+□ Implement login/register pages
+□ Add protected routes middleware
+□ Create user profile management
+□ Handle authentication errors
+
+DELIVERABLES:
+- /login and /register pages
+- Protected route wrapper
+- User profile page
+- Error handling for auth flows
+
+FILES TO CREATE/MODIFY:
+- src/app/login/page.tsx (new)
+- src/app/register/page.tsx (new)
+- src/app/profile/page.tsx (new)
+- src/components/auth/ProtectedRoute.tsx (new)
+- src/middleware.ts (new - Next.js middleware)
+
+AUTHENTICATION FEATURES:
+- Email/password registration
+- Google social login
+- Password reset functionality
+- Email verification
+- User profile management
+
+DAY 5: FIRESTORE DATABASE SCHEMA
+--------------------------------------------------
+TASKS:
+□ Design Firestore collections structure
+□ Create Firestore security rules
+□ Implement database helper functions
+□ Test data reading/writing
+
+DELIVERABLES:
+- Firestore database structure
+- Security rules configuration
+- Database helper functions
+- Test user and order data
+
+FIRESTORE COLLECTIONS:
+```
+users/
+  {userId}/
+    - email: string
+    - name: string
+    - phone: string
+    - addresses: array
+    - createdAt: timestamp
+    - updatedAt: timestamp
+
+orders/
+  {orderId}/
+    - userId: string
+    - orderNumber: string
+    - status: string (pending, processing, shipped, delivered)
+    - items: array[{
+        productId: string,
+        name: string,
+        quantity: number,
+        price: number,
+        image: string
+      }]
+    - totalAmount: number
+    - shippingAddress: object
+    - orderDate: timestamp
+    - updatedAt: timestamp
+```
+
+FILES TO CREATE/MODIFY:
+- firestore.rules (update security rules)
+- src/lib/firestore.ts (new - helper functions)
+- src/types/order.ts (new - TypeScript types)
+- src/types/user.ts (new - TypeScript types)
+
+DAY 6-7: ORDER CREATION SYSTEM
+--------------------------------------------------
+TASKS:
+□ Modify cart checkout to create Firestore orders
+□ Generate unique order numbers
+□ Implement order status management
+□ Create order confirmation system
+
+DELIVERABLES:
+- Order creation from cart
+- Order number generation
+- Order status tracking
+- Email order confirmations
+
+FILES TO CREATE/MODIFY:
+- src/lib/orders.ts (new - order management functions)
+- src/app/checkout/success/page.tsx (modify existing)
+- src/components/OrderConfirmation.tsx (new)
+- Modify existing cart checkout flow
+
+ORDER CREATION FLOW:
+1. User clicks "Place Order" in cart
+2. Check user authentication
+3. Create order document in Firestore
+4. Generate order number
+5. Send confirmation email
+6. Redirect to order success page
+
+WEEK 2: USER PORTAL & ORDER HISTORY
+================================================================================
+
+DAY 8-9: USER DASHBOARD LAYOUT
+--------------------------------------------------
+TASKS:
+□ Create user dashboard layout
+□ Design navigation menu for portal
+□ Implement responsive design
+□ Add user welcome section
+
+DELIVERABLES:
+- User dashboard main layout
+- Navigation menu
+- Responsive design
+- User profile section
+
+FILES TO CREATE/MODIFY:
+- src/app/dashboard/layout.tsx (new)
+- src/app/dashboard/page.tsx (new)
+- src/components/dashboard/DashboardNav.tsx (new)
+- src/components/dashboard/WelcomeSection.tsx (new)
+
+DASHBOARD SECTIONS:
+- Overview/Welcome
+- Order History
+- Profile Settings
+- Address Management
+- Logout functionality
+
+DAY 10-11: ORDER HISTORY IMPLEMENTATION
+--------------------------------------------------
+TASKS:
+□ Fetch user orders from Firestore
+□ Create order history table/list
+□ Implement order details view
+□ Add order status filtering
+
+DELIVERABLES:
+- Order history page
+- Order details modal/page
+- Order filtering by status
+- Pagination for large order lists
+
+FILES TO CREATE/MODIFY:
+- src/app/dashboard/orders/page.tsx (new)
+- src/app/dashboard/orders/[orderId]/page.tsx (new)
+- src/components/dashboard/OrderList.tsx (new)
+- src/components/dashboard/OrderDetails.tsx (new)
+- src/components/dashboard/OrderFilters.tsx (new)
+
+ORDER HISTORY FEATURES:
+- List all user orders
+- Search orders by number/date
+- Filter by status (All, Pending, Shipped, Delivered)
+- View detailed order information
+- Track order status updates
+
+DAY 12-13: PROFILE MANAGEMENT
+--------------------------------------------------
+TASKS:
+□ Implement profile editing
+□ Add address management
+□ Create password change functionality
+□ Handle profile image uploads
+
+DELIVERABLES:
+- Profile editing form
+- Address management (add/edit/delete)
+- Password change form
+- Profile image upload (optional)
+
+FILES TO CREATE/MODIFY:
+- src/app/dashboard/profile/page.tsx (new)
+- src/components/dashboard/ProfileForm.tsx (new)
+- src/components/dashboard/AddressManager.tsx (new)
+- src/components/dashboard/PasswordChange.tsx (new)
+
+PROFILE FEATURES:
+- Edit name, email, phone
+- Manage multiple addresses
+- Change password
+- Account deletion (optional)
+
+DAY 14: TESTING & DEPLOYMENT
+--------------------------------------------------
+TASKS:
+□ End-to-end testing of user flows
+□ Fix bugs and edge cases
+□ Optimize performance
+□ Deploy to production
+
+DELIVERABLES:
+- Fully tested user authentication system
+- Working order history portal
+- Production deployment
+- Documentation for usage
+
+TESTING CHECKLIST:
+- User registration and login
+- Order creation from cart
+- Order history display
+- Profile editing
+- Mobile responsiveness
+- Error handling
+
+TECHNICAL IMPLEMENTATION DETAILS
+================================================================================
+
+FIREBASE SECURITY RULES:
+```
+// firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Users can read their own orders
+    match /orders/{orderId} {
+      allow read: if request.auth != null && 
+                  request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId;
+    }
+  }
+}
+```
+
+AUTH CONTEXT STRUCTURE:
+```typescript
+// AuthContext.tsx
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<void>;
+  logout: () => Promise<void>;
+  updateProfile: (data: UserProfile) => Promise<void>;
+}
+```
+
+ORDER TYPE DEFINITIONS:
+```typescript
+// types/order.ts
+interface Order {
+  id: string;
+  userId: string;
+  orderNumber: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered';
+  items: OrderItem[];
+  totalAmount: number;
+  shippingAddress: Address;
+  orderDate: Date;
+  updatedAt: Date;
+}
+
+interface OrderItem {
+  productId: string;
+  name: string;
+  quantity: number;
+  price: number;
+  image: string;
+}
+```
+
+NAVIGATION UPDATES:
+```typescript
+// Update existing Navbar.tsx to show user state
+- Add login/logout buttons
+- Show user name when logged in
+- Add "My Account" link to dashboard
+```
+
+INTEGRATION WITH EXISTING CODEBASE
+================================================================================
+
+CART INTEGRATION:
+- Modify existing CartContext to create orders on checkout
+- Add user authentication check before checkout
+- Integrate with Firestore order creation
+
+EXISTING COMPONENTS TO MODIFY:
+- src/components/Navbar.tsx (add auth buttons)
+- src/layouts/Cart.tsx (add auth check)
+- src/app/layout.tsx (wrap with AuthContext)
+- src/app/checkout/page.tsx (integrate order creation)
+
+MINIMAL CODE CHANGES:
+- Leverage existing UI components from src/components/ui/
+- Use existing styling patterns and design system
+- Maintain current cart and product functionality
+- Add authentication layer without disrupting existing features
+
+DEPLOYMENT CHECKLIST
+================================================================================
+
+ENVIRONMENT VARIABLES:
+□ NEXT_PUBLIC_FIREBASE_API_KEY
+□ NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+□ NEXT_PUBLIC_FIREBASE_PROJECT_ID
+□ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+□ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+□ NEXT_PUBLIC_FIREBASE_APP_ID
+
+FIREBASE CONSOLE SETUP:
+□ Enable Authentication (Email/Password + Google)
+□ Create Firestore database
+□ Deploy security rules
+□ Configure authorized domains
+
+VERCEL DEPLOYMENT:
+□ Update environment variables
+□ Test authentication flows
+□ Verify Firestore connectivity
+□ Check mobile responsiveness
+
+SUCCESS METRICS
+================================================================================
+
+WEEK 1 SUCCESS CRITERIA:
+- Users can register and login successfully
+- Firebase Auth is properly configured
+- Orders are created and stored in Firestore
+- Basic error handling is implemented
+
+WEEK 2 SUCCESS CRITERIA:
+- Users can access their dashboard
+- Order history displays correctly
+- Profile editing works properly
+- Mobile experience is responsive
+
+FINAL DELIVERABLES:
+- User registration and login system
+- Protected user dashboard
+- Order history with filtering and search
+- Profile management system
+- Mobile-responsive design
+- Production deployment
+
+POST-IMPLEMENTATION FEATURES (Future):
+- Email notifications for order updates
+- Advanced order tracking with shipping integration
+- Wishlist integration with user accounts
+- Order reordering functionality
+- Customer support ticket system
+
+================================================================================
+Document Version: 1.0
+Date: August 19, 2025
+Timeline: 14 days
+Status: Implementation Ready
+================================================================================

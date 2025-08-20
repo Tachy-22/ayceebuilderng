@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics, Analytics } from "firebase/analytics";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
+import { getAuth, Auth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -19,20 +20,15 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 let analytics: Analytics | null = null;
-let db: Firestore;
-let storage: FirebaseStorage | null = null;
 
-// Initialize services only on the client side
+// Initialize Firestore and Auth for both client and server
+const db = getFirestore(app);
+const storage = getStorage(app);
+const auth = getAuth(app);
+
+// Initialize analytics only on the client side
 if (typeof window !== "undefined") {
   analytics = getAnalytics(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
 }
 
-// Always initialize Firestore on the server side
-if (typeof window === "undefined") {
-  db = getFirestore(app);
-  storage = getStorage(app);
-}
-
-export { app, analytics, db, storage };
+export { app, analytics, db, storage, auth };

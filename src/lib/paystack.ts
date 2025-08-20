@@ -1,9 +1,9 @@
 // ...existing code...
-export function getPaystackConfig(email: string, amount: number) {
+export function getPaystackConfig(email: string, amount: number, paystackPublicKey?: string) {
   return {
     email,
     amount,
-    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY as string,
+    publicKey: paystackPublicKey || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY as string,
     metadata: {
       custom_fields: [
         {
