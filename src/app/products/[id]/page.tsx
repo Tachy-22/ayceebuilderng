@@ -45,7 +45,7 @@ const page = async ({ params, searchParams }: PageProps) => {
       }
 
       const response = await fetch(searchUrl, { 
-        next: { revalidate: 60 },
+        next: { revalidate: 0 },
         headers: {
           'Content-Type': 'application/json',
         }
@@ -61,7 +61,7 @@ const page = async ({ params, searchParams }: PageProps) => {
     } else if (id) {
       // Fetch product by ID from Firebase
       const response = await fetch(`${baseUrl}/api/products/${id}`, {
-        next: { revalidate: 60 },
+        next: { revalidate: 0 },
         headers: {
           'Content-Type': 'application/json',
         }

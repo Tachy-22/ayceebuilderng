@@ -98,7 +98,7 @@ const page = async ({ searchParams }: PageProps) => {
 
   try {
     const res = await fetch(url, { 
-      next: { revalidate: 60 }, // Cache for 1 minute
+      next: { revalidate: 0 }, // Cache for 1 minute
       headers: {
         'Content-Type': 'application/json',
       }
