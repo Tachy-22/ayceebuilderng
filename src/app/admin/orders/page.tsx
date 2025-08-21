@@ -69,6 +69,11 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
       const ordersRef = collection(db, 'orders');
       const ordersQuery = query(ordersRef, orderBy('orderDate', 'desc'));
       const ordersSnapshot = await getDocs(ordersQuery);
@@ -117,6 +122,11 @@ export default function AdminOrdersPage() {
   const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
       setUpdatingStatus(true);
+      
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
       await updateDoc(doc(db, 'orders', orderId), {
         status: newStatus,
         updatedAt: new Date(),

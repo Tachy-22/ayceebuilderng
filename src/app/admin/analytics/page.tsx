@@ -63,6 +63,10 @@ export default function AdminAnalyticsPage() {
       let totalUsers = 0;
 
       try {
+        if (!db) {
+          throw new Error('Database not initialized');
+        }
+
         // Fetch all orders first (simpler query)
         const ordersRef = collection(db, 'orders');
         const allOrdersQuery = query(ordersRef, orderBy('orderDate', 'desc'));
@@ -89,6 +93,10 @@ export default function AdminAnalyticsPage() {
       }
 
       try {
+        if (!db) {
+          throw new Error('Database not initialized');
+        }
+
         // Fetch users
         const usersRef = collection(db, 'users');
         const usersSnapshot = await getDocs(usersRef);

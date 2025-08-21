@@ -1,16 +1,6 @@
 "use server";
 
-import {
-  collection,
-  query,
-  getDocs,
-  where,
-  orderBy,
-  limit,
-  QueryConstraint,
-  Timestamp,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getCollection, isFirebaseError, QueryFilter, QueryOrder } from "@/lib/firebase-utils";
 
 export type QueryOptions = {
   whereClause?: [
@@ -37,59 +27,32 @@ export async function fetchCollection<T>(
       throw new Error("Collection name is required");
     }
 
-    if (!db) {
-      throw new Error("Database not initialized");
-    }
+    // Convert legacy options format to new format
+    const filters: QueryFilter[] = options?.whereClause?.map(([field, operator, value]) => ({
+      field,
+      operator: operator as any, // Firebase operators match the legacy ones
+      value
+    })) || [];
 
-    const constraints: QueryConstraint[] = [];
-    if (options?.whereClause) {
-      options.whereClause.forEach(([field, operator, value]) => {
-        constraints.push(where(field, operator, value));
-      });
-    }
+    const orderBy: QueryOrder[] = options?.orderByField ? [{
+      field: options.orderByField,
+      direction: options.orderDirection || "asc"
+    }] : [];
 
-    if (options?.orderByField) {
-      constraints.push(
-        orderBy(options.orderByField, options.orderDirection || "asc")
-      );
-    }
+    const result = await getCollection<T>(collectionName, {
+      filters,
+      orderBy,
+      limit: options?.limitTo
+    });
 
-    if (options?.limitTo) {
-      constraints.push(limit(options.limitTo));
-    }
-
-    const q = query(collection(db, collectionName), ...constraints);
-    const querySnapshot = await getDocs(q);
-
-    const items = querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-
-      // Transform data to ensure all fields are plain objects or primitives
-      const transformedData = Object.entries(data).reduce(
-        (acc, [key, value]) => {
-          if (value instanceof Timestamp) {
-            acc[key] = value.toDate().toISOString(); // Convert Timestamp to ISO string
-          } else if (typeof value === "object" && value !== null) {
-            // Recursively handle nested objects if needed
-            acc[key] = JSON.parse(JSON.stringify(value));
-          } else {
-            acc[key] = value; // Keep primitive values as-is
-          }
-          return acc;
-        },
-        {} as Record<string, unknown>
-      );
-      // //console.log({
-      //   id: doc.id,
-      //   ...transformedData,
-      // });
+    if (isFirebaseError(result)) {
       return {
-        id: doc.id,
-        ...transformedData,
+        code: result.code || "fetch-collection-error",
+        message: result.error
       };
-    }) as T[];
+    }
 
-    return { items, count: items.length };
+    return { items: result.data, count: result.data.length };
   } catch (error) {
     return {
       code: "fetch-collection-error",

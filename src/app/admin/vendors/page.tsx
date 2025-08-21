@@ -65,6 +65,11 @@ export default function AdminVendorsPage() {
   const fetchVendors = async () => {
     try {
       setLoading(true);
+      
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
       const vendorsRef = collection(db, 'vendors');
       const q = query(vendorsRef, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);

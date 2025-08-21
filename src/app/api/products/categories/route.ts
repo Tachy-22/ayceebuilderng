@@ -1,25 +1,27 @@
 import { NextResponse } from "next/server";
-import { adminDb } from '@/lib/firebase-admin';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { getCollection, isFirebaseError } from '@/lib/firebase-utils';
+import { Product } from '@/data/products';
 
 export async function GET() {
   try {
     console.log('Fetching product categories from Firebase...');
 
-    if (!adminDb) {
-      throw new Error('Firebase Admin database not initialized');
+    // Get all products with category ordering
+    const productsResult = await getCollection<Product>('products', {
+      orderBy: [{ field: 'category', direction: 'asc' }]
+    });
+
+    if (isFirebaseError(productsResult)) {
+      return NextResponse.json(productsResult, { status: 500 });
     }
 
-    const productsRef = collection(adminDb, 'products');
-    const productsQuery = query(productsRef, orderBy('category'));
-    const snapshot = await getDocs(productsQuery);
+    const products = productsResult.data;
 
     // Extract unique categories with counts
     const categoryMap = new Map<string, { name: string; count: number; sample?: any }>();
 
-    snapshot.docs.forEach((doc: any) => {
-      const data = doc.data();
-      const category = data.category;
+    products.forEach((product) => {
+      const category = product.category;
       
       if (category) {
         if (categoryMap.has(category)) {
@@ -33,10 +35,10 @@ export async function GET() {
             name: category,
             count: 1,
             sample: {
-              id: doc.id,
-              name: data.name,
-              price: data.price,
-              image: data.image
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              image: product.image
             }
           });
         }

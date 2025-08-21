@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { collection, doc, writeBatch, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getCollection, batchWrite, isFirebaseError } from '@/lib/firebase-utils';
 import { mapNewProductToProduct, ProductNew, categories } from '@/data/products';
 
 const GOOGLE_SCRIPT_URL =
@@ -12,14 +11,17 @@ export async function POST(request: NextRequest) {
 
     // Check if products already exist (unless force migration)
     if (!force) {
-      const productsRef = collection(db, 'products');
-      const existingProducts = await getDocs(productsRef);
+      const existingResult = await getCollection('products');
       
-      if (!existingProducts.empty) {
+      if (isFirebaseError(existingResult)) {
+        return NextResponse.json(existingResult, { status: 500 });
+      }
+      
+      if (existingResult.data.length > 0) {
         return NextResponse.json({
           success: false,
           error: 'Products already exist in Firebase. Use force=true to overwrite.',
-          existingCount: existingProducts.size
+          existingCount: existingResult.data.length
         }, { status: 400 });
       }
     }
@@ -116,8 +118,8 @@ export async function POST(request: NextRequest) {
 
         // Migrate each batch
         for (let batchIndex = 0; batchIndex < productBatches.length; batchIndex++) {
-          const batch = writeBatch(db);
           const currentBatch = productBatches[batchIndex];
+          const batchOperations = [];
 
           for (let j = 0; j < currentBatch.length; j++) {
             try {
@@ -137,8 +139,6 @@ export async function POST(request: NextRequest) {
                 // Remove undefined values
                 subCategory: product.subCategory || null,
                 discountPrice: product.discountPrice || null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
                 migratedFrom: 'google_sheets',
                 originalSheetName: categoryId
               };
@@ -150,9 +150,13 @@ export async function POST(request: NextRequest) {
                 }
               });
               
-              // Add to batch
-              const productRef = doc(db, 'products', productId);
-              batch.set(productRef, cleanProduct);
+              // Add to batch operations
+              batchOperations.push({
+                type: 'add' as const,
+                collection: 'products',
+                documentId: productId,
+                data: cleanProduct
+              });
 
               migrationResults.categories[categoryId].count++;
               migrationResults.totalProducts++;
@@ -166,9 +170,13 @@ export async function POST(request: NextRequest) {
           }
 
           // Commit the batch
-          if (currentBatch.length > 0) {
-            await batch.commit();
-            console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${categoryId}`);
+          if (batchOperations.length > 0) {
+            const batchResult = await batchWrite(batchOperations);
+            if (isFirebaseError(batchResult)) {
+              migrationResults.errors.push(`Batch ${batchIndex + 1} for ${categoryId} failed: ${batchResult.error}`);
+            } else {
+              console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${categoryId}`);
+            }
           }
         }
 
@@ -215,23 +223,26 @@ export async function POST(request: NextRequest) {
 // GET endpoint to check migration status
 export async function GET() {
   try {
-    const productsRef = collection(db, 'products');
-    const snapshot = await getDocs(productsRef);
+    const productsResult = await getCollection('products');
     
+    if (isFirebaseError(productsResult)) {
+      return NextResponse.json(productsResult, { status: 500 });
+    }
+    
+    const products = productsResult.data;
     const stats = {
-      totalProducts: snapshot.size,
+      totalProducts: products.length,
       categories: {} as Record<string, number>
     };
 
-    snapshot.docs.forEach(doc => {
-      const data = doc.data();
-      const category = data.category || 'unknown';
+    products.forEach(product => {
+      const category = product.category || 'unknown';
       stats.categories[category] = (stats.categories[category] || 0) + 1;
     });
 
     return NextResponse.json({
       success: true,
-      migrationExists: snapshot.size > 0,
+      migrationExists: products.length > 0,
       ...stats
     });
     

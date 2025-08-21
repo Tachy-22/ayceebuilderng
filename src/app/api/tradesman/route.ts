@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { addDocument, isFirebaseError } from '@/lib/firebase-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,17 +7,18 @@ export async function POST(request: NextRequest) {
     const tradesmanData = await request.json();
 
     // Add tradesman to Firebase
-    const tradesmenRef = collection(db, 'tradesmen');
-    const docRef = await addDoc(tradesmenRef, {
+    const result = await addDocument('tradesmen', {
       ...tradesmanData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
       status: 'pending', // Default status for new tradesmen
     });
 
+    if (isFirebaseError(result)) {
+      return NextResponse.json(result, { status: 500 });
+    }
+
     return NextResponse.json({
       success: true,
-      id: docRef.id,
+      id: result.data.id,
       message: 'Tradesman registration submitted successfully'
     });
   } catch (error) {

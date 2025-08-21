@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getCollection, isFirebaseError } from '@/lib/firebase-utils';
 
 export async function GET() {
   try {
-    const tradesmenRef = collection(db, 'tradesmen');
-    const q = query(tradesmenRef);
-    const snapshot = await getDocs(q);
-    const tradesmenData = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const tradesmenResult = await getCollection('tradesmen');
+    
+    if (isFirebaseError(tradesmenResult)) {
+      return NextResponse.json(tradesmenResult, { status: 500 });
+    }
+
+    const tradesmenData = tradesmenResult.data;
     console.log({ tradesmenData })
+    
     // Filter approved tradesmen and sort by featured/rating
     const approvedTradesmen = tradesmenData
       .filter((tradesman: any) => tradesman.status === 'approved')

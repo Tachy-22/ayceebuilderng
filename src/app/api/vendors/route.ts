@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getCollection, isFirebaseError } from '@/lib/firebase-utils';
 
 export async function GET() {
   try {
-    const vendorsRef = collection(db, 'vendors');
-    const q = query(vendorsRef, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
+    const vendorsResult = await getCollection('vendors', {
+      orderBy: [{ field: 'createdAt', direction: 'desc' }]
+    });
+    
+    if (isFirebaseError(vendorsResult)) {
+      return NextResponse.json(vendorsResult, { status: 500 });
+    }
 
-    const vendorsData = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const vendorsData = vendorsResult.data;
     console.log("here")
     console.log({ vendorsData, "ner": "here" })
+    
     //Filter approved vendors and sort by featured/rating
     const approvedVendors = vendorsData
       .filter((vendor: any) => vendor.status === 'approved')

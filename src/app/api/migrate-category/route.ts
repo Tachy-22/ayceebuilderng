@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { collection, doc, writeBatch, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getCollection, batchWrite, isFirebaseError } from '@/lib/firebase-utils';
 import { mapNewProductToProduct, ProductNew } from '@/data/products';
 
 const GOOGLE_SCRIPT_URL =
@@ -17,17 +16,22 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+
     // Check if products already exist for this category (unless force migration)
     if (!force) {
-      const productsRef = collection(db, 'products');
-      const categoryQuery = query(productsRef, where('category', '==', category));
-      const existingProducts = await getDocs(categoryQuery);
+      const existingResult = await getCollection('products', {
+        filters: [{ field: 'category', operator: '==', value: category }]
+      });
       
-      if (!existingProducts.empty) {
+      if (isFirebaseError(existingResult)) {
+        return NextResponse.json(existingResult, { status: 500 });
+      }
+      
+      if (existingResult.data.length > 0) {
         return NextResponse.json({
           success: false,
           error: `Products already exist for category "${category}". Use force=true to overwrite.`,
-          existingCount: existingProducts.size,
+          existingCount: existingResult.data.length,
           category
         }, { status: 400 });
       }
@@ -114,17 +118,22 @@ export async function POST(request: NextRequest) {
 
       // If force migration, delete existing products for this category
       if (force) {
-        const productsRef = collection(db, 'products');
-        const categoryQuery = query(productsRef, where('category', '==', category));
-        const existingProducts = await getDocs(categoryQuery);
+        const existingResult = await getCollection('products', {
+          filters: [{ field: 'category', operator: '==', value: category }]
+        });
         
-        if (!existingProducts.empty) {
-          console.log(`Deleting ${existingProducts.size} existing products for ${category}`);
-          const deleteBatch = writeBatch(db);
-          existingProducts.docs.forEach(doc => {
-            deleteBatch.delete(doc.ref);
-          });
-          await deleteBatch.commit();
+        if (!isFirebaseError(existingResult) && existingResult.data.length > 0) {
+          console.log(`Deleting ${existingResult.data.length} existing products for ${category}`);
+          const deleteOperations = existingResult.data.map(product => ({
+            type: 'delete' as const,
+            collection: 'products',
+            documentId: product.id
+          }));
+          
+          const deleteResult = await batchWrite(deleteOperations);
+          if (isFirebaseError(deleteResult)) {
+            return NextResponse.json(deleteResult, { status: 500 });
+          }
         }
       }
 
@@ -138,8 +147,8 @@ export async function POST(request: NextRequest) {
 
       // Migrate each batch
       for (let batchIndex = 0; batchIndex < productBatches.length; batchIndex++) {
-        const batch = writeBatch(db);
         const currentBatch = productBatches[batchIndex];
+        const batchOperations = [];
 
         for (let j = 0; j < currentBatch.length; j++) {
           try {
@@ -159,8 +168,6 @@ export async function POST(request: NextRequest) {
               category: category, // Ensure category is set correctly
               subCategory: product.subCategory || null,
               discountPrice: product.discountPrice || null,
-              createdAt: new Date(),
-              updatedAt: new Date(),
               migratedFrom: 'google_sheets',
               originalSheetName: category
             };
@@ -172,9 +179,13 @@ export async function POST(request: NextRequest) {
               }
             });
             
-            // Add to batch
-            const productRef = doc(db, 'products', productId);
-            batch.set(productRef, cleanProduct);
+            // Add to batch operations
+            batchOperations.push({
+              type: 'add' as const,
+              collection: 'products',
+              documentId: productId,
+              data: cleanProduct
+            });
 
             migrationResult.migratedProducts++;
             
@@ -186,9 +197,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Commit the batch
-        if (currentBatch.length > 0) {
-          await batch.commit();
-          console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${category} (${currentBatch.length} products)`);
+        if (batchOperations.length > 0) {
+          const batchResult = await batchWrite(batchOperations);
+          if (isFirebaseError(batchResult)) {
+            migrationResult.errors.push(`Batch ${batchIndex + 1} failed: ${batchResult.error}`);
+          } else {
+            console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${category} (${currentBatch.length} products)`);
+          }
         }
       }
 
@@ -239,25 +254,26 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const productsRef = collection(db, 'products');
-    const categoryQuery = query(productsRef, where('category', '==', category));
-    const snapshot = await getDocs(categoryQuery);
+    const productsResult = await getCollection('products', {
+      filters: [{ field: 'category', operator: '==', value: category }]
+    });
     
-    const products = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    if (isFirebaseError(productsResult)) {
+      return NextResponse.json(productsResult, { status: 500 });
+    }
+    
+    const products = productsResult.data;
 
     return NextResponse.json({
       success: true,
       category,
-      exists: snapshot.size > 0,
-      productCount: snapshot.size,
+      exists: products.length > 0,
+      productCount: products.length,
       sampleProducts: products.slice(0, 3).map(p => ({
         id: p.id,
-        name: (p as any).name,
-        price: (p as any).price,
-        inStock: (p as any).inStock
+        name: p.name,
+        price: p.price,
+        inStock: p.inStock
       }))
     });
     

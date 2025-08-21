@@ -1,16 +1,6 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
-  Timestamp,
-} from "firebase/firestore";
+import { addDocument, getCollection, isFirebaseError } from "@/lib/firebase-utils";
 
 interface CommentInput {
   blogId: string;
@@ -20,53 +10,37 @@ interface CommentInput {
   userName: string;
 }
 
-// Helper function to properly serialize Firestore data
-function serializeComment(doc: any): CommentT {
-  const data = doc.data();
-
-  // Handle Firestore Timestamp properly
-  let createdAt: Date | string;
-  if (data.createdAt instanceof Timestamp) {
-    createdAt = data.createdAt.toDate().toISOString();
-  } else if (data.createdAt) {
-    createdAt = new Date(data.createdAt).toISOString();
-  } else {
-    createdAt = new Date().toISOString();
-  }
-
-  return {
-    id: doc.id,
-    blogId: data.blogId || "",
-    blogTitle: data.blogTitle || "",
-    content: data.content || "",
-    userId: data.userId || "",
-    userName: data.userName || "",
-    createdAt,
-  };
+interface CommentT {
+  id: string;
+  blogId: string;
+  blogTitle: string;
+  content: string;
+  userId: string;
+  userName: string;
+  createdAt: string;
 }
 
 export async function addComment(input: CommentInput) {
   try {
-    if (!db) {
-      throw new Error("Database not initialized");
-    }
-
     const commentData = {
       blogId: input.blogId,
       blogTitle: input.blogTitle,
       content: input.content,
       userId: input.userId,
       userName: input.userName,
-      createdAt: serverTimestamp(),
     };
 
-    const docRef = await addDoc(collection(db, "comments"), commentData);
+    const result = await addDocument("comments", commentData);
+
+    if (isFirebaseError(result)) {
+      throw new Error(result.error);
+    }
 
     // Return a plain object with serialized date
     return {
-      id: docRef.id,
+      id: result.data.id,
       ...commentData,
-      createdAt: new Date().toISOString(), // Use current date since serverTimestamp is not available client-side
+      createdAt: new Date().toISOString(),
     };
   } catch (error) {
     console.error("Error adding comment:", error);
@@ -76,25 +50,23 @@ export async function addComment(input: CommentInput) {
 
 export async function getComments(blogId: string) {
   try {
-    if (!db) {
+    const result = await getCollection<CommentT>("comments", {
+      filters: [{ field: "blogId", operator: "==", value: blogId }],
+      orderBy: [{ field: "createdAt", direction: "desc" }]
+    });
+
+    if (isFirebaseError(result)) {
+      console.error("Error fetching comments:", result.error);
       return [];
     }
 
-    const commentsRef = collection(db, "comments");
-    const q = query(
-      commentsRef,
-      where("blogId", "==", blogId),
-      orderBy("createdAt", "desc")
-    );
-
-    const querySnapshot = await getDocs(q);
-    const comments: CommentT[] = [];
-
-    querySnapshot.forEach((doc) => {
-      comments.push(serializeComment(doc));
-    });
-
-    return comments;
+    // Ensure createdAt is properly serialized - data from Firebase utilities should already be serialized
+    return result.data.map(comment => ({
+      ...comment,
+      createdAt: typeof comment.createdAt === 'string'
+        ? comment.createdAt
+        : new Date().toISOString(),
+    }));
   } catch (error) {
     console.error("Error fetching comments:", error);
     return [];

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { addDocument, isFirebaseError } from '@/lib/firebase-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,17 +7,18 @@ export async function POST(request: NextRequest) {
     const vendorData = await request.json();
 
     // Add vendor to Firebase
-    const vendorsRef = collection(db, 'vendors');
-    const docRef = await addDoc(vendorsRef, {
+    const result = await addDocument('vendors', {
       ...vendorData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
       status: 'pending', // Default status for new vendors
     });
 
+    if (isFirebaseError(result)) {
+      return NextResponse.json(result, { status: 500 });
+    }
+
     return NextResponse.json({
       success: true,
-      id: docRef.id,
+      id: result.data.id,
       message: 'Vendor registration submitted successfully'
     });
   } catch (error) {

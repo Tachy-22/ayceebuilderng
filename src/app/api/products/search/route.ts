@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from '@/lib/firebase-admin';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { getCollection, isFirebaseError, QueryFilter, QueryOrder } from '@/lib/firebase-utils';
 import { Product } from "@/data/products";
 
 export async function GET(request: NextRequest) {
@@ -28,29 +27,25 @@ export async function GET(request: NextRequest) {
       inStock
     });
 
-    if (!adminDb) {
-      throw new Error('Firebase Admin database not initialized');
-    }
-
-    const productsRef = collection(adminDb, 'products');
-    let baseQuery = query(productsRef);
+    // Build filters for Firebase utilities
+    const filters: QueryFilter[] = [];
 
     // Apply category filter
     if (category && category !== 'all') {
-      baseQuery = query(baseQuery, where('category', '==', category));
+      filters.push({ field: 'category', operator: '==', value: category });
     }
 
     // Apply price range filter
     if (minPrice > 0) {
-      baseQuery = query(baseQuery, where('price', '>=', minPrice));
+      filters.push({ field: 'price', operator: '>=', value: minPrice });
     }
     if (maxPrice < 999999999) {
-      baseQuery = query(baseQuery, where('price', '<=', maxPrice));
+      filters.push({ field: 'price', operator: '<=', value: maxPrice });
     }
 
     // Apply stock filter
     if (inStock) {
-      baseQuery = query(baseQuery, where('inStock', '==', true));
+      filters.push({ field: 'inStock', operator: '==', value: true });
     }
 
     // Apply sorting
@@ -59,30 +54,54 @@ export async function GET(request: NextRequest) {
                      sortBy === 'rating' ? 'rating' : 'createdAt';
     const direction = sortDirection === 'asc' ? 'asc' : 'desc';
     
-    baseQuery = query(baseQuery, orderBy(sortField, direction));
+    const orderBy: QueryOrder[] = [{ field: sortField, direction }];
 
     // Handle search separately due to Firebase limitations
-    let searchResults: any[] = [];
-    
     if (searchTerm) {
-      // For better search, we'll fetch more results and filter client-side
+      // For better search, we'll fetch all products and filter client-side
       // In production, consider using Algolia, Elasticsearch, or similar
-      const searchQuery = query(productsRef, limit(1000));
-      const searchSnapshot = await getDocs(searchQuery);
-      
-      const allProducts: Product[] = searchSnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Product[];
+      const allProductsResult = await getCollection<Product>('products', {
+        limit: 1000 // Get a large number for client-side filtering
+      });
+
+      if (isFirebaseError(allProductsResult)) {
+        return NextResponse.json(allProductsResult, { status: 500 });
+      }
 
       // Client-side search filtering
       const searchLower = searchTerm.toLowerCase();
-      searchResults = allProducts.filter(product =>
+      let searchResults = allProductsResult.data.filter(product =>
         product.name?.toLowerCase().includes(searchLower) ||
         product.description?.toLowerCase().includes(searchLower) ||
         product.category?.toLowerCase().includes(searchLower) ||
         product.subCategory?.toLowerCase().includes(searchLower)
       );
+
+      // Apply additional filters client-side
+      if (category && category !== 'all') {
+        searchResults = searchResults.filter(p => p.category === category);
+      }
+      if (minPrice > 0) {
+        searchResults = searchResults.filter(p => (p.price || 0) >= minPrice);
+      }
+      if (maxPrice < 999999999) {
+        searchResults = searchResults.filter(p => (p.price || 0) <= maxPrice);
+      }
+      if (inStock) {
+        searchResults = searchResults.filter(p => p.inStock === true);
+      }
+
+      // Apply sorting
+      searchResults.sort((a: any, b: any) => {
+        const aVal = a[sortField];
+        const bVal = b[sortField];
+        
+        if (direction === 'asc') {
+          return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+        } else {
+          return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+        }
+      });
 
       // Apply pagination to search results
       const totalItems = searchResults.length;
@@ -117,26 +136,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Regular query without search
-    // Get total count for pagination
-    const countSnapshot = await getDocs(baseQuery);
-    const totalItems = countSnapshot.size;
+    const productsResult = await getCollection<Product>('products', {
+      filters,
+      orderBy
+    });
+
+    if (isFirebaseError(productsResult)) {
+      return NextResponse.json(productsResult, { status: 500 });
+    }
+
+    // Apply pagination client-side
+    const totalItems = productsResult.data.length;
     const totalPages = Math.ceil(totalItems / limitParam);
-
-    // Apply pagination using limit - note: offset is not available in client SDK
-    const paginatedQuery = query(baseQuery, limit(page * limitParam));
-
-    // Execute the query
-    const snapshot = await getDocs(paginatedQuery);
-    
-    // Client-side pagination to get the correct page
     const startIndex = (page - 1) * limitParam;
-    const allResults = snapshot.docs.map((doc: any) => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const endIndex = startIndex + limitParam;
     
-    const products = allResults.slice(startIndex, startIndex + limitParam);
-    
+    const products = productsResult.data.slice(startIndex, endIndex);
 
     console.log(`Found ${products.length} products for page ${page}`);
 

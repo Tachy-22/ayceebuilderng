@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from '@/lib/firebase-admin';
-import { collection, query, where, orderBy, limit, getDocs, startAfter } from 'firebase/firestore';
+import { getCollection, isFirebaseError, QueryFilter, QueryOrder } from '@/lib/firebase-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,81 +22,49 @@ export async function GET(request: NextRequest) {
       sortDirection
     });
 
-    // Test Firebase Admin connection
-    console.log('Products API: Testing Firebase Admin connection...');
-    if (!adminDb) {
-      throw new Error('Firebase Admin database not initialized');
-    }
-
-    console.log('Products API: Creating collection reference...');
-    const productsRef = collection(adminDb, 'products');
-    console.log('Products API: Collection reference created');
+    // Build filters
+    const filters: QueryFilter[] = [];
     
-    let baseQuery = query(productsRef);
-
     // Apply category filter
     if (category && category !== 'all') {
-      baseQuery = query(baseQuery, where('category', '==', category));
+      filters.push({ field: 'category', operator: '==', value: category });
     }
 
-    // Apply search filter (note: this is basic text search)
+    // Apply search filter for name (basic text search)
     if (searchTerm) {
-      // Firebase doesn't support full-text search natively
-      // This is a simple approach - for better search, consider using Algolia or similar
-      baseQuery = query(baseQuery, where('name', '>=', searchTerm), where('name', '<=', searchTerm + '\uf8ff'));
+      // Firebase text search limitations - using range queries
+      filters.push({ field: 'name', operator: '>=', value: searchTerm });
+      filters.push({ field: 'name', operator: '<=', value: searchTerm + '\uf8ff' });
     }
 
-    // Apply sorting - only if no filters are applied to avoid index requirements
-    // When filtering by category, we'll do client-side sorting instead
-    if (category === 'all' && !searchTerm) {
-      const sortField = sortBy === 'price' ? 'price' : 
-                       sortBy === 'name' ? 'name' : 
-                       sortBy === 'rating' ? 'rating' : 'createdAt';
-      const direction = sortDirection === 'asc' ? 'asc' : 'desc';
-      
-      baseQuery = query(baseQuery, orderBy(sortField, direction));
-    }
-
-    // Get total count for pagination
-    console.log('Products API: Getting count...');
-    const countSnapshot = await getDocs(baseQuery);
-    const totalItems = countSnapshot.size;
-    console.log('Products API: Count retrieved:', totalItems);
+    // Build ordering
+    const orderBy: QueryOrder[] = [];
+    const sortField = sortBy === 'price' ? 'price' : 
+                     sortBy === 'name' ? 'name' : 
+                     sortBy === 'rating' ? 'rating' : 'createdAt';
+    const direction = sortDirection === 'asc' ? 'asc' : 'desc';
     
-    const totalPages = Math.ceil(totalItems / limitParam);
-
-    // Apply pagination
-    if (page > 1) {
-      // Get the last document from the previous page for pagination
-      const prevPageQuery = query(baseQuery, limit((page - 1) * limitParam));
-      const prevPageSnapshot = await getDocs(prevPageQuery);
-      
-      if (!prevPageSnapshot.empty) {
-        const lastDoc = prevPageSnapshot.docs[prevPageSnapshot.docs.length - 1];
-        baseQuery = query(baseQuery, startAfter(lastDoc), limit(limitParam));
-      } else {
-        baseQuery = query(baseQuery, limit(limitParam));
-      }
-    } else {
-      baseQuery = query(baseQuery, limit(limitParam));
+    // Only apply ordering if no search term (to avoid Firebase index requirements)
+    if (!searchTerm) {
+      orderBy.push({ field: sortField, direction });
     }
 
-    // Execute the query
-    console.log('Products API: Executing paginated query...');
-    const snapshot = await getDocs(baseQuery);
+    console.log('Products API: Fetching products with filters and ordering...');
     
-    let products = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    // Get all matching products (we'll handle pagination client-side for now)
+    const result = await getCollection('products', {
+      filters,
+      orderBy
+    });
 
-    // Apply client-side sorting if we have filters (to avoid Firebase index requirements)
-    if (category !== 'all' || searchTerm) {
-      const sortField = sortBy === 'price' ? 'price' : 
-                       sortBy === 'name' ? 'name' : 
-                       sortBy === 'rating' ? 'rating' : 'createdAt';
-      const direction = sortDirection === 'asc' ? 'asc' : 'desc';
-      
+    if (isFirebaseError(result)) {
+      return NextResponse.json(result, { status: 500 });
+    }
+
+    let products = result.data;
+
+    // Apply client-side sorting if we had search term
+    if (searchTerm) {
       products.sort((a: any, b: any) => {
         const aVal = a[sortField];
         const bVal = b[sortField];
@@ -110,11 +77,18 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log(`Found ${products.length} products for page ${page}`);
+    // Apply pagination client-side
+    const totalItems = products.length;
+    const totalPages = Math.ceil(totalItems / limitParam);
+    const startIndex = (page - 1) * limitParam;
+    const endIndex = startIndex + limitParam;
+    const paginatedProducts = products.slice(startIndex, endIndex);
+
+    console.log(`Found ${totalItems} total products, returning ${paginatedProducts.length} for page ${page}`);
 
     return NextResponse.json({
       success: true,
-      data: products,
+      data: paginatedProducts,
       pagination: {
         currentPage: page,
         totalPages,

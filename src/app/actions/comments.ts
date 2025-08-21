@@ -1,20 +1,13 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
-  updateDoc,
-  doc,
-  increment,
-  getDoc,
-  deleteDoc,
-} from "firebase/firestore";
+import { 
+  addDocument, 
+  getCollection, 
+  getDocument, 
+  updateDocument, 
+  deleteDocument, 
+  isFirebaseError 
+} from "@/lib/firebase-utils";
 import { CommentT } from "@/lib/types/blog";
 
 // Add a new comment
@@ -35,10 +28,6 @@ export async function addComment(
       return { success: false, error: "Name cannot be empty" };
     }
 
-    if (!db) {
-      return { success: false, error: "Database not initialized" };
-    }
-
     // Create the comment object
     const commentData = {
       blogId,
@@ -46,19 +35,22 @@ export async function addComment(
       author: author.trim(),
       userId, // Using userId instead of email
       visitorId,
-      createdAt: serverTimestamp(),
       likes: 0,
       ...(parentId && { parentId }),
     };
 
     // Add to Firestore
-    const docRef = await addDoc(collection(db, "comments"), commentData);
+    const result = await addDocument("comments", commentData);
+
+    if (isFirebaseError(result)) {
+      return { success: false, error: result.error };
+    }
 
     // Return the created comment with its ID
     return {
       success: true,
       comment: {
-        id: docRef.id,
+        id: result.data.id,
         ...commentData,
         // Convert timestamp to a serializable format for the client
         createdAt: new Date().toISOString(),
@@ -73,24 +65,23 @@ export async function addComment(
 // Get comments for a blog post
 export async function getComments(blogId: string): Promise<CommentT[]> {
   try {
-    if (!db) {
+    const result = await getCollection<CommentT>("comments", {
+      filters: [{ field: "blogId", operator: "==", value: blogId }],
+      orderBy: [{ field: "createdAt", direction: "desc" }]
+    });
+
+    if (isFirebaseError(result)) {
+      console.error("Error fetching comments:", result.error);
       return [];
     }
 
-    const commentsRef = collection(db, "comments");
-    const q = query(
-      commentsRef,
-      where("blogId", "==", blogId),
-      orderBy("createdAt", "desc")
-    );
-
-    const querySnapshot = await getDocs(q);
-    const comments = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      // Convert Firestore timestamp to ISO string for serialization
-      createdAt: doc.data().createdAt?.toDate?.()
-        ? doc.data().createdAt.toDate().toISOString()
+    // Convert timestamps to ISO strings for serialization
+    const comments = result.data.map((comment) => ({
+      ...comment,
+      createdAt: comment.createdAt instanceof Date 
+        ? comment.createdAt.toISOString()
+        : typeof comment.createdAt === 'string'
+        ? comment.createdAt
         : new Date().toISOString(),
     })) as CommentT[];
 
@@ -107,49 +98,75 @@ export async function likeComment(
   visitorId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    if (!db) {
-      return { success: false, error: "Database not initialized" };
+    // Check if the visitor already liked this comment
+    const likesResult = await getCollection("likes", {
+      filters: [
+        { field: "targetId", operator: "==", value: commentId },
+        { field: "visitorId", operator: "==", value: visitorId }
+      ]
+    });
+
+    if (isFirebaseError(likesResult)) {
+      return { success: false, error: likesResult.error };
     }
 
-    // Check if the visitor already liked this comment
-    const likesRef = collection(db, "likes");
-    const q = query(
-      likesRef,
-      where("targetId", "==", commentId),
-      where("visitorId", "==", visitorId)
-    );
-
-    const querySnapshot = await getDocs(q);
-
     // If already liked, remove the like
-    if (!querySnapshot.empty) {
+    if (likesResult.data.length > 0) {
       // Get the first like document
-      const likeDoc = querySnapshot.docs[0];
+      const likeDoc = likesResult.data[0];
 
       // Remove the like
-      await deleteDoc(doc(db, "likes", likeDoc.id));
+      const deleteResult = await deleteDocument("likes", likeDoc.id);
+      if (isFirebaseError(deleteResult)) {
+        return { success: false, error: deleteResult.error };
+      }
 
-      // Decrement the likes count on the comment
-      const commentRef = doc(db, "comments", commentId);
-      await updateDoc(commentRef, {
-        likes: increment(-1),
-      });
+      // Get current comment to calculate new likes count
+      const commentResult = await getDocument("comments", commentId);
+      if (isFirebaseError(commentResult)) {
+        return { success: false, error: commentResult.error };
+      }
+
+      if (commentResult.data) {
+        const currentLikes = (commentResult.data as any).likes || 0;
+        const updateResult = await updateDocument("comments", commentId, {
+          likes: Math.max(0, currentLikes - 1)
+        });
+        
+        if (isFirebaseError(updateResult)) {
+          return { success: false, error: updateResult.error };
+        }
+      }
 
       return { success: true };
     }
 
     // Add new like
-    await addDoc(collection(db, "likes"), {
+    const addLikeResult = await addDocument("likes", {
       targetId: commentId,
       visitorId,
-      createdAt: serverTimestamp(),
     });
 
-    // Increment the likes count on the comment
-    const commentRef = doc(db, "comments", commentId);
-    await updateDoc(commentRef, {
-      likes: increment(1),
-    });
+    if (isFirebaseError(addLikeResult)) {
+      return { success: false, error: addLikeResult.error };
+    }
+
+    // Get current comment to calculate new likes count
+    const commentResult = await getDocument("comments", commentId);
+    if (isFirebaseError(commentResult)) {
+      return { success: false, error: commentResult.error };
+    }
+
+    if (commentResult.data) {
+      const currentLikes = (commentResult.data as any).likes || 0;
+      const updateResult = await updateDocument("comments", commentId, {
+        likes: currentLikes + 1
+      });
+      
+      if (isFirebaseError(updateResult)) {
+        return { success: false, error: updateResult.error };
+      }
+    }
 
     return { success: true };
   } catch (error) {
@@ -164,18 +181,18 @@ export async function deleteComment(
   visitorId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    if (!db) {
-      return { success: false, error: "Database not initialized" };
+    // Verify this visitor is the comment author
+    const commentResult = await getDocument("comments", commentId);
+
+    if (isFirebaseError(commentResult)) {
+      return { success: false, error: commentResult.error };
     }
 
-    // Verify this visitor is the comment author
-    const commentRef = doc(db, "comments", commentId);
-    const commentSnap = await getDoc(commentRef);
-
-    if (!commentSnap.exists()) {
+    if (!commentResult.data) {
       return { success: false, error: "Comment not found" };
     }
-    const commentData = commentSnap.data();
+
+    const commentData = commentResult.data as any;
 
     console.log("Server received request to delete comment:");
     console.log("Comment ID:", commentId);
@@ -195,7 +212,11 @@ export async function deleteComment(
     }
 
     // Delete the comment
-    await deleteDoc(commentRef);
+    const deleteResult = await deleteDocument("comments", commentId);
+    
+    if (isFirebaseError(deleteResult)) {
+      return { success: false, error: deleteResult.error };
+    }
 
     return { success: true };
   } catch (error) {

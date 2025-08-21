@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from '@/lib/firebase-admin';
-import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { Product } from "@/data/products";
+import { getDocument, getCollection, isFirebaseError } from "@/lib/firebase-utils";
 
 export async function GET(
   request: NextRequest,
@@ -22,15 +21,14 @@ export async function GET(
 
     console.log(`Fetching product with ID: ${productId}`);
 
-    if (!adminDb) {
-      throw new Error('Firebase Admin database not initialized');
+    // Get the product document
+    const productResult = await getDocument<Product>('products', productId);
+
+    if (isFirebaseError(productResult)) {
+      return NextResponse.json(productResult, { status: 500 });
     }
 
-    // Get the product document
-    const productRef = doc(adminDb, 'products', productId);
-    const productDoc = await getDoc(productRef);
-
-    if (!productDoc.exists()) {
+    if (!productResult.data) {
       return NextResponse.json(
         {
           success: false,
@@ -40,27 +38,20 @@ export async function GET(
       );
     }
 
-    const productData = {
-      id: productDoc.id,
-      ...productDoc.data()
-    } as Product;
+    const productData = productResult.data;
 
     // Get related products from the same category
-    const productsRef = collection(adminDb, 'products');
-    const relatedQuery = query(
-      productsRef,
-      where('category', '==', productData.category),
-      limit(6)
-    );
-    
-    const relatedSnapshot = await getDocs(relatedQuery);
-    const relatedProducts = relatedSnapshot.docs
-      .filter((doc: any) => doc.id !== productId) // Exclude the current product
-      .slice(0, 4) // Get only 4 related products
-      .map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+    const relatedResult = await getCollection<Product>('products', {
+      filters: [{ field: 'category', operator: '==', value: productData.category }],
+      limit: 6
+    });
+
+    let relatedProducts: Product[] = [];
+    if (!isFirebaseError(relatedResult)) {
+      relatedProducts = relatedResult.data
+        .filter(product => product.id !== productId) // Exclude the current product
+        .slice(0, 4); // Get only 4 related products
+    }
 
     console.log(`Found product: ${productData.name} with ${relatedProducts.length} related products`);
 

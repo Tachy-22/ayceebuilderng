@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import {
-  collection,
-  query,
-  where,
-  getCountFromServer,
-} from "firebase/firestore";
+import { getCollectionCount, isFirebaseError } from "@/lib/firebase-utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,15 +14,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Query the comments collection to count comments for the specified blog
-    const commentsRef = collection(db, "comments");
-    const q = query(commentsRef, where("blogId", "==", blogId));
+    // Get the count of comments for the specified blog
+    const countResult = await getCollectionCount("comments", {
+      filters: [{ field: "blogId", operator: "==", value: blogId }]
+    });
 
-    // Get the count using Firestore's getCountFromServer
-    const snapshot = await getCountFromServer(q);
-    const count = snapshot.data().count;
+    if (isFirebaseError(countResult)) {
+      return NextResponse.json(countResult, { status: 500 });
+    }
 
-    return NextResponse.json({ count });
+    return NextResponse.json({ count: countResult.data });
   } catch (error) {
     console.error("Error getting comment count:", error);
     return NextResponse.json(

@@ -71,6 +71,11 @@ export default function AdminProductsPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        
+        if (!db) {
+          throw new Error('Database not initialized');
+        }
+
         const productsRef = collection(db, 'products');
         const q = query(productsRef, orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
@@ -234,6 +239,11 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
       const productsRef = collection(db, 'products');
       const q = query(productsRef, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);

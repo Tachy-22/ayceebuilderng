@@ -1,6 +1,5 @@
 "use server";
-import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { addDocument as addDoc, isFirebaseError } from "@/lib/firebase-utils";
 import { revalidatePath } from "next/cache";
 
 export type FirebaseError = {
@@ -21,24 +20,20 @@ export async function addDocument<T extends Record<string, unknown>>(
       throw new Error("Missing required parameters");
     }
 
-    if (!db) {
-      throw new Error("Firebase database not initialized");
+    const result = await addDoc(collectionName, data);
+
+    if (isFirebaseError(result)) {
+      return {
+        code: result.code || "add-document-error",
+        message: result.error,
+        success: false,
+      };
     }
-
-    const collectionRef = collection(db, collectionName);
-
-    // Make sure createdAt exists and is a proper timestamp
-    const docData = {
-      ...data,
-      createdAt: new Date().toISOString(),
-    };
-
-    const docRef = await addDoc(collectionRef, docData);
 
     // Revalidate the path to update any cached data
     revalidatePath(path);
 
-    return { id: docRef.id, success: true };
+    return { id: result.data.id, success: true };
   } catch (error) {
     console.error("Error adding document:", error);
     return {

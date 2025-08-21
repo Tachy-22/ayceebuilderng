@@ -1,18 +1,12 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  serverTimestamp,
-  updateDoc,
-  doc,
-  increment,
-  getDoc,
-} from "firebase/firestore";
+import { 
+  addDocument, 
+  getCollection, 
+  getDocument, 
+  updateDocument, 
+  isFirebaseError 
+} from "@/lib/firebase-utils";
 
 // Add claps to a blog post
 export async function addClap(
@@ -26,47 +20,61 @@ export async function addClap(
       return { success: false, error: "Invalid clap count" };
     }
 
-    if (!db) {
-      return { success: false, error: "Database not initialized" };
+    // Check if the visitor already clapped for this blog
+    const clapsResult = await getCollection("claps", {
+      filters: [
+        { field: "blogId", operator: "==", value: blogId },
+        { field: "visitorId", operator: "==", value: visitorId }
+      ]
+    });
+
+    if (isFirebaseError(clapsResult)) {
+      return { success: false, error: clapsResult.error };
     }
 
-    // Check if the visitor already clapped for this blog
-    const clapsRef = collection(db, "claps");
-    const q = query(
-      clapsRef,
-      where("blogId", "==", blogId),
-      where("visitorId", "==", visitorId)
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
+    if (clapsResult.data.length === 0) {
       // First time clapping, create new document
-      await addDoc(collection(db, "claps"), {
+      const addResult = await addDocument("claps", {
         blogId,
         visitorId,
         count,
-        createdAt: serverTimestamp(),
       });
+
+      if (isFirebaseError(addResult)) {
+        return { success: false, error: addResult.error };
+      }
     } else {
       // Already clapped before, update the count
-      const clapDoc = querySnapshot.docs[0];
-      await updateDoc(doc(db, "claps", clapDoc.id), {
-        count: increment(count),
+      const clapDoc = clapsResult.data[0];
+      const currentCount = (clapDoc as any).count || 0;
+      
+      const updateResult = await updateDocument("claps", clapDoc.id, {
+        count: currentCount + count,
       });
+
+      if (isFirebaseError(updateResult)) {
+        return { success: false, error: updateResult.error };
+      }
     }
 
     // Update the total claps on the blog document
-    const blogRef = doc(db, "blogs", blogId);
-    const blogDoc = await getDoc(blogRef);
+    const blogResult = await getDocument("blogs", blogId);
 
-    if (blogDoc.exists()) {
-      const currentClaps = blogDoc.data().claps || 0;
+    if (isFirebaseError(blogResult)) {
+      return { success: false, error: blogResult.error };
+    }
+
+    if (blogResult.data) {
+      const currentClaps = (blogResult.data as any).claps || 0;
       const newClaps = currentClaps + count;
 
-      await updateDoc(blogRef, {
+      const updateBlogResult = await updateDocument("blogs", blogId, {
         claps: newClaps,
       });
+
+      if (isFirebaseError(updateBlogResult)) {
+        return { success: false, error: updateBlogResult.error };
+      }
 
       return { success: true, totalClaps: newClaps };
     }
@@ -81,15 +89,15 @@ export async function addClap(
 // Get the total claps for a blog post
 export async function getClaps(blogId: string): Promise<number> {
   try {
-    if (!db) {
+    const blogResult = await getDocument("blogs", blogId);
+
+    if (isFirebaseError(blogResult)) {
+      console.error("Error getting claps:", blogResult.error);
       return 0;
     }
-    
-    const blogRef = doc(db, "blogs", blogId);
-    const blogDoc = await getDoc(blogRef);
 
-    if (blogDoc.exists()) {
-      return blogDoc.data().claps || 0;
+    if (blogResult.data) {
+      return (blogResult.data as any).claps || 0;
     }
 
     return 0;
@@ -105,21 +113,20 @@ export async function getVisitorClaps(
   visitorId: string
 ): Promise<number> {
   try {
-    if (!db) {
+    const clapsResult = await getCollection("claps", {
+      filters: [
+        { field: "blogId", operator: "==", value: blogId },
+        { field: "visitorId", operator: "==", value: visitorId }
+      ]
+    });
+
+    if (isFirebaseError(clapsResult)) {
+      console.error("Error getting visitor claps:", clapsResult.error);
       return 0;
     }
-    
-    const clapsRef = collection(db, "claps");
-    const q = query(
-      clapsRef,
-      where("blogId", "==", blogId),
-      where("visitorId", "==", visitorId)
-    );
 
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      return querySnapshot.docs[0].data().count || 0;
+    if (clapsResult.data.length > 0) {
+      return (clapsResult.data[0] as any).count || 0;
     }
 
     return 0;

@@ -66,6 +66,11 @@ export default function AdminTradesmenPage() {
   const fetchTradesmen = async () => {
     try {
       setLoading(true);
+      
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
       const tradesmenRef = collection(db, 'tradesmen');
       const q = query(tradesmenRef, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
