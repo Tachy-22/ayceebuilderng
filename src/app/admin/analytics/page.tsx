@@ -24,6 +24,7 @@ import { collection, query, orderBy, getDocs, where, Timestamp } from 'firebase/
 import { db } from '@/lib/firebase';
 import { Order } from '@/types/order';
 import { useSettings } from '@/contexts/SettingsContext';
+import { toJSDate } from '@/lib/formatOrderDate';
 
 interface AnalyticsData {
   totalRevenue: number;
@@ -71,7 +72,7 @@ export default function AdminAnalyticsPage() {
         const ordersRef = collection(db, 'orders');
         const allOrdersQuery = query(ordersRef, orderBy('orderDate', 'desc'));
         const allOrdersSnapshot = await getDocs(allOrdersQuery);
-        
+
         allOrders = allOrdersSnapshot.docs.map(doc => {
           const data = doc.data();
           return {
@@ -84,7 +85,7 @@ export default function AdminAnalyticsPage() {
         console.log('Fetched all orders:', allOrders.length);
 
         // Filter orders by date range in memory (more reliable than Firestore query)
-        orders = allOrders.filter(order => order.orderDate >= startDate);
+        orders = allOrders.filter(order => toJSDate(order.orderDate) >= startDate);
 
         console.log('Filtered orders for time range:', orders.length);
       } catch (ordersError) {
@@ -115,18 +116,18 @@ export default function AdminAnalyticsPage() {
 
       // Calculate growth (comparing with previous period)
       const previousPeriodStart = new Date(startDate.getTime() - (daysBack * 24 * 60 * 60 * 1000));
-      const previousOrders = allOrders.filter(order => 
-        order.orderDate >= previousPeriodStart && order.orderDate < startDate
+      const previousOrders = allOrders.filter(order =>
+        toJSDate(order.orderDate) >= previousPeriodStart && toJSDate(order.orderDate) < startDate
       );
       const previousRevenue = previousOrders
         .filter(order => order.status !== 'cancelled')
         .reduce((sum, order) => sum + (order.totalAmount || 0), 0);
       const previousOrderCount = previousOrders.length;
 
-      const revenueGrowth = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : 
-                           totalRevenue > 0 ? 100 : 0;
-      const ordersGrowth = previousOrderCount > 0 ? ((totalOrders - previousOrderCount) / previousOrderCount) * 100 : 
-                          totalOrders > 0 ? 100 : 0;
+      const revenueGrowth = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 :
+        totalRevenue > 0 ? 100 : 0;
+      const ordersGrowth = previousOrderCount > 0 ? ((totalOrders - previousOrderCount) / previousOrderCount) * 100 :
+        totalOrders > 0 ? 100 : 0;
 
       // Calculate top categories with safe defaults
       const categoryMap: { [key: string]: { count: number; revenue: number } } = {};
@@ -154,7 +155,7 @@ export default function AdminAnalyticsPage() {
       const monthlyMap: { [key: string]: { revenue: number; orders: number } } = {};
       completedOrders.forEach(order => {
         try {
-          const monthKey = order.orderDate.toISOString().substring(0, 7); // YYYY-MM
+          const monthKey = toJSDate(order.orderDate).toISOString().substring(0, 7); // YYYY-MM
           if (!monthlyMap[monthKey]) {
             monthlyMap[monthKey] = { revenue: 0, orders: 0 };
           }
@@ -176,7 +177,7 @@ export default function AdminAnalyticsPage() {
       const recentActivity = orders.slice(0, 10).map(order => ({
         type: 'order',
         description: `Order #${order.orderNumber || order.id} - ${formatCurrency(order.totalAmount || 0)}`,
-        date: order.orderDate,
+        date: toJSDate(order.orderDate),
       }));
 
       console.log('Analytics data calculated:', {
@@ -204,7 +205,7 @@ export default function AdminAnalyticsPage() {
       });
     } catch (error) {
       console.error('Error fetching analytics data:', error);
-      
+
       // Set empty analytics data in case of error
       setAnalyticsData({
         totalRevenue: 0,
@@ -410,9 +411,9 @@ export default function AdminAnalyticsPage() {
                       <Calendar className="h-4 w-4 text-gray-400" />
                       <div>
                         <p className="font-medium">
-                          {new Date(month.month + '-01').toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long' 
+                          {new Date(month.month + '-01').toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long'
                           })}
                         </p>
                         <p className="text-sm text-gray-500">{month.orders} orders</p>

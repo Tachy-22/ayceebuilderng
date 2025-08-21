@@ -20,6 +20,8 @@ import Link from 'next/link';
 import { Order } from '@/types/order';
 import { useSettings } from '@/contexts/SettingsContext';
 import ClientMigration from '@/components/admin/ClientMigration';
+import { Timestamp } from 'firebase/firestore';
+import { toJSDate } from '@/lib/formatOrderDate';
 
 interface DashboardStats {
   totalOrders: number;
@@ -231,7 +233,7 @@ export default function OverviewClient({ stats, recentOrders }: OverviewClientPr
                       <p className="font-medium">{order.orderNumber}</p>
                       <p className="text-sm text-gray-600">{order.customerEmail}</p>
                       <p className="text-xs text-gray-500">
-                        {order.orderDate.toLocaleDateString()}
+                        {toJSDate(order.orderDate).toLocaleDateString()}
                       </p>
                     </div>
                   </div>

@@ -42,10 +42,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { collection, query, orderBy, getDocs, doc, updateDoc, where } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, updateDoc, where, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Order, OrderStatus } from '@/types/order';
 import Image from 'next/image';
+import { toJSDate } from '@/lib/formatOrderDate';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -69,7 +70,7 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      
+
       if (!db) {
         throw new Error('Database not initialized');
       }
@@ -122,7 +123,7 @@ export default function AdminOrdersPage() {
   const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
       setUpdatingStatus(true);
-      
+
       if (!db) {
         throw new Error('Database not initialized');
       }
@@ -404,7 +405,7 @@ export default function AdminOrdersPage() {
                         </div><div className='flex flex-col '>
                           <h4 className="text-lg font-medium">Order #{order.orderNumber}</h4>
                           <p className="text-sm text-gray-500">
-                            {order.orderDate.toLocaleDateString('en-US', {
+                            {toJSDate(order.orderDate).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric',

@@ -1,14 +1,14 @@
-import { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
   limit,
   Timestamp,
   writeBatch
@@ -16,6 +16,7 @@ import {
 import { db } from './firebase';
 import { Order, OrderItem, OrderStatus } from '@/types/order';
 import { UserProfile } from '@/types/user';
+import { toJSDate } from './formatOrderDate';
 
 // Order Management Functions
 export const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate' | 'updatedAt'>) => {
@@ -30,7 +31,7 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate' | 'u
 
     const docRef = await addDoc(collection(db, 'orders'), {
       ...order,
-      orderDate: Timestamp.fromDate(order.orderDate),
+      orderDate: Timestamp.fromDate(toJSDate(order.orderDate)),
       updatedAt: Timestamp.fromDate(order.updatedAt),
     });
 
@@ -49,10 +50,10 @@ export const getUserOrders = async (userId: string, limitCount: number = 10) => 
       orderBy('orderDate', 'desc'),
       limit(limitCount)
     );
-    
+
     const querySnapshot = await getDocs(q);
     const orders: Order[] = [];
-    
+
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       orders.push({
@@ -62,7 +63,7 @@ export const getUserOrders = async (userId: string, limitCount: number = 10) => 
         updatedAt: data.updatedAt.toDate(),
       } as Order);
     });
-    
+
     return orders;
   } catch (error) {
     console.error('Error fetching user orders:', error);
@@ -74,7 +75,7 @@ export const getOrderById = async (orderId: string) => {
   try {
     const docRef = doc(db, 'orders', orderId);
     const docSnap = await getDoc(docRef);
-    
+
     if (docSnap.exists()) {
       const data = docSnap.data();
       return {
@@ -84,7 +85,7 @@ export const getOrderById = async (orderId: string) => {
         updatedAt: data.updatedAt.toDate(),
       } as Order;
     }
-    
+
     return null;
   } catch (error) {
     console.error('Error fetching order:', error);
@@ -113,10 +114,10 @@ export const getOrdersByStatus = async (userId: string, status: OrderStatus) => 
       where('status', '==', status),
       orderBy('orderDate', 'desc')
     );
-    
+
     const querySnapshot = await getDocs(q);
     const orders: Order[] = [];
-    
+
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       orders.push({
@@ -126,7 +127,7 @@ export const getOrdersByStatus = async (userId: string, status: OrderStatus) => 
         updatedAt: data.updatedAt.toDate(),
       } as Order);
     });
-    
+
     return orders;
   } catch (error) {
     console.error('Error fetching orders by status:', error);
@@ -139,7 +140,7 @@ export const getUserProfile = async (userId: string) => {
   try {
     const docRef = doc(db, 'users', userId);
     const docSnap = await getDoc(docRef);
-    
+
     if (docSnap.exists()) {
       const data = docSnap.data();
       return {
@@ -148,7 +149,7 @@ export const getUserProfile = async (userId: string) => {
         updatedAt: data.updatedAt.toDate(),
       } as UserProfile;
     }
-    
+
     return null;
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -163,7 +164,7 @@ export const updateUserProfile = async (userId: string, profileData: Partial<Use
       ...profileData,
       updatedAt: Timestamp.fromDate(new Date()),
     };
-    
+
     await updateDoc(userRef, updateData);
   } catch (error) {
     console.error('Error updating user profile:', error);
@@ -183,7 +184,7 @@ export const createMultipleOrders = async (orders: Omit<Order, 'id' | 'orderDate
   try {
     const batch = writeBatch(db);
     const orderRefs: { id: string; order: Order }[] = [];
-    
+
     orders.forEach((orderData) => {
       const orderRef = doc(collection(db, 'orders'));
       const order: Order = {
@@ -193,16 +194,16 @@ export const createMultipleOrders = async (orders: Omit<Order, 'id' | 'orderDate
         orderDate: new Date(),
         updatedAt: new Date(),
       };
-      
+
       batch.set(orderRef, {
         ...order,
-        orderDate: Timestamp.fromDate(order.orderDate),
+        orderDate: Timestamp.fromDate(toJSDate(order.orderDate)),
         updatedAt: Timestamp.fromDate(order.updatedAt),
       });
-      
+
       orderRefs.push({ id: orderRef.id, order });
     });
-    
+
     await batch.commit();
     return orderRefs;
   } catch (error) {
@@ -221,10 +222,10 @@ export const searchUserOrders = async (userId: string, searchTerm: string) => {
       where('userId', '==', userId),
       orderBy('orderDate', 'desc')
     );
-    
+
     const querySnapshot = await getDocs(q);
     const orders: Order[] = [];
-    
+
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       const order = {
@@ -233,19 +234,19 @@ export const searchUserOrders = async (userId: string, searchTerm: string) => {
         orderDate: data.orderDate.toDate(),
         updatedAt: data.updatedAt.toDate(),
       } as Order;
-      
+
       // Client-side filtering by order number or item names
-      const matchesSearch = 
+      const matchesSearch =
         order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.items.some(item => 
+        order.items.some(item =>
           item.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
-      
+
       if (matchesSearch) {
         orders.push(order);
       }
     });
-    
+
     return orders;
   } catch (error) {
     console.error('Error searching orders:', error);
@@ -288,10 +289,10 @@ export const getHomePageStats = async () => {
   try {
     const [productsCount, vendorsCount, usersCount] = await Promise.all([
       getProductsCount(),
-      getVendorsCount(), 
+      getVendorsCount(),
       getUsersCount()
     ]);
-    
+
     return {
       products: productsCount,
       vendors: vendorsCount,

@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react';
 import { getOrderById } from '@/lib/firestore';
 import { Order } from '@/types/order';
 import { useParams, useRouter } from 'next/navigation';
-import { 
-  Package, 
+import {
+  Package,
   ArrowLeft,
-  Clock, 
+  Clock,
   CheckCircle,
   Truck,
   X,
@@ -27,6 +27,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { Timestamp } from 'firebase/firestore';
+import { toJSDate } from '@/lib/formatOrderDate';
 
 // Dynamically import DownloadableReceipt with SSR disabled
 const DownloadableReceipt = dynamic(
@@ -47,7 +49,7 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       if (!user || !orderId) return;
-      
+
       try {
         const orderData = await getOrderById(orderId);
         if (orderData) {
@@ -208,7 +210,7 @@ export default function OrderDetailsPage() {
               Order #{order.orderNumber}
             </h1>
             <p className="text-gray-600">
-              Placed on {order.orderDate.toLocaleDateString('en-US', {
+              Placed on {toJSDate(order.orderDate).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -397,7 +399,7 @@ export default function OrderDetailsPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Order Date:</span>
-                <span>{order.orderDate.toLocaleDateString()}</span>
+                <span>{toJSDate(order.orderDate).toLocaleDateString()}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Last Updated:</span>

@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { UserProfile } from '@/types/user';
+import { toJSDate } from '@/lib/formatOrderDate';
 
 interface UserWithStats extends UserProfile {
   orderCount?: number;
@@ -188,7 +189,7 @@ export default function UsersClient({ users }: UsersClientProps) {
                           </span>
                           <span className="flex items-center">
                             <Calendar className="h-3 w-3 mr-1" />
-                            Joined {user.createdAt.toLocaleDateString()}
+                            Joined {toJSDate(user.createdAt).toLocaleDateString()}
                           </span>
                           {user.addresses && user.addresses.length > 0 && (
                             <span className="flex items-center">
@@ -265,8 +266,8 @@ export default function UsersClient({ users }: UsersClientProps) {
                     <p><span className="font-medium">Name:</span> {selectedUser.name || 'Not provided'}</p>
                     <p><span className="font-medium">Email:</span> {selectedUser.email}</p>
                     <p><span className="font-medium">Phone:</span> {selectedUser.phone || 'Not provided'}</p>
-                    <p><span className="font-medium">Member since:</span> {selectedUser.createdAt.toLocaleDateString()}</p>
-                    <p><span className="font-medium">Last updated:</span> {selectedUser.updatedAt.toLocaleDateString()}</p>
+                    <p><span className="font-medium">Member since:</span> {toJSDate(selectedUser.createdAt).toLocaleDateString()}</p>
+                    <p><span className="font-medium">Last updated:</span> {toJSDate(selectedUser.updatedAt).toLocaleDateString()}</p>
                   </div>
                 </div>
 

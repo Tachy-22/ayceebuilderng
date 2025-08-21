@@ -4,10 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { getUserOrders } from '@/lib/firestore';
 import { Order } from '@/types/order';
-import { 
-  Package, 
-  ShoppingCart, 
-  Clock, 
+import {
+  Package,
+  ShoppingCart,
+  Clock,
   CheckCircle,
   Truck,
   User
@@ -16,6 +16,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Timestamp } from 'firebase-admin/firestore';
+import { toJSDate } from '@/lib/formatOrderDate';
 
 export default function DashboardPage() {
   const { user, userProfile } = useAuth();
@@ -31,21 +33,21 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return;
-      
+
       try {
         const orders = await getUserOrders(user.uid, 5); // Get last 5 orders
         setRecentOrders(orders);
-        
+
         // Calculate stats
         const totalOrders = orders.length;
-        const pendingOrders = orders.filter(order => 
+        const pendingOrders = orders.filter(order =>
           ['pending', 'confirmed', 'processing'].includes(order.status)
         ).length;
-        const completedOrders = orders.filter(order => 
+        const completedOrders = orders.filter(order =>
           order.status === 'delivered'
         ).length;
         const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-        
+
         setStats({
           totalOrders,
           pendingOrders,
@@ -147,7 +149,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold">{stats.totalOrders}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
@@ -157,7 +159,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold">{stats.pendingOrders}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed Orders</CardTitle>
@@ -167,7 +169,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold">{stats.completedOrders}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
@@ -207,7 +209,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="font-medium">Order #{order.orderNumber}</p>
                       <p className="text-sm text-gray-500">
-                        {order.orderDate.toLocaleDateString()} • {order.items.length} items
+                        {toJSDate(order.orderDate).toLocaleDateString()} • {order.items.length} items
                       </p>
                     </div>
                   </div>

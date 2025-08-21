@@ -4,11 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { getUserOrders, getOrdersByStatus } from '@/lib/firestore';
 import { Order, OrderStatus } from '@/types/order';
-import { 
-  Package, 
-  Search, 
+import {
+  Package,
+  Search,
   Filter,
-  Clock, 
+  Clock,
   CheckCircle,
   Truck,
   X,
@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/select';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Timestamp } from 'firebase/firestore';
+import { toJSDate } from '@/lib/formatOrderDate';
 
 export default function OrdersPage() {
   const { user } = useAuth();
@@ -39,7 +41,7 @@ export default function OrdersPage() {
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user) return;
-      
+
       try {
         const allOrders = await getUserOrders(user.uid, 50); // Get more orders
         setOrders(allOrders);
@@ -59,9 +61,9 @@ export default function OrdersPage() {
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(order => 
+      filtered = filtered.filter(order =>
         order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.items.some(item => 
+        order.items.some(item =>
           item.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
@@ -187,8 +189,8 @@ export default function OrdersPage() {
             <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
             <p className="text-gray-500 mb-6">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'Try adjusting your filters' 
+              {searchTerm || statusFilter !== 'all'
+                ? 'Try adjusting your filters'
                 : 'You haven\'t placed any orders yet'}
             </p>
             {(!searchTerm && statusFilter === 'all') && (
@@ -210,7 +212,7 @@ export default function OrdersPage() {
                     <div>
                       <h3 className="font-medium">Order #{order.orderNumber}</h3>
                       <p className="text-sm text-gray-500">
-                        Placed on {order.orderDate.toLocaleDateString('en-US', {
+                        Placed on {toJSDate(order.orderDate).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
@@ -249,7 +251,7 @@ export default function OrdersPage() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {order.items.length > 2 && (
                     <p className="text-sm text-gray-500">
                       +{order.items.length - 2} more items
