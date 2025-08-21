@@ -219,7 +219,7 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
                 } else {
                   console.log('Both searches failed. Status:', fallbackStatus);
                   setPredictions([]);
-                  setShowSuggestions(false);
+                  setShowSuggestions(true); // Keep suggestions open to show "No results" message
                 }
               }
             );
@@ -397,6 +397,12 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
               <br />• Major landmarks (e.g., &quot;Shoprite Ikeja&quot;)
               <br />• Street names (e.g., &quot;Allen Avenue Lagos&quot;)
               <br />• Area names (e.g., &quot;Victoria Island Lagos&quot;)
+            </div>
+            <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-amber-600">
+              <div className="flex items-center">
+                <span className="mr-1">⚠️</span>
+                <span>Note: If your address is not found, delivery cost estimates may vary slightly from actual charges.</span>
+              </div>
             </div>
           </div>
         )}

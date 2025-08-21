@@ -180,7 +180,7 @@ export default function OrderDetailsPage() {
           {error || 'Order not found'}
         </h3>
         <p className="text-gray-500 mb-6">
-          The order you're looking for doesn't exist or you don't have permission to view it.
+          The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.
         </p>
         <Button onClick={() => router.push('/dashboard/orders')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
