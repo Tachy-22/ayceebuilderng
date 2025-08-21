@@ -37,6 +37,10 @@ export async function fetchCollection<T>(
       throw new Error("Collection name is required");
     }
 
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     const constraints: QueryConstraint[] = [];
     if (options?.whereClause) {
       options.whereClause.forEach(([field, operator, value]) => {

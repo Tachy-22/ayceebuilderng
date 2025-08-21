@@ -13,6 +13,10 @@ export async function incrementViews(
       throw new Error("Blog ID is required");
     }
 
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     const docRef = doc(db, "blogs", blogId);
     const docSnap = await getDoc(docRef);
 

@@ -16,6 +16,10 @@ export async function updateDocument<T extends { [key: string]: unknown }>(
       throw new Error("Missing required parameters");
     }
 
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     const docRef = doc(db, collectionName, documentId);
 
     // Make sure updatedAt is a proper timestamp

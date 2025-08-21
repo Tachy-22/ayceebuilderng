@@ -19,6 +19,10 @@ export async function deleteDocument(
       );
     }
 
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     const docRef = doc(db, collectionName, documentId);
     const docSnap = await getDoc(docRef);
 

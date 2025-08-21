@@ -26,6 +26,10 @@ export async function addClap(
       return { success: false, error: "Invalid clap count" };
     }
 
+    if (!db) {
+      return { success: false, error: "Database not initialized" };
+    }
+
     // Check if the visitor already clapped for this blog
     const clapsRef = collection(db, "claps");
     const q = query(
@@ -77,6 +81,10 @@ export async function addClap(
 // Get the total claps for a blog post
 export async function getClaps(blogId: string): Promise<number> {
   try {
+    if (!db) {
+      return 0;
+    }
+    
     const blogRef = doc(db, "blogs", blogId);
     const blogDoc = await getDoc(blogRef);
 
@@ -97,6 +105,10 @@ export async function getVisitorClaps(
   visitorId: string
 ): Promise<number> {
   try {
+    if (!db) {
+      return 0;
+    }
+    
     const clapsRef = collection(db, "claps");
     const q = query(
       clapsRef,

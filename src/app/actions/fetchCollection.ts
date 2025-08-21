@@ -48,6 +48,10 @@ export async function fetchCollection<T>(
       throw new Error("Missing collection name");
     }
 
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     const collectionRef = collection(db, collectionName);
     let queryConstraints = [];
 

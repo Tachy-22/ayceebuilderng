@@ -47,6 +47,10 @@ function serializeComment(doc: any): CommentT {
 
 export async function addComment(input: CommentInput) {
   try {
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     const commentData = {
       blogId: input.blogId,
       blogTitle: input.blogTitle,
@@ -72,6 +76,10 @@ export async function addComment(input: CommentInput) {
 
 export async function getComments(blogId: string) {
   try {
+    if (!db) {
+      return [];
+    }
+
     const commentsRef = collection(db, "comments");
     const q = query(
       commentsRef,

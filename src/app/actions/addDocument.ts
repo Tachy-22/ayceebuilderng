@@ -21,6 +21,10 @@ export async function addDocument<T extends Record<string, unknown>>(
       throw new Error("Missing required parameters");
     }
 
+    if (!db) {
+      throw new Error("Firebase database not initialized");
+    }
+
     const collectionRef = collection(db, collectionName);
 
     // Make sure createdAt exists and is a proper timestamp

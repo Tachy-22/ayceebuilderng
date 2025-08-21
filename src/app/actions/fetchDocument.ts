@@ -17,6 +17,10 @@ export async function fetchDocument<T>(
       throw new Error("Missing required parameters");
     }
 
+    if (!db) {
+      return null;
+    }
+
     const docRef = doc(db, collectionName, documentId);
     const docSnap = await getDoc(docRef);
 

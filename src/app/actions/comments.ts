@@ -35,6 +35,10 @@ export async function addComment(
       return { success: false, error: "Name cannot be empty" };
     }
 
+    if (!db) {
+      return { success: false, error: "Database not initialized" };
+    }
+
     // Create the comment object
     const commentData = {
       blogId,
@@ -69,6 +73,10 @@ export async function addComment(
 // Get comments for a blog post
 export async function getComments(blogId: string): Promise<CommentT[]> {
   try {
+    if (!db) {
+      return [];
+    }
+
     const commentsRef = collection(db, "comments");
     const q = query(
       commentsRef,
@@ -99,6 +107,10 @@ export async function likeComment(
   visitorId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    if (!db) {
+      return { success: false, error: "Database not initialized" };
+    }
+
     // Check if the visitor already liked this comment
     const likesRef = collection(db, "likes");
     const q = query(
@@ -152,6 +164,10 @@ export async function deleteComment(
   visitorId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    if (!db) {
+      return { success: false, error: "Database not initialized" };
+    }
+
     // Verify this visitor is the comment author
     const commentRef = doc(db, "comments", commentId);
     const commentSnap = await getDoc(commentRef);
