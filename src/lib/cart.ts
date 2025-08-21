@@ -14,6 +14,13 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Product } from '@/data/products';
+import { 
+  getCollection, 
+  addDocument, 
+  updateDocument, 
+  deleteDocument,
+  isFirebaseError 
+} from './firebase-utils';
 
 export interface CartItem {
   id: string;
@@ -114,7 +121,10 @@ export const addToCart = async (userId: string, productData: any, quantity: numb
 // Remove item from cart
 export const removeFromCart = async (cartItemId: string) => {
   try {
-    await deleteDoc(doc(db, 'carts', cartItemId));
+    const result = await deleteDocument('carts', cartItemId);
+    if (isFirebaseError(result)) {
+      throw new Error(result.error);
+    }
   } catch (error) {
     console.error('Error removing from cart:', error);
     throw error;
@@ -142,22 +152,20 @@ export const updateCartItemQuantity = async (cartItemId: string, quantity: numbe
 // Get user's cart items
 export const getUserCart = async (userId: string): Promise<CartItem[]> => {
   try {
-    const cartRef = collection(db, 'carts');
-    const cartQuery = query(cartRef, where('userId', '==', userId));
-    const cartSnapshot = await getDocs(cartQuery);
-    
-    const cartItems: CartItem[] = [];
-    cartSnapshot.forEach((doc) => {
-      const data = doc.data();
-      cartItems.push({
-        id: doc.id,
-        ...data,
-        addedAt: data.addedAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
-      } as CartItem);
+    const result = await getCollection<CartItem>('carts', {
+      filters: [{ field: 'userId', operator: '==', value: userId }],
+      orderBy: [{ field: 'addedAt', direction: 'desc' }]
     });
-    
-    return cartItems.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
+
+    if (isFirebaseError(result)) {
+      throw new Error(result.error);
+    }
+
+    return result.data.map(item => ({
+      ...item,
+      addedAt: item.addedAt instanceof Date ? item.addedAt : new Date(item.addedAt),
+      updatedAt: item.updatedAt instanceof Date ? item.updatedAt : new Date(item.updatedAt),
+    }));
   } catch (error) {
     console.error('Error fetching user cart:', error);
     throw error;

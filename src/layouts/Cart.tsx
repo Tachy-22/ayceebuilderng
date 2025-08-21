@@ -93,6 +93,7 @@ const Cart = () => {
   const [orderReference, setOrderReference] = useState("");
   const [confirmedItems, setConfirmedItems] = useState<any[]>([]);
   const [confirmedTotal, setConfirmedTotal] = useState(0);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [savedUsers, setSavedUsers] = useState<
     | {
       name: string;
@@ -540,6 +541,7 @@ const Cart = () => {
 
   const handlePaystackSuccess = async (reference: any) => {
     try {
+      setIsProcessingPayment(true);
       if (selectedAddress && user && userProfile) {
         const itemsForReceipt = cartItems.map((item) => ({
           productName: item.product.name,
@@ -616,7 +618,10 @@ const Cart = () => {
           setOrderReference(reference.reference);
           setConfirmedItems(itemsForReceipt);
           setConfirmedTotal(total);
-          clearCart();
+          
+          // Clear cart after a slight delay to show processing
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await clearCart();
           setPaymentConfirmed(true);
 
           // Show success message
@@ -649,6 +654,8 @@ const Cart = () => {
         title: "Order failed",
         description: error instanceof Error ? error.message : "There was an error processing your order. Please try again.",
       });
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -1632,6 +1639,24 @@ const Cart = () => {
           )}
         </motion.div>
       </main>
+
+      {/* Payment Processing Overlay */}
+      {isProcessingPayment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 text-center">
+            <div className="flex justify-center mb-4">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Processing Payment</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Please wait while we verify your payment and process your order...
+            </p>
+            <div className="text-xs text-gray-500">
+              This may take a few moments
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

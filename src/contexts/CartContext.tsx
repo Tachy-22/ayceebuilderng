@@ -79,11 +79,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       const savedCart = localStorage.getItem("guestCart");
       if (savedCart) {
         try {
-          setCartItems(JSON.parse(savedCart));
+          const guestCartItems = JSON.parse(savedCart);
+          setCartItems(guestCartItems);
         } catch (error) {
           console.error("Error parsing guest cart from localStorage:", error);
           localStorage.removeItem("guestCart");
+          setCartItems([]);
         }
+      } else {
+        setCartItems([]);
       }
       setLoading(false);
     }
@@ -92,12 +96,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   // Handle user login - merge guest cart with user cart
   useEffect(() => {
     const handleUserLogin = async () => {
-      if (user && cartItems.length > 0) {
-        const guestCart = localStorage.getItem("guestCart");
-        if (guestCart) {
+      if (user) {
+        // Get guest cart from localStorage immediately
+        const guestCartJson = localStorage.getItem("guestCart");
+        if (guestCartJson) {
           try {
-            const guestCartItems = JSON.parse(guestCart);
+            const guestCartItems = JSON.parse(guestCartJson);
             if (guestCartItems.length > 0) {
+              setLoading(true);
               await mergeGuestCartWithUserCart(user.uid, guestCartItems);
               localStorage.removeItem("guestCart");
               toast({
@@ -107,6 +113,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           } catch (error) {
             console.error("Error merging guest cart:", error);
+          } finally {
+            setLoading(false);
           }
         }
       }
@@ -117,8 +125,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Save guest cart to localStorage when user is not authenticated
   useEffect(() => {
-    if (!user && cartItems.length > 0) {
-      localStorage.setItem("guestCart", JSON.stringify(cartItems));
+    if (!user) {
+      if (cartItems.length > 0) {
+        localStorage.setItem("guestCart", JSON.stringify(cartItems));
+      } else {
+        // Clear localStorage if cart is empty
+        localStorage.removeItem("guestCart");
+      }
     }
   }, [cartItems, user]);
   // Add product to cart

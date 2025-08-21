@@ -179,6 +179,23 @@ const ProductsPage = ({
       setSelectedCategories([]);
     }
 
+    // Initialize sort option from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const sortBy = urlParams.get('sortBy') || 'createdAt';
+    const sortDirection = urlParams.get('sortDirection') || 'desc';
+    
+    // Map server sort parameters back to client sort option
+    const sortMappings: Record<string, string> = {
+      'createdAt-desc': 'featured',
+      'price-asc': 'price-asc',
+      'price-desc': 'price-desc',
+      'rating-desc': 'rating',
+    };
+    
+    const sortKey = `${sortBy}-${sortDirection}`;
+    const mappedSortOption = sortMappings[sortKey] || 'featured';
+    setSortOption(mappedSortOption);
+
     // Update page input when current page changes
     setPageInput(currentPage.toString());
 
@@ -201,36 +218,23 @@ const ProductsPage = ({
     setIsLoaded(true);
   }, [fetchedProducts]);
 
-  // Apply client-side filtering for price range and sorting
+  // Apply client-side filtering for price range ONLY
+  // Note: Category, search, and sorting are handled server-side
   useEffect(() => {
     let result = [...mappedProducts];
 
-    // Apply price filter (client-side only)
-    result = result.filter(
-      (product) =>
-        product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Apply sorting (client-side)
-    switch (sortOption) {
-      case "newest":
-        result = [...result].reverse();
-        break;
-      case "price-asc":
-        result = [...result].sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        result = [...result].sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        result = [...result].sort((a, b) => b.rating - a.rating);
-        break;
-      default:
-        break;
+    // Apply price filter (client-side only) - only if we have price range constraints
+    if (priceRange[0] > 0 || priceRange[1] < 100000000) {
+      result = result.filter(
+        (product) =>
+          product.price >= priceRange[0] && product.price <= priceRange[1]
+      );
     }
 
+    // Note: Sorting is now handled server-side, so no client-side sorting needed
+
     setFilteredProducts(result);
-  }, [mappedProducts, priceRange, sortOption]);
+  }, [mappedProducts, priceRange]);
 
   // Handler for search input changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -296,7 +300,11 @@ const ProductsPage = ({
     // Set loading state
     setActionLoading(true);
 
-    setPriceRange([0, 50000]);
+    // Reset price range to defaults
+    setPriceRange([0, 100000000]);
+
+    // Reset sort option to default
+    setSortOption("featured");
 
     // Reset URL parameters and fetch all products
     router.push(
@@ -304,6 +312,8 @@ const ProductsPage = ({
         category: "all",
         search: "",
         page: "1",
+        sortBy: "createdAt",
+        sortDirection: "desc",
       })}`
     );
   };
@@ -500,7 +510,30 @@ const ProductsPage = ({
                 <div className="flex gap-3">
                   <Select
                     value={sortOption}
-                    onValueChange={setSortOption}
+                    onValueChange={(value) => {
+                      setSortOption(value);
+                      setActionLoading(true);
+                      
+                      // Map sort option to server parameters
+                      const sortMappings: Record<string, { sortBy: string; sortDirection: string }> = {
+                        "featured": { sortBy: "createdAt", sortDirection: "desc" },
+                        "newest": { sortBy: "createdAt", sortDirection: "desc" },
+                        "price-asc": { sortBy: "price", sortDirection: "asc" },
+                        "price-desc": { sortBy: "price", sortDirection: "desc" },
+                        "rating": { sortBy: "rating", sortDirection: "desc" },
+                      };
+                      
+                      const mapping = sortMappings[value] || sortMappings["featured"];
+                      
+                      // Update URL to trigger server-side sorting
+                      router.push(
+                        `${pathname}?${createQueryString({
+                          sortBy: mapping.sortBy,
+                          sortDirection: mapping.sortDirection,
+                          page: "1", // Reset to first page when sorting changes
+                        })}`
+                      );
+                    }}
                     disabled={actionLoading}
                   >
                     <SelectTrigger className="w-full sm:w-[180px]">
@@ -582,7 +615,7 @@ const ProductsPage = ({
                       variant="ghost"
                       size="sm"
                       className="h-8 text-sm"
-                      onClick={() => setPriceRange([0, 50000])}
+                      onClick={() => setPriceRange([0, 100000000])}
                       disabled={actionLoading}
                     >
                       Reset
@@ -591,8 +624,8 @@ const ProductsPage = ({
                   <Slider
                     defaultValue={priceRange}
                     min={0}
-                    max={50000}
-                    step={1000}
+                    max={100000000}
+                    step={100000}
                     value={priceRange}
                     onValueChange={setPriceRange}
                     className="my-6"
@@ -778,7 +811,7 @@ const ProductsPage = ({
                     variant="ghost"
                     size="sm"
                     className="h-8 text-sm"
-                    onClick={() => setPriceRange([0, 50000])}
+                    onClick={() => setPriceRange([0, 100000000])}
                   >
                     Reset
                   </Button>
@@ -786,8 +819,8 @@ const ProductsPage = ({
                 <Slider
                   defaultValue={priceRange}
                   min={0}
-                  max={50000}
-                  step={1000}
+                  max={100000000}
+                  step={100000}
                   value={priceRange}
                   onValueChange={setPriceRange}
                   className="my-6"

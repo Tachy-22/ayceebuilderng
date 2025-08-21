@@ -23,6 +23,17 @@ export async function GET() {
     products.forEach((product) => {
       const category = product.category;
       
+      // Debug: log category info for first few products
+      if (categoryMap.size < 5) {
+        console.log('Product category debug:', {
+          id: product.id,
+          name: product.name,
+          category: product.category,
+          Category: (product as any).Category,
+          sheetName: (product as any).sheetName
+        });
+      }
+      
       if (category) {
         if (categoryMap.has(category)) {
           const existing = categoryMap.get(category)!;
@@ -52,6 +63,7 @@ export async function GET() {
     })).sort((a, b) => b.count - a.count);
 
     console.log(`Found ${categories.length} categories`);
+    console.log('All categories found:', categories.map(c => ({ id: c.id, name: c.name, count: c.count })));
 
     return NextResponse.json({
       success: true,
