@@ -38,6 +38,18 @@ export interface CartItem {
 // Add item to cart
 export const addToCart = async (userId: string, productData: any, quantity: number = 1, color?: string) => {
   try {
+    console.log('🛒 Adding to cart:', {
+      userId,
+      productId: productData?.id,
+      productName: productData?.name,
+      quantity,
+      color
+    });
+
+    if (!db) {
+      throw new Error('Database not initialized');
+    }
+
     // Check if item already exists in cart
     const cartRef = collection(db, 'carts');
     let existingItemQuery;
@@ -58,6 +70,7 @@ export const addToCart = async (userId: string, productData: any, quantity: numb
     }
     
     const existingItems = await getDocs(existingItemQuery);
+    console.log('🔍 Found', existingItems.size, 'existing items for this product');
     
     // Find exact match (considering color field presence)
     let matchingItem = null;
@@ -72,13 +85,17 @@ export const addToCart = async (userId: string, productData: any, quantity: numb
     }
     
     if (matchingItem) {
+      console.log('📈 Updating existing cart item quantity');
       // Update existing item quantity
       await updateDoc(matchingItem.ref, {
         quantity: increment(quantity),
         updatedAt: Timestamp.fromDate(new Date())
       });
-      return { id: matchingItem.id, ...matchingItem.data() };
+      const result = { id: matchingItem.id, ...matchingItem.data() };
+      console.log('✅ Updated cart item:', result.id);
+      return result;
     } else {
+      console.log('➕ Adding new cart item');
       // Add new item to cart
       const cartItem: any = {
         userId,
@@ -110,10 +127,12 @@ export const addToCart = async (userId: string, productData: any, quantity: numb
         updatedAt: Timestamp.fromDate(cartItem.updatedAt)
       });
 
-      return { id: docRef.id, ...cartItem };
+      const result = { id: docRef.id, ...cartItem };
+      console.log('✅ Added new cart item:', result.id);
+      return result;
     }
   } catch (error) {
-    console.error('Error adding to cart:', error);
+    console.error('❌ Error adding to cart:', error);
     throw error;
   }
 };
@@ -228,16 +247,30 @@ export const getCartTotal = (cartItems: CartItem[]): number => {
 // Merge guest cart with user cart (for when user logs in)
 export const mergeGuestCartWithUserCart = async (userId: string, guestCartItems: any[]) => {
   try {
-    for (const guestItem of guestCartItems) {
-      await addToCart(
+    console.log('🔄 Starting merge for user:', userId, 'with', guestCartItems.length, 'guest items');
+    
+    for (let index = 0; index < guestCartItems.length; index++) {
+      const guestItem = guestCartItems[index];
+      console.log(`📦 Merging item ${index + 1}/${guestCartItems.length}:`, {
+        productId: guestItem.product?.id,
+        productName: guestItem.product?.name,
+        quantity: guestItem.quantity,
+        color: guestItem.color
+      });
+      
+      const result = await addToCart(
         userId, 
         guestItem.product, 
         guestItem.quantity, 
         guestItem.color
       );
+      
+      console.log(`✅ Item ${index + 1} merged successfully:`, result?.id);
     }
+    
+    console.log('🎉 All guest items merged successfully');
   } catch (error) {
-    console.error('Error merging guest cart:', error);
+    console.error('❌ Error merging guest cart:', error);
     throw error;
   }
 };
