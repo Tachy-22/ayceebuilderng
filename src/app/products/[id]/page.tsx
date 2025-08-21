@@ -33,7 +33,7 @@ const page = async ({ params, searchParams }: PageProps) => {
   let productData: ProductNew | null = null;
 
   // Build API URL for Firebase
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
   try {
     if (searchTitle) {

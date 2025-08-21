@@ -74,7 +74,7 @@ const page = async ({ searchParams }: PageProps) => {
   const inStock = searchParams.inStock || "";
 
   // Build API URL - use search endpoint if we have search term or filters
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const useSearchEndpoint = search || minPrice || maxPrice || inStock;
   const apiPath = useSearchEndpoint ? '/api/products/search' : '/api/products';
   
