@@ -1176,7 +1176,12 @@ const Cart = () => {
                             <div className="space-y-2">
                               <div className="flex justify-between items-center">
                                 <Label className="text-sm font-medium">Delivery Address</Label>
-                                <Link href="/dashboard/profile">
+                                <Link 
+                                  href="/dashboard/profile"
+                                  onClick={() => {
+                                    localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                                  }}
+                                >
                                   <Button variant="link" className="text-xs p-0 h-auto">
                                     Manage addresses
                                   </Button>
@@ -1346,7 +1351,12 @@ const Cart = () => {
                             <div className="text-center py-6">
                               <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                               <p className="text-sm text-gray-600 mb-3">No delivery addresses saved</p>
-                              <Link href="/dashboard/profile">
+                              <Link 
+                                href="/dashboard/profile"
+                                onClick={() => {
+                                  localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                                }}
+                              >
                                 <Button variant="outline" size="sm">
                                   Add Address in Profile
                                 </Button>
@@ -1366,7 +1376,12 @@ const Cart = () => {
                         <div className="text-center py-6">
                           <UserX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                           <p className="text-sm text-gray-600 mb-3">Complete your profile to continue</p>
-                          <Link href="/dashboard/profile">
+                          <Link 
+                            href="/dashboard/profile"
+                            onClick={() => {
+                              localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                            }}
+                          >
                             <Button size="sm">
                               Complete Profile
                             </Button>
@@ -1579,12 +1594,26 @@ const Cart = () => {
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <Link href="/login" className="flex-1">
+                          <Link 
+                            href="/login" 
+                            className="flex-1"
+                            onClick={() => {
+                              // Store current cart URL for redirect after login
+                              localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                            }}
+                          >
                             <Button variant="outline" className="w-full">
                               Sign In
                             </Button>
                           </Link>
-                          <Link href="/register" className="flex-1">
+                          <Link 
+                            href="/register" 
+                            className="flex-1"
+                            onClick={() => {
+                              // Store current cart URL for redirect after registration
+                              localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                            }}
+                          >
                             <Button className="w-full">
                               Sign Up
                             </Button>

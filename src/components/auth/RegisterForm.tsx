@@ -72,7 +72,13 @@ export default function RegisterForm() {
         title: "Account created successfully",
         description: "Welcome to AyceeBuilder!",
       });
-      router.push('/dashboard');
+      
+      // Check for redirect URL or default to dashboard
+      const redirectUrl = localStorage.getItem('authRedirectUrl') || '/dashboard';
+      if (redirectUrl !== '/dashboard') {
+        localStorage.removeItem('authRedirectUrl');
+      }
+      router.push(redirectUrl);
     } catch (error: any) {
       console.error('Registration error:', error);
       setError(error.message || 'Failed to create account');
@@ -90,7 +96,13 @@ export default function RegisterForm() {
         title: "Account created successfully",
         description: "Welcome to AyceeBuilder!",
       });
-      router.push('/dashboard');
+      
+      // Check for redirect URL or default to dashboard
+      const redirectUrl = localStorage.getItem('authRedirectUrl') || '/dashboard';
+      if (redirectUrl !== '/dashboard') {
+        localStorage.removeItem('authRedirectUrl');
+      }
+      router.push(redirectUrl);
     } catch (error: any) {
       console.error('Google registration error:', error);
       setError(error.message || 'Failed to create account with Google');

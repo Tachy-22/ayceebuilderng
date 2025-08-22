@@ -246,12 +246,24 @@ const Navbar = () => {
                 </DropdownMenu>
               ) : (
                 <div className="hidden md:flex items-center space-x-2">
-                  <Link href="/login">
+                  <Link 
+                    href="/login"
+                    onClick={() => {
+                      // Store current page for redirect after login
+                      localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                    }}
+                  >
                     <Button variant="ghost" size="sm">
                       Sign In
                     </Button>
                   </Link>
-                  <Link href="/register">
+                  <Link 
+                    href="/register"
+                    onClick={() => {
+                      // Store current page for redirect after registration
+                      localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                    }}
+                  >
                     <Button size="sm">
                       Sign Up
                     </Button>
@@ -328,15 +340,48 @@ const Navbar = () => {
                       </div>
                     )}
                   </nav>
-                  {/* <div className="mt-auto py-4 border-t">
-                    <Link
-                      href="/auth"
-                      className="flex items-center px-4 py-3 rounded-md text-sm font-medium hover:bg-secondary/50"
-                    >
-                      <User size={18} className="mr-2" />
-                      Account
-                    </Link>
-                  </div> */}
+                  {/* Mobile Auth Section */}
+                  <div className="mt-auto py-4 border-t px-4">
+                    {user ? (
+                      <div className="space-y-2">
+                        <Link
+                          href="/dashboard"
+                          className="flex items-center px-4 py-3 rounded-md text-sm font-medium hover:bg-secondary/50"
+                        >
+                          <User size={18} className="mr-2" />
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={logout}
+                          className="flex items-center px-4 py-3 rounded-md text-sm font-medium hover:bg-secondary/50 w-full text-left"
+                        >
+                          <LogOut size={18} className="mr-2" />
+                          Sign Out
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Link
+                          href="/login"
+                          onClick={() => {
+                            localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                          }}
+                          className="flex items-center justify-center px-4 py-3 rounded-md text-sm font-medium border border-primary text-primary hover:bg-primary/5"
+                        >
+                          Sign In
+                        </Link>
+                        <Link
+                          href="/register"
+                          onClick={() => {
+                            localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
+                          }}
+                          className="flex items-center justify-center px-4 py-3 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary/90"
+                        >
+                          Sign Up
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>

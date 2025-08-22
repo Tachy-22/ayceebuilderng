@@ -39,7 +39,13 @@ export default function LoginForm() {
         title: "Login successful",
         description: "Welcome back!",
       });
-      router.push('/dashboard');
+      
+      // Check for redirect URL or default to dashboard
+      const redirectUrl = localStorage.getItem('authRedirectUrl') || '/dashboard';
+      if (redirectUrl !== '/dashboard') {
+        localStorage.removeItem('authRedirectUrl');
+      }
+      router.push(redirectUrl);
     } catch (error: any) {
       console.error('Login error:', error);
       setError(error.message || 'Failed to login');
@@ -57,7 +63,13 @@ export default function LoginForm() {
         title: "Login successful",
         description: "Welcome back!",
       });
-      router.push('/dashboard');
+      
+      // Check for redirect URL or default to dashboard
+      const redirectUrl = localStorage.getItem('authRedirectUrl') || '/dashboard';
+      if (redirectUrl !== '/dashboard') {
+        localStorage.removeItem('authRedirectUrl');
+      }
+      router.push(redirectUrl);
     } catch (error: any) {
       console.error('Google login error:', error);
       setError(error.message || 'Failed to login with Google');
