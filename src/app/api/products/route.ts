@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') || 'all';
     const searchTerm = searchParams.get('search') || '';
     const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortDirection = searchParams.get('sortDirection') || 'desc';
+    const sortDirection = searchParams.get('sortDirection') || 'asc';
 
     console.log('Products API called with params:', {
       page,
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const sortField = sortBy === 'price' ? 'price' : 
                      sortBy === 'name' ? 'name' : 
                      sortBy === 'rating' ? 'rating' : 'createdAt';
-    const direction = sortDirection === 'asc' ? 'asc' : 'desc';
+    const direction = sortDirection === 'asc' ? 'asc' : 'asc';
     
     // Only apply ordering if no search term (to avoid Firebase index requirements)
     if (!searchTerm) {
@@ -64,7 +64,8 @@ export async function GET(request: NextRequest) {
     // Get all matching products (we'll handle pagination client-side for now)
     const result = await getCollection('products', {
       filters,
-      orderBy
+      orderBy,
+      
     });
 
     if (isFirebaseError(result)) {

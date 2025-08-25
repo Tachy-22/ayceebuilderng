@@ -182,14 +182,14 @@ const ProductsPage = ({
     // Initialize sort option from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const sortBy = urlParams.get('sortBy') || 'createdAt';
-    const sortDirection = urlParams.get('sortDirection') || 'desc';
+    const sortDirection = urlParams.get('sortDirection') || 'asc';
     
     // Map server sort parameters back to client sort option
     const sortMappings: Record<string, string> = {
-      'createdAt-desc': 'featured',
-      'price-asc': 'price-asc',
-      'price-desc': 'price-desc',
-      'rating-desc': 'rating',
+      'createdAt-asc': 'featured',
+      'price-desc': 'price-asc',
+      'price-asc': 'price-desc',
+      'rating-asc': 'rating',
     };
     
     const sortKey = `${sortBy}-${sortDirection}`;
@@ -313,7 +313,7 @@ const ProductsPage = ({
         search: "",
         page: "1",
         sortBy: "createdAt",
-        sortDirection: "desc",
+        sortDirection: "asc",
       })}`
     );
   };
@@ -516,11 +516,11 @@ const ProductsPage = ({
                       
                       // Map sort option to server parameters
                       const sortMappings: Record<string, { sortBy: string; sortDirection: string }> = {
-                        "featured": { sortBy: "createdAt", sortDirection: "desc" },
-                        "newest": { sortBy: "createdAt", sortDirection: "desc" },
-                        "price-asc": { sortBy: "price", sortDirection: "asc" },
-                        "price-desc": { sortBy: "price", sortDirection: "desc" },
-                        "rating": { sortBy: "rating", sortDirection: "desc" },
+                        "featured": { sortBy: "createdAt", sortDirection: "asc" },
+                        "newest": { sortBy: "createdAt", sortDirection: "asc" },
+                        "price-asc": { sortBy: "price", sortDirection: "desc" },
+                        "price-desc": { sortBy: "price", sortDirection: "asc" },
+                        "rating": { sortBy: "rating", sortDirection: "asc" },
                       };
                       
                       const mapping = sortMappings[value] || sortMappings["featured"];
@@ -678,7 +678,7 @@ const ProductsPage = ({
                 // Show actual products
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredProducts.map((product, index) => (
+                    {filteredProducts.reverse().map((product, index) => (
                       <ProductCard
                         key={`${product.id}-${currentPage}-${index}`}
                         product={product}

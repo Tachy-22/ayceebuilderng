@@ -16,9 +16,16 @@ export interface ProductCardProps {
 }
 
 // Function to calculate discount percentage
-const calculateDiscountPercentage = (originalPrice: number, discountPrice: number): number => {
-  return Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
+const calculateDiscountPercentage = (
+  originalPrice: number,
+  discountPrice: number
+): number => {
+  if (!originalPrice || originalPrice <= 0) return 0;
+  return Math.round(
+    (Math.abs(originalPrice - discountPrice) / originalPrice) * 100
+  );
 };
+
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,

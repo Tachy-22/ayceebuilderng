@@ -298,8 +298,14 @@ export function mapNewProductToProduct(
         product.Category?.toLowerCase() ||
         "uncategorized",
       subCategory: product.subCategory || product.SubCategory || undefined,
-      price: Number(product.price) || Number(product.Price) || 0,
-      discountPrice: Number(product.discountPrice) || Number(product.discountedPrice) || undefined,
+      price:
+        (Number(product.discountPrice) || Number(product.discountedPrice))
+          ? (Number(product.price) || Number(product.Price) || 0)
+          : ((Number(product.price) || Number(product.Price) || 0) * 0.95),
+      discountPrice:
+        Number(product.discountPrice) ||
+        Number(product.discountedPrice) ||
+        (Number(product.price) || Number(product.Price) || 0),
       image: imageUrl,
       images: imageArray,
       rating: product.rating || 4.0,
