@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 
@@ -35,7 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import GooglePlacesAutocomplete from "@/components/ui/GooglePlacesAutocomplete";
 import { geocodeAddress, calculateHaversineDistance } from "@/lib/googlePlaces";
-import { getAllStateNames, getCitiesForState, validateStateCity } from "@/lib/nigerianLocations";
+import { getAllStateNames, getCitiesForState, validateStateCity, calculateFallbackDistance } from "@/lib/nigerianLocations";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Interface for place coordinates
@@ -139,13 +139,25 @@ const Cart = () => {
     name: '',
     street: '',
     city: '',
-    state: ''
+    state: '',
+    phone: ''
   });
   const [productLocation, setProductLocation] = useState(
     "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja"
   );
   // Add state to track if we're showing the address selection UI
   const [showAddressSelection, setShowAddressSelection] = useState(false);
+  
+  // State for estimated billing agreement
+  const [agreedToEstimatedBilling, setAgreedToEstimatedBilling] = useState(false);
+  const [showEstimatedBillingForm, setShowEstimatedBillingForm] = useState(false);
+  const [estimatedBillingForm, setEstimatedBillingForm] = useState({
+    address: '',
+    postalCode: '',
+    city: '',
+    state: '',
+    phone: ''
+  });
 
   // Helper function to convert color names to hex values
   const getColorValue = (colorName: string): string => {
@@ -346,20 +358,66 @@ const Cart = () => {
         });
       } else {
         console.error('Missing coordinates:', { productCoords, userCoords });
-        throw new Error("Could not geocode addresses");
+        console.log('Geocoding failed, trying fallback distance calculation');
+        
+        // Try fallback distance calculation using Nigerian states
+        const fallbackDistance = calculateFallbackDistance(productLocation, selectedUser.address);
+        
+        if (fallbackDistance) {
+          console.log('Fallback distance calculated:', fallbackDistance);
+          const roundedFallbackDistance = Math.round(fallbackDistance);
+          setCalculatedDistance(roundedFallbackDistance);
+          setDeliveryDistance(roundedFallbackDistance);
+          
+          toast({
+            title: "Distance estimated",
+            description: `Using approximate distance: ${roundedFallbackDistance} km (based on state/city location).`,
+            duration: 5000,
+          });
+        } else {
+          console.log('Both geocoding and fallback failed, using default shipping');
+          setCalculatedDistance(null);
+          setDeliveryDistance(10); // Keep legacy deliveryDistance for backward compatibility
+        }
       }
     } catch (error) {
       console.error("Error calculating distance:", error);
-      toast({
-        variant: "destructive",
-        title: "Error calculating distance",
-        description:
-          "Could not calculate the delivery distance. Using default estimate.",
-      });
-
-      // Set a default distance to prevent cost calculation from breaking
-      setCalculatedDistance(10);
-      setDeliveryDistance(10);
+      
+      // Try fallback even in error case
+      try {
+        if (selectedUser?.address) {
+          const fallbackDistance = calculateFallbackDistance(productLocation, selectedUser.address);
+          if (fallbackDistance) {
+            console.log('Fallback distance calculated after error:', fallbackDistance);
+            const roundedFallbackDistance = Math.round(fallbackDistance);
+            setCalculatedDistance(roundedFallbackDistance);
+            setDeliveryDistance(roundedFallbackDistance);
+            
+            toast({
+              title: "Distance estimated",
+              description: `Using approximate distance: ${roundedFallbackDistance} km (Google Maps unavailable).`,
+              duration: 5000,
+            });
+          } else {
+            setCalculatedDistance(null);
+            setDeliveryDistance(10);
+          }
+        } else {
+          setCalculatedDistance(null);
+          setDeliveryDistance(10);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback distance calculation also failed:', fallbackError);
+        toast({
+          variant: "destructive",
+          title: "Error calculating distance",
+          description:
+            "Could not calculate the delivery distance. Using default estimate.",
+        });
+        
+        setCalculatedDistance(null);
+        setDeliveryDistance(10); // Keep legacy deliveryDistance for backward compatibility
+      }
     } finally {
       setIsCalculatingDistance(false);
     }
@@ -448,14 +506,14 @@ const Cart = () => {
     let weightCost = 0;
     let weightRate = 0;
     if (deliveryWeight <= 200) {
-      weightCost = deliveryWeight * 100;
-      weightRate = 100;
+      weightCost = deliveryWeight * 10;
+      weightRate = 10;
     } else if (deliveryWeight <= 500) {
-      weightCost = deliveryWeight * 150;
-      weightRate = 150;
+      weightCost = deliveryWeight * 15;
+      weightRate = 15;
     } else {
-      weightCost = deliveryWeight * 200;
-      weightRate = 200;
+      weightCost = deliveryWeight * 20;
+      weightRate = 20;
     }
 
     const subtotalDeliveryCost =
@@ -573,6 +631,10 @@ const Cart = () => {
 
         // Create order in Firestore
         try {
+          // Calculate estimated delivery date (3 weeks from now)
+          const estimatedDeliveryDate = new Date();
+          estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 21); // 3 weeks = 21 days
+
           const order = await createOrder({
             userId: user.uid,
             orderNumber: '', // Will be generated automatically
@@ -580,6 +642,7 @@ const Cart = () => {
             items: orderItems,
             totalAmount: total,
             shippingAddress,
+            estimatedDeliveryDate,
             notes: `Payment Reference: ${reference.reference}`,
           });
 
@@ -701,27 +764,19 @@ const Cart = () => {
     }
   }, [selectedUser, productLocation, selectedPlaceCoordinates]);
 
-  // Effect to auto-calculate distance when address is selected (new system)
-  useEffect(() => {
-    if (selectedAddress && selectedAddress.street && productLocation) {
-      console.log('Auto-calculating distance for selected address');
-      calculateAddressDistance(selectedAddress.street);
-    }
-  }, [selectedAddress, productLocation]);
-
   // New address management functions
   const handleAddressSelect = (address: any) => {
+    console.log('Address selected:', address);
     setSelectedAddress(address);
     setCalculatedDistance(null);
-    // Auto-calculate distance when address is selected
-    if (address.street && productLocation) {
-      calculateAddressDistance(address.street);
-    }
+    // Note: Distance calculation will be triggered by useEffect
   };
 
-  const calculateAddressDistance = async (addressStr: string) => {
+  const calculateAddressDistance = useCallback(async (addressStr: string) => {
     try {
       setIsCalculatingDistance(true);
+      console.log('Starting distance calculation for:', addressStr);
+      
       // Use geocoding first, then calculate distance
       const originCoords = await geocodeAddress(productLocation);
       const destCoords = await geocodeAddress(addressStr);
@@ -733,28 +788,92 @@ const Cart = () => {
           destCoords.lat,
           destCoords.lng
         );
+        console.log('Google Maps distance calculated:', distance);
         setCalculatedDistance(distance);
       } else {
-        setCalculatedDistance(10); // fallback distance
+        console.log('Geocoding failed, trying fallback distance calculation');
+        // Try fallback distance calculation using Nigerian states
+        const fallbackDistance = calculateFallbackDistance(productLocation, addressStr);
+        
+        if (fallbackDistance) {
+          console.log('Fallback distance calculated:', fallbackDistance);
+          setCalculatedDistance(fallbackDistance);
+          
+          toast({
+            title: "Distance estimated",
+            description: `Using approximate distance: ${Math.round(fallbackDistance)} km (based on state/city location).`,
+            duration: 5000,
+          });
+        } else {
+          console.log('Both geocoding and fallback failed, using default shipping');
+          setCalculatedDistance(null); // Use default shipping when all methods fail
+        }
       }
     } catch (error) {
       console.error('Error calculating distance:', error);
-      setCalculatedDistance(10); // fallback distance
+      
+      // Try fallback even in error case
+      try {
+        const fallbackDistance = calculateFallbackDistance(productLocation, addressStr);
+        if (fallbackDistance) {
+          console.log('Fallback distance calculated after error:', fallbackDistance);
+          setCalculatedDistance(fallbackDistance);
+          
+          toast({
+            title: "Distance estimated",
+            description: `Using approximate distance: ${Math.round(fallbackDistance)} km (Google Maps unavailable).`,
+            duration: 5000,
+          });
+        } else {
+          setCalculatedDistance(null); // Use default shipping when all methods fail
+        }
+      } catch (fallbackError) {
+        console.error('Fallback distance calculation also failed:', fallbackError);
+        setCalculatedDistance(null); // Use default shipping when all methods fail
+      }
     } finally {
       setIsCalculatingDistance(false);
     }
-  };
+  }, [productLocation, toast]);
+
+  // Effect to auto-calculate distance when address is selected (new system)
+  useEffect(() => {
+    if (selectedAddress && selectedAddress.street && productLocation) {
+      console.log('Auto-calculating distance for selected address:', selectedAddress);
+      const fullAddress = `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}, Nigeria`;
+      calculateAddressDistance(fullAddress);
+    }
+  }, [selectedAddress, productLocation, calculateAddressDistance]);
 
   const handleQuickAddressSave = async () => {
     if (!user || !userProfile) return;
 
-    // Validate all fields are filled
-    if (!quickAddressForm.name.trim() || !quickAddressForm.street.trim() ||
-      !quickAddressForm.city.trim() || !quickAddressForm.state.trim()) {
+    // Validate required fields
+    if (!quickAddressForm.street.trim()) {
       toast({
         variant: "destructive",
         title: "Incomplete address",
-        description: "Please fill in all address fields.",
+        description: "Please select a valid address.",
+      });
+      return;
+    }
+    
+    // Check if we have city and state (should be extracted from GooglePlaces)
+    if (!quickAddressForm.city.trim() || !quickAddressForm.state.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Address incomplete",
+        description: "Please select an address from the suggestions to ensure proper delivery.",
+      });
+      return;
+    }
+
+    // Validate phone number is required
+    if (!quickAddressForm.phone.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Phone number required",
+        description: "Please provide a phone number for delivery contact.",
       });
       return;
     }
@@ -780,18 +899,24 @@ const Cart = () => {
     }
 
     try {
+      // Auto-generate address name based on existing addresses count
+      const existingAddresses = userProfile.addresses || [];
+      const addressCount = existingAddresses.length + 1;
+      const autoGeneratedName = `Address ${addressCount}`;
+      
       const newAddress = {
         id: Date.now().toString(),
         type: 'other' as const,
-        name: quickAddressForm.name,
+        name: autoGeneratedName,
         street: quickAddressForm.street,
         city: quickAddressForm.city,
         state: quickAddressForm.state,
         country: 'Nigeria',
+        phone: quickAddressForm.phone,
         isDefault: false,
       };
 
-      const updatedAddresses = [...(userProfile.addresses || []), newAddress];
+      const updatedAddresses = [...existingAddresses, newAddress];
 
       await updateUserProfile(user.uid, {
         addresses: updatedAddresses,
@@ -799,7 +924,7 @@ const Cart = () => {
 
       setSelectedAddress(newAddress);
       setShowQuickAddressForm(false);
-      setQuickAddressForm({ name: '', street: '', city: '', state: '' });
+      setQuickAddressForm({ name: '', street: '', city: '', state: '', phone: '' });
 
       toast({
         title: "Address saved",
@@ -824,6 +949,7 @@ const Cart = () => {
   useEffect(() => {
     if (userProfile && userProfile.addresses && userProfile.addresses.length > 0 && !selectedAddress) {
       const defaultAddress = userProfile.addresses.find(addr => addr.isDefault) || userProfile.addresses[0];
+      console.log('Auto-selecting default address:', defaultAddress);
       handleAddressSelect(defaultAddress);
     }
   }, [userProfile]);
@@ -844,6 +970,108 @@ const Cart = () => {
       title: "User removed",
       description: "User has been removed from your saved addresses",
     });
+  };
+
+  // Handle estimated billing agreement
+  const handleAgreeToEstimatedBilling = (prefilledAddress?: string) => {
+    setAgreedToEstimatedBilling(true);
+    setShowEstimatedBillingForm(true);
+    setShowQuickAddressForm(false); // Close the quick address form
+    
+    // Pre-fill the estimated billing form with the address user was typing
+    if (prefilledAddress) {
+      setEstimatedBillingForm(prev => ({
+        ...prev,
+        address: prefilledAddress
+      }));
+      
+      // Try to calculate distance with the prefilled address if we have coordinates
+      if (productLocation) {
+        calculateAddressDistance(prefilledAddress);
+      }
+    }
+    
+    // If no prefilled address or distance calculation fails, keep null to use default shipping
+    if (!prefilledAddress) {
+      setCalculatedDistance(null);
+    }
+    
+    toast({
+      title: "Using estimated delivery cost",
+      description: "Complete address details for better estimates.",
+    });
+  };
+
+  // Handle estimated billing form submission
+  const handleEstimatedBillingFormSubmit = async () => {
+    if (!user || !userProfile) return;
+
+    // Validate form
+    if (!estimatedBillingForm.address.trim() || !estimatedBillingForm.city.trim() || 
+        !estimatedBillingForm.state.trim() || !estimatedBillingForm.postalCode.trim() ||
+        !estimatedBillingForm.phone.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Incomplete address",
+        description: "Please fill in all required fields including phone number.",
+      });
+      return;
+    }
+
+    // Validate state-city combination
+    if (!validateStateCity(estimatedBillingForm.state, estimatedBillingForm.city)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid location",
+        description: `${estimatedBillingForm.city} is not a valid city in ${estimatedBillingForm.state} state.`,
+      });
+      return;
+    }
+
+    try {
+      // Auto-generate address name based on existing addresses count
+      const existingAddresses = userProfile.addresses || [];
+      const addressCount = existingAddresses.length + 1;
+      const autoGeneratedName = `Address ${addressCount}`;
+      
+      const newAddress = {
+        id: Date.now().toString(),
+        type: 'other' as const,
+        name: autoGeneratedName,
+        street: `${estimatedBillingForm.address}, ${estimatedBillingForm.postalCode}`,
+        city: estimatedBillingForm.city,
+        state: estimatedBillingForm.state,
+        country: 'Nigeria',
+        phone: estimatedBillingForm.phone,
+        isDefault: false,
+      };
+
+      const updatedAddresses = [...(userProfile.addresses || []), newAddress];
+
+      await updateUserProfile(user.uid, {
+        addresses: updatedAddresses,
+      });
+
+      setSelectedAddress(newAddress);
+      setShowEstimatedBillingForm(false);
+      
+      // Calculate distance with the new address
+      if (newAddress.street && productLocation) {
+        calculateAddressDistance(`${newAddress.street}, ${newAddress.city}, ${newAddress.state}, Nigeria`);
+      }
+
+      toast({
+        title: "Address saved",
+        description: "Your estimated billing address has been saved and selected.",
+      });
+    } catch (error) {
+      console.error('Error saving estimated billing address:', error);
+      toast({
+        variant: "destructive",
+        title: "Error saving address",
+        description: "Please try again.",
+      });
+    }
   };
 
   const config = getPaystackConfig(
@@ -1253,7 +1481,7 @@ const Cart = () => {
                                       size="sm"
                                       onClick={() => {
                                         setShowQuickAddressForm(false);
-                                        setQuickAddressForm({ name: '', street: '', city: '', state: '' });
+                                        setQuickAddressForm({ name: '', street: '', city: '', state: '', phone: '' });
                                       }}
                                     >
                                       <X className="h-4 w-4" />
@@ -1261,11 +1489,6 @@ const Cart = () => {
                                   </div>
 
                                   <div className="space-y-3">
-                                    <Input
-                                      placeholder="Address label (e.g., Home, Office)"
-                                      value={quickAddressForm.name}
-                                      onChange={(e) => setQuickAddressForm(prev => ({ ...prev, name: e.target.value }))}
-                                    />
                                     <GooglePlacesAutocomplete
                                       value={quickAddressForm.street}
                                       onChange={(value) => setQuickAddressForm(prev => ({ ...prev, street: value }))}
@@ -1281,7 +1504,46 @@ const Cart = () => {
                                         }
 
                                         const addressStr = place.address || place.formatted_address || place.name || '';
-                                        setQuickAddressForm(prev => ({ ...prev, street: addressStr }));
+                                        
+                                        // Extract city and state from the address string
+                                        const addressParts = addressStr.split(',').map(part => part.trim());
+                                        let extractedCity = '';
+                                        let extractedState = '';
+                                        
+                                        // Try to identify state and city from address parts
+                                        const allStates = getAllStateNames();
+                                        for (const part of addressParts) {
+                                          const matchingState = allStates.find(state => 
+                                            part.toLowerCase().includes(state.toLowerCase()) || 
+                                            state.toLowerCase().includes(part.toLowerCase())
+                                          );
+                                          if (matchingState) {
+                                            extractedState = matchingState;
+                                            break;
+                                          }
+                                        }
+                                        
+                                        // If we found a state, try to find a city
+                                        if (extractedState) {
+                                          const stateCities = getCitiesForState(extractedState);
+                                          for (const part of addressParts) {
+                                            const matchingCity = stateCities.find(city => 
+                                              part.toLowerCase().includes(city.toLowerCase()) || 
+                                              city.toLowerCase().includes(part.toLowerCase())
+                                            );
+                                            if (matchingCity) {
+                                              extractedCity = matchingCity;
+                                              break;
+                                            }
+                                          }
+                                        }
+
+                                        setQuickAddressForm(prev => ({ 
+                                          ...prev, 
+                                          street: addressStr,
+                                          city: extractedCity,
+                                          state: extractedState
+                                        }));
                                         setSelectedPlaceCoordinates({
                                           lat: place.lat,
                                           lng: place.lng,
@@ -1295,48 +1557,24 @@ const Cart = () => {
                                         });
                                       }}
                                       placeholder="Start typing your address"
+                                      showEstimatedBillingOption={true}
+                                      onAgreeToEstimatedBilling={handleAgreeToEstimatedBilling}
                                     />
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div>
-                                        <Select
-                                          value={quickAddressForm.state}
-                                          onValueChange={(value) => setQuickAddressForm(prev => ({ ...prev, state: value, city: '' }))}
-                                        >
-                                          <SelectTrigger>
-                                            <SelectValue placeholder="Select State" />
-                                          </SelectTrigger>
-                                          <SelectContent className="max-h-48 overflow-y-auto">
-                                            {getAllStateNames().map((state) => (
-                                              <SelectItem key={state} value={state}>
-                                                {state}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <div>
-                                        <Select
-                                          value={quickAddressForm.city}
-                                          onValueChange={(value) => setQuickAddressForm(prev => ({ ...prev, city: value }))}
-                                          disabled={!quickAddressForm.state}
-                                        >
-                                          <SelectTrigger>
-                                            <SelectValue placeholder={quickAddressForm.state ? "Select City" : "Select State first"} />
-                                          </SelectTrigger>
-                                          <SelectContent className="max-h-48 overflow-y-auto">
-                                            {quickAddressForm.state && getCitiesForState(quickAddressForm.state).map((city) => (
-                                              <SelectItem key={city} value={city}>
-                                                {city}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
+                                    <div className="space-y-2">
+                                      <Label htmlFor="quickPhoneNumber">Phone Number *</Label>
+                                      <Input
+                                        id="quickPhoneNumber"
+                                        type="tel"
+                                        value={quickAddressForm.phone}
+                                        onChange={(e) => setQuickAddressForm(prev => ({ ...prev, phone: e.target.value }))}
+                                        placeholder="Enter your phone number"
+                                        required
+                                      />
                                     </div>
                                     <Button
                                       className="w-full"
                                       onClick={handleQuickAddressSave}
-                                      disabled={!quickAddressForm.name || !quickAddressForm.street || !quickAddressForm.city || !quickAddressForm.state}
+                                      disabled={!quickAddressForm.street.trim() || !quickAddressForm.phone.trim()}
                                     >
                                       Save & Select Address
                                     </Button>
@@ -1386,6 +1624,100 @@ const Cart = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Sliding form for estimated billing address */}
+                    {showEstimatedBillingForm && (
+                      <div className="border border-orange-200 rounded-lg p-4 bg-orange-50 mt-4 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-medium text-sm text-orange-800">Estimated Billing Address</h4>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowEstimatedBillingForm(false);
+                              setAgreedToEstimatedBilling(false);
+                              setCalculatedDistance(null);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Street address"
+                            value={estimatedBillingForm.address}
+                            onChange={(e) => setEstimatedBillingForm(prev => ({ ...prev, address: e.target.value }))}
+                            className="text-sm"
+                          />
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              placeholder="Postal code"
+                              value={estimatedBillingForm.postalCode}
+                              onChange={(e) => setEstimatedBillingForm(prev => ({ ...prev, postalCode: e.target.value }))}
+                              className="text-sm"
+                            />
+                            <div>
+                              <Select
+                                value={estimatedBillingForm.state}
+                                onValueChange={(value) => setEstimatedBillingForm(prev => ({ ...prev, state: value, city: '' }))}
+                              >
+                                <SelectTrigger className="text-sm">
+                                  <SelectValue placeholder="State" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-32 overflow-y-auto">
+                                  {getAllStateNames().map((state) => (
+                                    <SelectItem key={state} value={state} className="text-sm">
+                                      {state}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Select
+                              value={estimatedBillingForm.city}
+                              onValueChange={(value) => setEstimatedBillingForm(prev => ({ ...prev, city: value }))}
+                              disabled={!estimatedBillingForm.state}
+                            >
+                              <SelectTrigger className="text-sm">
+                                <SelectValue placeholder={estimatedBillingForm.state ? "Select City" : "Select State first"} />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-32 overflow-y-auto">
+                                {estimatedBillingForm.state && getCitiesForState(estimatedBillingForm.state).map((city) => (
+                                  <SelectItem key={city} value={city} className="text-sm">
+                                    {city}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-sm">Phone Number *</Label>
+                            <Input
+                              type="tel"
+                              placeholder="Enter your phone number"
+                              value={estimatedBillingForm.phone}
+                              onChange={(e) => setEstimatedBillingForm(prev => ({ ...prev, phone: e.target.value }))}
+                              className="text-sm"
+                              required
+                            />
+                          </div>
+
+                          <Button
+                            className="w-full text-sm h-8"
+                            onClick={handleEstimatedBillingFormSubmit}
+                            disabled={!estimatedBillingForm.address || !estimatedBillingForm.postalCode || !estimatedBillingForm.city || !estimatedBillingForm.state || !estimatedBillingForm.phone}
+                          >
+                            Save Estimated Address
+                          </Button>
+                        </div>
+                      </div>
+                    )}
 
                     {selectedAddress && (
                       <div className="border-t pt-3">
@@ -1521,20 +1853,13 @@ const Cart = () => {
                               <span className="text-muted-foreground">Weight</span>
                               <span>{deliveryWeight} kg</span>
                             </div>
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                              <p className="text-xs text-yellow-800">
-                                📍 Distance calculation needed for accurate delivery cost.
-                                Click &quot;Calculate Delivery Distance&quot; above.
-                              </p>
-                            </div>
-                            <div className="flex justify-between font-medium text-muted-foreground">
-                              <span>Delivery Fee</span>
-                              <span>Calculating...</span>
-                            </div>
+                          
+                            
                           </div>
                         )}
                       </div>
                     )}
+
 
                     <div className="border-t pt-3 flex justify-between items-center">
                       <span className="font-bold">Total</span>

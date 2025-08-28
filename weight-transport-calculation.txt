@@ -1,0 +1,77 @@
+WEIGHT TO TRANSPORT FARE CALCULATION
+=====================================
+
+OVERVIEW
+--------
+The delivery cost is calculated based on multiple factors including weight, distance, time, and fixed fees.
+
+WEIGHT CALCULATION TIERS
+------------------------
+The weight cost is calculated using tiered pricing:
+
+1. Light Weight (1-200kg): ₦10 per kg
+2. Medium Weight (201-500kg): ₦15 per kg  
+3. Heavy Weight (500kg+): ₦20 per kg
+
+WEIGHT CALCULATION CODE
+-----------------------
+```javascript
+let weightCost = 0;
+if (deliveryWeight <= 200) {
+  weightCost = deliveryWeight * 10; // ₦10 per kg
+} else if (deliveryWeight <= 500) {
+  weightCost = deliveryWeight * 15; // ₦15 per kg
+} else {
+  weightCost = deliveryWeight * 20; // ₦20 per kg
+}
+```
+
+HOW TOTAL WEIGHT IS CALCULATED
+------------------------------
+The total delivery weight comes from summing all cart items:
+
+```javascript
+const calculatedWeight = cartItems.reduce(
+  (sum, item) => sum + item.quantity * (item.product.weight || 0),
+  0
+);
+```
+
+COMPLETE DELIVERY COST FORMULA
+------------------------------
+Total Delivery Cost = Base Fare + Time Cost + Distance Cost + Weight Cost + Fixed Fees + Service Fee
+
+Where:
+- Base Fare: ₦750
+- Time Cost: ₦50 × estimated hours (minimum 0.5 hours)
+- Distance Cost: ₦90 × distance in km  
+- Weight Cost: As calculated above
+- Fixed Fees:
+  * Heavy Traffic Fee: ₦2,000
+  * Toll Fee: ₦300
+  * Wait Time Fee: ₦300
+- Service Fee: 7.5% of subtotal (before service fee)
+
+EXAMPLE CALCULATION
+------------------
+For a 150kg shipment over 10km:
+
+1. Base Fare: ₦750
+2. Time Cost: ₦50 × 0.5h = ₦25 (minimum 30 minutes)
+3. Distance Cost: ₦90 × 10km = ₦900
+4. Weight Cost: 150kg × ₦10/kg = ₦1,500
+5. Heavy Traffic Fee: ₦2,000
+6. Toll Fee: ₦300
+7. Wait Time Fee: ₦300
+
+Subtotal: ₦5,775
+Service Fee (7.5%): ₦433.13
+Total Delivery Cost: ₦6,208.13
+
+WEIGHT SOURCES
+--------------
+Product weights come from:
+1. Google Sheets data via API
+2. Transformed through mapNewProductToProduct() function in /src/data/products.ts
+3. Default to 0 if no weight specified in source data
+4. Can be edited in admin panel via ProductEditor component

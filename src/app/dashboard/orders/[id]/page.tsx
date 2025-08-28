@@ -218,6 +218,15 @@ export default function OrderDetailsPage() {
                 minute: '2-digit'
               })}
             </p>
+            {order.estimatedDeliveryDate && (
+              <p className="text-blue-600 font-medium">
+                Estimated delivery: {toJSDate(order.estimatedDeliveryDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center space-x-3">
@@ -405,6 +414,14 @@ export default function OrderDetailsPage() {
                 <span className="text-gray-600">Last Updated:</span>
                 <span>{order.updatedAt.toLocaleDateString()}</span>
               </div>
+              {order.estimatedDeliveryDate && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Est. Delivery:</span>
+                  <span className="font-medium text-blue-600">
+                    {toJSDate(order.estimatedDeliveryDate).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
               {order.notes && (
                 <div className="pt-2 border-t">
                   <span className="text-sm text-gray-600">Notes:</span>

@@ -73,6 +73,8 @@ interface GooglePlacesAutocompleteProps {
   label?: string;
   className?: string;
   disabled?: boolean;
+  onAgreeToEstimatedBilling?: (currentAddress?: string) => void;
+  showEstimatedBillingOption?: boolean;
 }
 
 const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
@@ -83,6 +85,8 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
   label = "Address",
   className = "",
   disabled = false,
+  onAgreeToEstimatedBilling,
+  showEstimatedBillingOption = false,
 }) => {
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -399,10 +403,23 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
               <br />• Area names (e.g., &quot;Victoria Island Lagos&quot;)
             </div>
             <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-amber-600">
-              <div className="flex items-center">
+              <div className="flex items-center mb-2">
                 <span className="mr-1">⚠️</span>
                 <span>Note: If your address is not found, delivery cost estimates may vary slightly from actual charges.</span>
               </div>
+              {showEstimatedBillingOption && onAgreeToEstimatedBilling && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onAgreeToEstimatedBilling(value);
+                    setShowSuggestions(false);
+                  }}
+                  className="w-full mt-2 text-xs h-7 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                >
+                  Agree to Estimated Billing
+                </Button>
+              )}
             </div>
           </div>
         )}

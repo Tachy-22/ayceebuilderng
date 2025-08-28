@@ -9,6 +9,7 @@ export interface Order {
   billingAddress?: Address;
   orderDate: Date;
   updatedAt: Date;
+  estimatedDeliveryDate: Date;
   notes?: string;
   customerEmail?: string;
 }

@@ -14,6 +14,12 @@ export function formatOrderDate(orderDate: string | Date | Timestamp) {
 }
 
 export function toJSDate(orderDate: any): Date {
+  // Handle null or undefined
+  if (!orderDate) {
+    console.warn('toJSDate received null/undefined date, returning current date');
+    return new Date();
+  }
+  
   if (orderDate?.toDate) {
     // Firestore Timestamp instance
     return orderDate.toDate();
@@ -28,5 +34,7 @@ export function toJSDate(orderDate: any): Date {
     // Plain object version of a Timestamp
     return new Date(orderDate.seconds * 1000);
   }
-  throw new Error("Unsupported date type");
+  
+  console.error('Unsupported date type:', orderDate, typeof orderDate);
+  throw new Error(`Unsupported date type: ${typeof orderDate}`);
 }

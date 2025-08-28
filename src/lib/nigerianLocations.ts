@@ -481,3 +481,212 @@ export const validateStateCity = (stateName: string, cityName: string): boolean 
   if (!state) return false;
   return state.cities.includes(cityName);
 };
+
+// Approximate distances (in kilometers) from Lagos (our product location) to state capitals
+// These are road distances used as fallback when Google Maps geocoding fails
+export const stateDistancesFromLagos: { [stateName: string]: number } = {
+  "Abia": 650,
+  "Adamawa": 1200,
+  "Akwa Ibom": 750,
+  "Anambra": 480,
+  "Bauchi": 1000,
+  "Bayelsa": 420,
+  "Benue": 520,
+  "Borno": 1350,
+  "Cross River": 680,
+  "Delta": 350,
+  "Ebonyi": 560,
+  "Edo": 320,
+  "Ekiti": 280,
+  "Enugu": 480,
+  "Federal Capital Territory": 750,
+  "Gombe": 1050,
+  "Imo": 580,
+  "Jigawa": 1100,
+  "Kaduna": 850,
+  "Kano": 1050,
+  "Katsina": 950,
+  "Kebbi": 950,
+  "Kogi": 450,
+  "Kwara": 350,
+  "Lagos": 25, // Average distance within Lagos state
+  "Nasarawa": 700,
+  "Niger": 600,
+  "Ogun": 80,
+  "Ondo": 250,
+  "Osun": 220,
+  "Oyo": 180,
+  "Plateau": 900,
+  "Rivers": 550,
+  "Sokoto": 1100,
+  "Taraba": 1000,
+  "Yobe": 1250,
+  "Zamfara": 900
+};
+
+// Extract state name from address string using various patterns
+export const extractStateFromAddress = (address: string): string | null => {
+  if (!address) return null;
+  
+  const addressLower = address.toLowerCase().trim();
+  const allStates = getAllStateNames();
+  
+  // Direct state name match - use word boundaries to avoid partial matches
+  for (const state of allStates) {
+    const stateLower = state.toLowerCase();
+    // Use regex with word boundaries to prevent partial matches
+    const regex = new RegExp('\\b' + stateLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+    if (regex.test(addressLower)) {
+      console.log('State extracted via direct match:', { address, state, regex: regex.toString() });
+      return state;
+    }
+  }
+  
+  // Common state abbreviations and alternative names
+  const stateAliases: { [key: string]: string } = {
+    'fct': 'Federal Capital Territory',
+    'abuja': 'Federal Capital Territory',
+    'rivers state': 'Rivers',
+    'akwa ibom': 'Akwa Ibom',
+    'cross river': 'Cross River',
+    'benue state': 'Benue',
+    'plateau state': 'Plateau',
+    'kwara state': 'Kwara',
+    'niger state': 'Niger',
+    'kaduna state': 'Kaduna',
+    'kano state': 'Kano',
+    'sokoto state': 'Sokoto',
+    'kebbi state': 'Kebbi',
+    'zamfara state': 'Zamfara',
+    'katsina state': 'Katsina',
+    'jigawa state': 'Jigawa',
+    'yobe state': 'Yobe',
+    'borno state': 'Borno',
+    'adamawa state': 'Adamawa',
+    'taraba state': 'Taraba',
+    'gombe state': 'Gombe',
+    'bauchi state': 'Bauchi'
+  };
+  
+  for (const [alias, stateName] of Object.entries(stateAliases)) {
+    const regex = new RegExp('\\b' + alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+    if (regex.test(addressLower)) {
+      console.log('State extracted via alias match:', { address, alias, stateName, regex: regex.toString() });
+      return stateName;
+    }
+  }
+  
+  // Check for major cities that might indicate the state
+  for (const state of nigerianStates) {
+    const cities = state.cities;
+    for (const city of cities) {
+      const cityLower = city.toLowerCase();
+      // Use word boundaries for city matching too to avoid partial matches
+      const regex = new RegExp('\\b' + cityLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+      if (regex.test(addressLower)) {
+        console.log('State extracted via city match:', { address, city, state: state.name, regex: regex.toString() });
+        return state.name;
+      }
+    }
+  }
+  
+  console.log('No state could be extracted from address:', { address });
+  return null;
+};
+
+// Calculate fallback distance based on extracted state
+export const calculateFallbackDistance = (fromAddress: string, toAddress: string): number | null => {
+  // Extract states from both addresses
+  const fromState = extractStateFromAddress(fromAddress);
+  const toState = extractStateFromAddress(toAddress);
+  
+  console.log('Fallback distance calculation:', { 
+    fromAddress, 
+    toAddress, 
+    fromState, 
+    toState,
+    fromLagosDistance: fromState ? stateDistancesFromLagos[fromState] : null,
+    toLagosDistance: toState ? stateDistancesFromLagos[toState] : null
+  });
+  
+  // If we can't determine states, return null
+  if (!fromState && !toState) {
+    return null;
+  }
+  
+  // If both addresses are in the same state, assume short distance
+  if (fromState && toState && fromState === toState) {
+    // Same state distances
+    const sameStateDistances: { [stateName: string]: number } = {
+      "Lagos": 25, // Lagos is large, average intra-state distance
+      "Federal Capital Territory": 15, // FCT is smaller
+      "Kano": 35,
+      "Rivers": 30,
+      "Oyo": 40,
+      "Kaduna": 50,
+      "Katsina": 45,
+      "Borno": 60,
+      "Niger": 80,
+      "Kwara": 35,
+      "Kebbi": 40,
+      "Sokoto": 35,
+      "Zamfara": 40,
+      "Bauchi": 50,
+      "Jigawa": 40,
+      "Yobe": 45,
+      "Gombe": 30,
+      "Adamawa": 50,
+      "Taraba": 45,
+      "Plateau": 40,
+      "Nasarawa": 35,
+      "Benue": 45,
+      "Cross River": 40,
+      "Akwa Ibom": 35,
+      "Abia": 30,
+      "Imo": 25,
+      "Anambra": 30,
+      "Enugu": 25,
+      "Ebonyi": 25,
+      "Delta": 35,
+      "Edo": 30,
+      "Ondo": 40,
+      "Ekiti": 25,
+      "Osun": 30,
+      "Ogun": 35,
+      "Bayelsa": 25
+    };
+    
+    return sameStateDistances[fromState] || 35; // Default 35km for same state
+  }
+  
+  // If one address is in Lagos (our product location), use direct distance
+  if (fromState === 'Lagos' && toState) {
+    const distance = stateDistancesFromLagos[toState] || null;
+    console.log('Direct Lagos to state distance:', { toState, distance });
+    return distance;
+  }
+  
+  if (toState === 'Lagos' && fromState) {
+    const distance = stateDistancesFromLagos[fromState] || null;
+    console.log('Direct state to Lagos distance:', { fromState, distance });
+    return distance;
+  }
+  
+  // For inter-state distances (not involving Lagos), use approximation
+  // This is a simple approximation - in a more sophisticated system, 
+  // you'd have a full distance matrix between all states
+  if (fromState && toState && fromState !== toState) {
+    const fromLagosDistance = stateDistancesFromLagos[fromState];
+    const toLagosDistance = stateDistancesFromLagos[toState];
+    
+    if (fromLagosDistance && toLagosDistance) {
+      // Simple triangulation approximation (not perfectly accurate but reasonable)
+      const triangulated = Math.abs(fromLagosDistance - toLagosDistance) * 0.8 + Math.min(fromLagosDistance, toLagosDistance) * 0.3;
+      console.log('Triangulation calculation:', { fromState, toState, fromLagosDistance, toLagosDistance, triangulated });
+      return triangulated;
+    }
+  }
+  
+  console.log('No distance calculation method matched, returning null');
+  return null;
+};

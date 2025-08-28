@@ -218,6 +218,15 @@ export default function OrdersPage() {
                           day: 'numeric'
                         })}
                       </p>
+                      {order.estimatedDeliveryDate && (
+                        <p className="text-sm text-blue-600">
+                          Est. delivery: {toJSDate(order.estimatedDeliveryDate).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 mt-3 sm:mt-0">
