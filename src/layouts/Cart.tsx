@@ -490,13 +490,10 @@ const Cart = () => {
       (sum, item) => sum + item.quantity * (item.product.weight || 0),
       0
     );
-
+    console.log({ cartItems })
     // Use the calculated weight if it's greater than 0, otherwise use default 500kg
-    if (calculatedWeight > 0) {
-      setDeliveryWeight(calculatedWeight);
-    } else {
-      setDeliveryWeight(500); // Default weight when no items have weight specified
-    }
+    setDeliveryWeight(calculatedWeight);
+
   }, [cartItems]);
 
   // Calculate cart totals
@@ -618,7 +615,7 @@ const Cart = () => {
           setOrderReference(reference.reference);
           setConfirmedItems(itemsForReceipt);
           setConfirmedTotal(total);
-          
+
           // Clear cart after a slight delay to show processing
           await new Promise(resolve => setTimeout(resolve, 1000));
           await clearCart();
@@ -752,8 +749,8 @@ const Cart = () => {
     if (!user || !userProfile) return;
 
     // Validate all fields are filled
-    if (!quickAddressForm.name.trim() || !quickAddressForm.street.trim() || 
-        !quickAddressForm.city.trim() || !quickAddressForm.state.trim()) {
+    if (!quickAddressForm.name.trim() || !quickAddressForm.street.trim() ||
+      !quickAddressForm.city.trim() || !quickAddressForm.state.trim()) {
       toast({
         variant: "destructive",
         title: "Incomplete address",
@@ -1176,7 +1173,7 @@ const Cart = () => {
                             <div className="space-y-2">
                               <div className="flex justify-between items-center">
                                 <Label className="text-sm font-medium">Delivery Address</Label>
-                                <Link 
+                                <Link
                                   href="/dashboard/profile"
                                   onClick={() => {
                                     localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
@@ -1282,7 +1279,7 @@ const Cart = () => {
                                           });
                                           return;
                                         }
-                                        
+
                                         const addressStr = place.address || place.formatted_address || place.name || '';
                                         setQuickAddressForm(prev => ({ ...prev, street: addressStr }));
                                         setSelectedPlaceCoordinates({
@@ -1291,7 +1288,7 @@ const Cart = () => {
                                           address: addressStr,
                                           placeId: place.placeId
                                         });
-                                        
+
                                         toast({
                                           title: "Address validated",
                                           description: "Valid address selected for delivery.",
@@ -1351,7 +1348,7 @@ const Cart = () => {
                             <div className="text-center py-6">
                               <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                               <p className="text-sm text-gray-600 mb-3">No delivery addresses saved</p>
-                              <Link 
+                              <Link
                                 href="/dashboard/profile"
                                 onClick={() => {
                                   localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
@@ -1376,7 +1373,7 @@ const Cart = () => {
                         <div className="text-center py-6">
                           <UserX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                           <p className="text-sm text-gray-600 mb-3">Complete your profile to continue</p>
-                          <Link 
+                          <Link
                             href="/dashboard/profile"
                             onClick={() => {
                               localStorage.setItem('authRedirectUrl', window.location.pathname + window.location.search);
@@ -1594,8 +1591,8 @@ const Cart = () => {
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <Link 
-                            href="/login" 
+                          <Link
+                            href="/login"
                             className="flex-1"
                             onClick={() => {
                               // Store current cart URL for redirect after login
@@ -1606,8 +1603,8 @@ const Cart = () => {
                               Sign In
                             </Button>
                           </Link>
-                          <Link 
-                            href="/register" 
+                          <Link
+                            href="/register"
                             className="flex-1"
                             onClick={() => {
                               // Store current cart URL for redirect after registration
