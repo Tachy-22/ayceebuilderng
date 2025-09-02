@@ -128,13 +128,12 @@ const About = () => {
               variants={fadeIn}
             >
               <div className="rounded-lg overflow-hidden shadow-xl">
-                <img
+                <Image
                   src="https://media.istockphoto.com/id/1178452628/photo/attractive-black-businessman-being-encouraged-by-diverse-multi-ethnic-group-of-coworkers.jpg?s=612x612&w=0&k=20&c=0CseKVV2CEx7jCgdfwpFwcNbnVfPpsF32EKVsyAB-ik="
                   alt="Aycee Builder Team"
                   width={600}
                   height={400}
                   className="w-full h-auto object-cover"
-
                 />
               </div>
               <div className="absolute -z-10 -bottom-10 -right-10 w-64 h-64 bg-primary/10 rounded-full" />
@@ -584,7 +583,7 @@ const About = () => {
                   1.3 Delivery Charges
                 </h3>
                 <p className="text-muted-foreground">
-                  A flat, subsidised delivery rate is applied based on the product's weight and destination. Free
+                  A flat, subsidised delivery rate is applied based on the product&apos;s weight and destination. Free
                   delivery may be available for select premium or bulk orders, which will be communicated at
                   checkout.
                 </p>
