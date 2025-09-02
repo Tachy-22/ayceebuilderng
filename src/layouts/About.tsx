@@ -524,7 +524,229 @@ const About = () => {
         </div>
       </section>
 
+      {/* Delivery Policy Section */}
+      <section id="delivery-policy" className="py-16 md:py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <motion.div
+            className="text-center max-w-3xl mx-auto mb-16"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeIn}
+          >
+            <Badge className="mb-4">Delivery & Returns</Badge>
+            <h2 className="text-3xl font-bold mb-6 text-grey-800">
+              Delivery Policy
+            </h2>
+          </motion.div>
 
+          <motion.div
+            className="max-w-4xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+          >
+            <div className="space-y-8">
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  1.1 How does delivery work at AYCEE Builder?
+                </h3>
+                <p className="text-muted-foreground">
+                  We partner with trusted logistics companies and independent drivers who specialise in the
+                  delivery of construction materials. Once an order is confirmed, processing begins within 24
+                  hours. We then schedule delivery based on your location, the type of product (e.g., tiles,
+                  lighting), and handling requirements. You will receive updates via SMS, WhatsApp, and a call
+                  from our delivery partner before arrival.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  1.2 Delivery Times
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Delivery times vary depending on your location and the product type:
+                </p>
+                <ul className="text-muted-foreground mb-4 list-disc list-inside space-y-1">
+                  <li>Lagos, Abuja, Port Harcourt: 1–3 working days</li>
+                  <li>Other urban areas: 2–5 working days</li>
+                  <li>Remote/under-served areas: 3–7 working days</li>
+                </ul>
+                <p className="text-muted-foreground">
+                  For custom orders, please note that delivery can take up to 14 days for urban areas and up to
+                  21 days for remote areas.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  1.3 Delivery Charges
+                </h3>
+                <p className="text-muted-foreground">
+                  A flat, subsidised delivery rate is applied based on the product's weight and destination. Free
+                  delivery may be available for select premium or bulk orders, which will be communicated at
+                  checkout.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  1.4 What if I am not available to receive my delivery?
+                </h3>
+                <p className="text-muted-foreground">
+                  We will attempt to contact you twice. You can reschedule the first attempt at no additional cost
+                  or nominate an alternative person to receive the delivery on your behalf. A small fee may be
+                  charged for re-delivery after a second failed attempt.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  1.5 Installation and Assembly
+                </h3>
+                <p className="text-muted-foreground">
+                  We understand that some products are heavy or fragile. Therefore, we offer optional installation
+                  and assembly services through our network of artisan partners and technicians for an additional
+                  fee.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  1.6 International Delivery
+                </h3>
+                <p className="text-muted-foreground">
+                  Currently, we do not offer direct delivery outside Nigeria. However, our vendor partners in South
+                  Africa, Egypt, and Ghana can assist with cross-border project needs.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  1.7 Delivery Methods
+                </h3>
+                <p className="text-muted-foreground">
+                  We utilise various delivery methods, including in-house dispatch riders, freight handlers,
+                  third-party logistics companies like GIGM and Kwik Delivery, and independent drivers for remote
+                  areas. We also prioritise eco-friendly delivery options, such as using reusable packaging and
+                  supporting local courier companies.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  1.8 Order Pickup
+                </h3>
+                <p className="text-muted-foreground">
+                  You may choose to pick up your order yourself from our Experience Centres in Lagos and
+                  Abuja, or from our partner warehouses.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-6 text-grey-800">
+                  2. Refund and Returns Policy
+                </h3>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="text-lg font-semibold mb-2 text-grey-800">2.1 Damaged or Incorrect Products</h4>
+                    <p className="text-muted-foreground">
+                      If your product arrives damaged or incorrect, you must take clear photos and notify us within 48
+                      hours of delivery. We will inspect the issue and, if a return is approved, will either replace the
+                      item or offer a full refund if the item is out of stock.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold mb-2 text-grey-800">2.2 Custom Orders</h4>
+                    <p className="text-muted-foreground">
+                      Please note that custom-made products, which are tailored to client specifications, are not
+                      eligible for refunds. These items are produced for a specific customer and cannot be restocked
+                      or resold.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold mb-2 text-grey-800">2.3 General Returns</h4>
+                    <p className="text-muted-foreground">
+                      We partner with trusted manufacturers and vendors who meet our standards and are certified by
+                      the Standards Organisation of Nigeria (SON) and the International Standards Organisation
+                      (ISO). If you are not satisfied with your purchase, please contact us for a possible return or
+                      exchange.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-6 text-grey-800">
+                  Delivery Summary
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 font-semibold text-grey-800">Item Type</th>
+                        <th className="text-left py-2 font-semibold text-grey-800">Urban Areas</th>
+                        <th className="text-left py-2 font-semibold text-grey-800">Remote Areas</th>
+                        <th className="text-left py-2 font-semibold text-grey-800">Extra Services</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-muted-foreground">
+                      <tr className="border-b">
+                        <td className="py-2">Tiles, Lighting</td>
+                        <td className="py-2">1–3 days</td>
+                        <td className="py-2">5–7 days</td>
+                        <td className="py-2">Installation on request</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2">Furniture</td>
+                        <td className="py-2">3–7 days</td>
+                        <td className="py-2">5–10 days</td>
+                        <td className="py-2">Assembly available</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2">Plumbing/Wiring</td>
+                        <td className="py-2">1–2 days</td>
+                        <td className="py-2">3–5 days</td>
+                        <td className="py-2">Site drop-off</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2">Custom Orders</td>
+                        <td className="py-2">Up to 14 days</td>
+                        <td className="py-2">Up to 21 days</td>
+                        <td className="py-2">Dedicated support</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+                <h3 className="text-xl font-bold mb-4 text-grey-800">
+                  3. Contact Us
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  For any urgent delivery needs or support, you can contact us at:
+                </p>
+                <ul className="text-muted-foreground space-y-2">
+                  <li>
+                    <strong>Email:</strong> aycee10@ayceebuilder.com
+                  </li>
+                  <li>
+                    <strong>Website:</strong> www.ayceebuilder.com
+                  </li>
+                  <li>
+                    <strong>Phone:</strong> +234 703 952 0579
+                  </li>
+                </ul>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
       {/* CTA Section explore our */}
       <section className="py-16 md:py-24 bg-primary relative overflow-hidden">

@@ -23,6 +23,7 @@ const footerLinks = [
       { name: "About Us", href: "/about" },
       { name: "Products", href: "/products" },
       { name: "Blog", href: "/blog" },
+      { name: "Delivery Policy", href: "/about#delivery-policy" },
     ],
   },
   {
@@ -187,7 +188,7 @@ Facebook: https://www.facebook.com/profile.php?id=100083060214875 */}{" "}
             </div>
             <p className="text-sm text-white/50">
               © {new Date().getFullYear()} {settings?.siteName || 'Ayceebuilder Nigeria'}. All rights
-              reserved.
+              reserved. 
             </p>
           </div>
         </div>
