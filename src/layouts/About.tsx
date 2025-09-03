@@ -591,7 +591,7 @@ const About = () => {
                     Delivery Charges
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground pt-2">
-                    A flat, subsidised delivery rate is applied based on the product's weight and destination. Free
+                    A flat, subsidised delivery rate is applied based on the product&apos;s weight and destination. Free
                     delivery may be available for select premium or bulk orders, which will be communicated at
                     checkout.
                   </AccordionContent>
