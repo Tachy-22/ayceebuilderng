@@ -6,7 +6,6 @@ import {
   Building,
   Users,
   Heart,
-  LightbulbIcon,
   Lightbulb,
   ShieldCheck,
   Award,
@@ -19,6 +18,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import Link from "next/link";
 import { whatsappNumber } from "@/lib/utils";
 import Image from "next/image";
@@ -546,139 +551,143 @@ const About = () => {
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-            <div className="space-y-8">
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-4 text-grey-800">
-                  1.1 How does delivery work at AYCEE Builder?
-                </h3>
-                <p className="text-muted-foreground">
-                  We partner with trusted logistics companies and independent drivers who specialise in the
-                  delivery of construction materials. Once an order is confirmed, processing begins within 24
-                  hours. We then schedule delivery based on your location, the type of product (e.g., tiles,
-                  lighting), and handling requirements. You will receive updates via SMS, WhatsApp, and a call
-                  from our delivery partner before arrival.
-                </p>
-              </motion.div>
+            <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="delivery-process" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    How does delivery work at AYCEE Builder?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    We partner with trusted logistics companies and independent drivers who specialise in the
+                    delivery of construction materials. Once an order is confirmed, processing begins within 24
+                    hours. We then schedule delivery based on your location, the type of product (e.g., tiles,
+                    lighting), and handling requirements. You will receive updates via SMS, WhatsApp, and a call
+                    from our delivery partner before arrival.
+                  </AccordionContent>
+                </AccordionItem>
 
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-4 text-grey-800">
-                  1.2 Delivery Times
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Delivery times vary depending on your location and the product type:
-                </p>
-                <ul className="text-muted-foreground mb-4 list-disc list-inside space-y-1">
-                  <li>Lagos, Abuja, Port Harcourt: 1–3 working days</li>
-                  <li>Other urban areas: 2–5 working days</li>
-                  <li>Remote/under-served areas: 3–7 working days</li>
-                </ul>
-                <p className="text-muted-foreground">
-                  For custom orders, please note that delivery can take up to 14 days for urban areas and up to
-                  21 days for remote areas.
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-4 text-grey-800">
-                  1.3 Delivery Charges
-                </h3>
-                <p className="text-muted-foreground">
-                  A flat, subsidised delivery rate is applied based on the product&apos;s weight and destination. Free
-                  delivery may be available for select premium or bulk orders, which will be communicated at
-                  checkout.
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-4 text-grey-800">
-                  1.4 What if I am not available to receive my delivery?
-                </h3>
-                <p className="text-muted-foreground">
-                  We will attempt to contact you twice. You can reschedule the first attempt at no additional cost
-                  or nominate an alternative person to receive the delivery on your behalf. A small fee may be
-                  charged for re-delivery after a second failed attempt.
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-4 text-grey-800">
-                  1.5 Installation and Assembly
-                </h3>
-                <p className="text-muted-foreground">
-                  We understand that some products are heavy or fragile. Therefore, we offer optional installation
-                  and assembly services through our network of artisan partners and technicians for an additional
-                  fee.
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-4 text-grey-800">
-                  1.6 International Delivery
-                </h3>
-                <p className="text-muted-foreground">
-                  Currently, we do not offer direct delivery outside Nigeria. However, our vendor partners in South
-                  Africa, Egypt, and Ghana can assist with cross-border project needs.
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-4 text-grey-800">
-                  1.7 Delivery Methods
-                </h3>
-                <p className="text-muted-foreground">
-                  We utilise various delivery methods, including in-house dispatch riders, freight handlers,
-                  third-party logistics companies like GIGM and Kwik Delivery, and independent drivers for remote
-                  areas. We also prioritise eco-friendly delivery options, such as using reusable packaging and
-                  supporting local courier companies.
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-4 text-grey-800">
-                  1.8 Order Pickup
-                </h3>
-                <p className="text-muted-foreground">
-                  You may choose to pick up your order yourself from our Experience Centres in Lagos and
-                  Abuja, or from our partner warehouses.
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
-                <h3 className="text-xl font-bold mb-6 text-grey-800">
-                  2. Refund and Returns Policy
-                </h3>
-                
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="text-lg font-semibold mb-2 text-grey-800">2.1 Damaged or Incorrect Products</h4>
-                    <p className="text-muted-foreground">
-                      If your product arrives damaged or incorrect, you must take clear photos and notify us within 48
-                      hours of delivery. We will inspect the issue and, if a return is approved, will either replace the
-                      item or offer a full refund if the item is out of stock.
+                <AccordionItem value="delivery-times" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    Delivery Times
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    <p className="mb-4">
+                      Delivery times vary depending on your location and the product type:
                     </p>
-                  </div>
-
-                  <div>
-                    <h4 className="text-lg font-semibold mb-2 text-grey-800">2.2 Custom Orders</h4>
-                    <p className="text-muted-foreground">
-                      Please note that custom-made products, which are tailored to client specifications, are not
-                      eligible for refunds. These items are produced for a specific customer and cannot be restocked
-                      or resold.
+                    <ul className="mb-4 list-disc list-inside space-y-1">
+                      <li>Lagos, Abuja, Port Harcourt: 1–3 working days</li>
+                      <li>Other urban areas: 2–5 working days</li>
+                      <li>Remote/under-served areas: 3–7 working days</li>
+                    </ul>
+                    <p>
+                      For custom orders, please note that delivery can take up to 14 days for urban areas and up to
+                      21 days for remote areas.
                     </p>
-                  </div>
+                  </AccordionContent>
+                </AccordionItem>
 
-                  <div>
-                    <h4 className="text-lg font-semibold mb-2 text-grey-800">2.3 General Returns</h4>
-                    <p className="text-muted-foreground">
-                      We partner with trusted manufacturers and vendors who meet our standards and are certified by
-                      the Standards Organisation of Nigeria (SON) and the International Standards Organisation
-                      (ISO). If you are not satisfied with your purchase, please contact us for a possible return or
-                      exchange.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
+                <AccordionItem value="delivery-charges" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    Delivery Charges
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    A flat, subsidised delivery rate is applied based on the product's weight and destination. Free
+                    delivery may be available for select premium or bulk orders, which will be communicated at
+                    checkout.
+                  </AccordionContent>
+                </AccordionItem>
 
+                <AccordionItem value="unavailable-delivery" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    What if I am not available to receive my delivery?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    We will attempt to contact you twice. You can reschedule the first attempt at no additional cost
+                    or nominate an alternative person to receive the delivery on your behalf. A small fee may be
+                    charged for re-delivery after a second failed attempt.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="installation" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    Installation and Assembly
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    We understand that some products are heavy or fragile. Therefore, we offer optional installation
+                    and assembly services through our network of artisan partners and technicians for an additional
+                    fee.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="international-delivery" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    International Delivery
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    Currently, we do not offer direct delivery outside Nigeria. However, our vendor partners in South
+                    Africa, Egypt, and Ghana can assist with cross-border project needs.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="delivery-methods" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    Delivery Methods
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    We utilise various delivery methods, including in-house dispatch riders, freight handlers,
+                    third-party logistics companies like GIGM and Kwik Delivery, and independent drivers for remote
+                    areas. We also prioritise eco-friendly delivery options, such as using reusable packaging and
+                    supporting local courier companies.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="order-pickup" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    Order Pickup
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    You may choose to pick up your order yourself from our Experience Centres in Lagos and
+                    Abuja, or from our partner warehouses.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="damaged-products" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    Damaged or Incorrect Products
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    If your product arrives damaged or incorrect, you must take clear photos and notify us within 48
+                    hours of delivery. We will inspect the issue and, if a return is approved, will either replace the
+                    item or offer a full refund if the item is out of stock.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="custom-orders" className="border-b">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    Custom Orders
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    Please note that custom-made products, which are tailored to client specifications, are not
+                    eligible for refunds. These items are produced for a specific customer and cannot be restocked
+                    or resold.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="general-returns">
+                  <AccordionTrigger className="text-xl font-bold text-grey-800 hover:no-underline">
+                    General Returns
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pt-2">
+                    We partner with trusted manufacturers and vendors who meet our standards and are certified by
+                    the Standards Organisation of Nigeria (SON) and the International Standards Organisation
+                    (ISO). If you are not satisfied with your purchase, please contact us for a possible return or
+                    exchange.
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </motion.div>
+
+            <div className="space-y-8 mt-[2rem]">
               <motion.div variants={fadeIn} className="bg-white p-8 rounded-xl border">
                 <h3 className="text-xl font-bold mb-6 text-grey-800">
                   Delivery Summary
@@ -748,7 +757,7 @@ const About = () => {
       </section>
 
       {/* CTA Section explore our */}
-      <section className="py-16 md:py-24 bg-primary relative overflow-hidden">
+      <section className="py-16 mt-[4rem] md:py-24 bg-primary relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             className="max-w-2xl mx-auto text-center text-black/90"
