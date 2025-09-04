@@ -107,17 +107,19 @@ export default function ProfilePage() {
     if (!user) return;
 
     // Validate state-city combination
-    if (addressForm.state && addressForm.city && !validateStateCity(addressForm.state, addressForm.city)) {
-      toast({
-        variant: "destructive",
-        title: "Invalid location",
-        description: `${addressForm.city} is not a valid city in ${addressForm.state} state.`,
-      });
-      return;
-    }
+    // if (addressForm.state && addressForm.city && !validateStateCity(addressForm.state, addressForm.city)) {
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Invalid location",
+    //     description: `${addressForm.city} is not a valid city in ${addressForm.state} state.`,
+    //   });
+    //   return;
+    // }
 
     // Basic validation for required fields
-    if (!addressForm.street.trim() || !addressForm.city.trim() || !addressForm.state.trim()) {
+    if (!addressForm.street.trim() 
+    //  || !addressForm.city.trim() || !addressForm.state.trim()
+    ) {
       toast({
         variant: "destructive",
         title: "Incomplete address",
