@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Database, 
-  Download, 
-  CheckCircle, 
-  AlertCircle, 
-  Loader2, 
+import {
+  Database,
+  Download,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
   RefreshCw,
   Package,
   TrendingUp
@@ -55,12 +55,12 @@ export default function CategoryMigration() {
   // Check status for all categories
   const checkAllStatuses = async () => {
     setLoading(prev => Object.keys(prev).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
-    
+
     for (const category of categories) {
       try {
         const response = await fetch(`/api/migrate-category?category=${category.id}`);
         const data = await response.json();
-        
+
         if (data.success) {
           setCategoryStatuses(prev => ({
             ...prev,
@@ -82,7 +82,7 @@ export default function CategoryMigration() {
         `https://script.google.com/macros/s/AKfycbwT0TdiN9b9pa7ihupog_ztKDe9C3KK2BvGef4X_Zpy1W-pRJf7vupnqAXQB8cQuw-W/exec?page=1&limit=1&sheet=${categoryId}`
       );
       const data = await response.json();
-      
+
       // The API should return total count even with limit=1
       if (data && typeof data.total === 'number') {
         return data.total;
@@ -97,15 +97,15 @@ export default function CategoryMigration() {
   // Check status for single category
   const checkCategoryStatus = async (categoryId: string) => {
     setLoading(prev => ({ ...prev, [categoryId]: true }));
-    
+
     try {
       // Get Firebase status
       const response = await fetch(`/api/migrate-category?category=${categoryId}`);
       const data = await response.json();
-      
+
       // Get actual count from Google Sheets
       const actualCount = await getActualCountFromSheets(categoryId);
-      
+
       if (data.success) {
         setCategoryStatuses(prev => ({
           ...prev,
@@ -118,9 +118,9 @@ export default function CategoryMigration() {
         setErrors(prev => ({ ...prev, [categoryId]: data.error || 'Failed to check status' }));
       }
     } catch (err) {
-      setErrors(prev => ({ 
-        ...prev, 
-        [categoryId]: err instanceof Error ? err.message : 'Failed to check status' 
+      setErrors(prev => ({
+        ...prev,
+        [categoryId]: err instanceof Error ? err.message : 'Failed to check status'
       }));
     } finally {
       setLoading(prev => ({ ...prev, [categoryId]: false }));
@@ -132,7 +132,7 @@ export default function CategoryMigration() {
     setMigrating(prev => ({ ...prev, [categoryId]: true }));
     setErrors(prev => ({ ...prev, [categoryId]: '' }));
     setResults(prev => ({ ...prev, [categoryId]: {} as CategoryMigrationResult }));
-    
+
     try {
       const response = await fetch('/api/migrate-category', {
         method: 'POST',
@@ -141,10 +141,10 @@ export default function CategoryMigration() {
         },
         body: JSON.stringify({ category: categoryId, force }),
       });
-      
+
       const data = await response.json();
       setResults(prev => ({ ...prev, [categoryId]: data }));
-      
+
       if (data.success) {
         // Refresh status after successful migration
         await checkCategoryStatus(categoryId);
@@ -152,9 +152,9 @@ export default function CategoryMigration() {
         setErrors(prev => ({ ...prev, [categoryId]: data.error || 'Migration failed' }));
       }
     } catch (err) {
-      setErrors(prev => ({ 
-        ...prev, 
-        [categoryId]: err instanceof Error ? err.message : 'Migration failed' 
+      setErrors(prev => ({
+        ...prev,
+        [categoryId]: err instanceof Error ? err.message : 'Migration failed'
       }));
     } finally {
       setMigrating(prev => ({ ...prev, [categoryId]: false }));
@@ -189,9 +189,9 @@ export default function CategoryMigration() {
               Migrate each product category individually from Google Sheets to Firebase
             </CardDescription>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={checkAllStatuses}
             disabled={Object.values(loading).some(l => l)}
           >
@@ -203,7 +203,7 @@ export default function CategoryMigration() {
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {categories.map((category) => {
@@ -224,15 +224,10 @@ export default function CategoryMigration() {
                         <span className="text-lg">{getCategoryIcon(categoryId)}</span>
                         <div>
                           <h3 className="font-medium">{getCategoryName(categoryId)}</h3>
-                          <p className="text-xs text-muted-foreground">
-                            {status?.availableInSheets !== undefined 
-                              ? `${status.availableInSheets} available in sheets`
-                              : `${category.itemCount} expected items`
-                            }
-                          </p>
+
                         </div>
                       </div>
-                      
+
                       {status && (
                         <Badge variant={status.exists ? "default" : "secondary"}>
                           {status.exists ? `${status.productCount} migrated` : "Not migrated"}
@@ -250,7 +245,7 @@ export default function CategoryMigration() {
                     {/* Action Buttons */}
                     <div className="space-y-2">
                       {!status?.exists ? (
-                        <Button 
+                        <Button
                           onClick={() => migrateCategory(categoryId, false)}
                           disabled={isMigrating || isLoading}
                           size="sm"
@@ -270,7 +265,7 @@ export default function CategoryMigration() {
                         </Button>
                       ) : (
                         <div className="space-y-1">
-                          <Button 
+                          <Button
                             onClick={() => migrateCategory(categoryId, true)}
                             disabled={isMigrating || isLoading}
                             variant="outline"
@@ -309,13 +304,13 @@ export default function CategoryMigration() {
                             <AlertDescription className={result.success ? "text-green-800" : "text-red-800"}>
                               {result.message}
                             </AlertDescription>
-                            
+
                             {result.success && (
                               <div className="text-xs">
                                 ✓ Migrated {result.migratedProducts} of {result.totalProducts} products
                               </div>
                             )}
-                            
+
                             {result.errors && result.errors.length > 0 && (
                               <details className="text-xs">
                                 <summary className="cursor-pointer text-muted-foreground">

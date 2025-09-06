@@ -96,12 +96,12 @@ export default function AdminLayout({
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-            <div className="flex items-center space-x-3">
+            <Link href={'/'} className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Package className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">AyceeBuilder</span>
-            </div>
+            </Link>
             <Button
               variant="ghost"
               size="sm"

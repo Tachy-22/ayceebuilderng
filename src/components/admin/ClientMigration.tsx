@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Database, 
-  Download, 
-  CheckCircle, 
-  AlertCircle, 
-  Loader2, 
+import {
+  Database,
+  Download,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
   RefreshCw
 } from 'lucide-react';
 import { categories, mapNewProductToProduct, ProductNew } from '@/data/products';
@@ -51,7 +51,7 @@ export default function ClientMigration() {
       const productsRef = collection(db, 'products');
       const categoryQuery = query(productsRef, where('category', '==', categoryId));
       const snapshot = await getDocs(categoryQuery);
-      
+
       return {
         exists: snapshot.size > 0,
         count: snapshot.size
@@ -77,13 +77,13 @@ export default function ClientMigration() {
   // Check status for single category
   const checkCategoryStatus = async (categoryId: string) => {
     setLoading(prev => ({ ...prev, [categoryId]: true }));
-    
+
     try {
       const [firebaseStatus, sheetsCount] = await Promise.all([
         checkFirebaseStatus(categoryId),
         getSheetsCount(categoryId)
       ]);
-      
+
       setCategoryStatuses(prev => ({
         ...prev,
         [categoryId]: {
@@ -94,9 +94,9 @@ export default function ClientMigration() {
         }
       }));
     } catch (err) {
-      setErrors(prev => ({ 
-        ...prev, 
-        [categoryId]: err instanceof Error ? err.message : 'Failed to check status' 
+      setErrors(prev => ({
+        ...prev,
+        [categoryId]: err instanceof Error ? err.message : 'Failed to check status'
       }));
     } finally {
       setLoading(prev => ({ ...prev, [categoryId]: false }));
@@ -112,7 +112,7 @@ export default function ClientMigration() {
 
     setMigrating(prev => ({ ...prev, [categoryId]: true }));
     setErrors(prev => ({ ...prev, [categoryId]: '' }));
-    
+
     const migrationResult: MigrationResult = {
       success: false,
       category: categoryId,
@@ -126,26 +126,26 @@ export default function ClientMigration() {
       if (!force) {
         const firebaseStatus = await checkFirebaseStatus(categoryId);
         if (firebaseStatus.exists && firebaseStatus.count > 0) {
-          setErrors(prev => ({ 
-            ...prev, 
-            [categoryId]: `Products already exist for "${categoryId}". Use Re-migrate to overwrite.` 
+          setErrors(prev => ({
+            ...prev,
+            [categoryId]: `Products already exist for "${categoryId}". Use Re-migrate to overwrite.`
           }));
           return;
         }
       }
 
       console.log(`Starting client-side migration for category: ${categoryId}`);
-      
+
       // Fetch all products from Google Sheets for this category
       let allProducts: ProductNew[] = [];
       let currentPage = 1;
       let hasMorePages = true;
       const pageLimit = 100;
-      
+
       while (hasMorePages) {
         const sheetUrl = `${GOOGLE_SCRIPT_URL}?page=${currentPage}&limit=${pageLimit}&sheet=${categoryId}`;
         console.log(`Fetching ${categoryId} page ${currentPage}`);
-        
+
         const sheetResponse = await fetch(sheetUrl);
         if (!sheetResponse.ok) {
           migrationResult.errors.push(`Failed to fetch page ${currentPage}: ${sheetResponse.statusText}`);
@@ -169,9 +169,9 @@ export default function ClientMigration() {
       }
 
       if (allProducts.length === 0) {
-        setErrors(prev => ({ 
-          ...prev, 
-          [categoryId]: `No products found for category: ${categoryId}` 
+        setErrors(prev => ({
+          ...prev,
+          [categoryId]: `No products found for category: ${categoryId}`
         }));
         return;
       }
@@ -184,7 +184,7 @@ export default function ClientMigration() {
         const productsRef = collection(db, 'products');
         const categoryQuery = query(productsRef, where('category', '==', categoryId));
         const existingProducts = await getDocs(categoryQuery);
-        
+
         if (!existingProducts.empty) {
           console.log(`Deleting ${existingProducts.size} existing products for ${categoryId}`);
           const deleteBatch = writeBatch(db);
@@ -198,7 +198,7 @@ export default function ClientMigration() {
       // Process products in batches
       const batchSize = 400;
       const productBatches = [];
-      
+
       for (let i = 0; i < allProducts.length; i += batchSize) {
         productBatches.push(allProducts.slice(i, i + batchSize));
       }
@@ -212,10 +212,10 @@ export default function ClientMigration() {
           try {
             const rawProduct = currentBatch[j];
             const globalIndex = (batchIndex * batchSize) + j;
-            
+
             const product = mapNewProductToProduct(rawProduct, globalIndex);
             const productId = `${categoryId}_${product.id || globalIndex}`;
-            
+
             // Clean up undefined values for Firestore
             const cleanProduct = {
               ...product,
@@ -235,11 +235,11 @@ export default function ClientMigration() {
                 delete cleanProduct[key as keyof typeof cleanProduct];
               }
             });
-            
+
             const productRef = doc(db, 'products', productId);
             batch.set(productRef, cleanProduct);
             migrationResult.migratedProducts++;
-            
+
           } catch (productError) {
             const error = `Error processing product ${j}: ${productError instanceof Error ? productError.message : 'Unknown error'}`;
             migrationResult.errors.push(error);
@@ -254,12 +254,12 @@ export default function ClientMigration() {
       }
 
       migrationResult.success = migrationResult.migratedProducts > 0;
-      migrationResult.message = migrationResult.success 
+      migrationResult.message = migrationResult.success
         ? `Successfully migrated ${migrationResult.migratedProducts} products for "${categoryId}"`
         : `Failed to migrate category "${categoryId}"`;
 
       setResults(prev => ({ ...prev, [categoryId]: migrationResult }));
-      
+
       if (migrationResult.success) {
         // Refresh status after successful migration
         await checkCategoryStatus(categoryId);
@@ -310,9 +310,9 @@ export default function ClientMigration() {
               Migrate each product category individually with proper authentication
             </CardDescription>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => categories.forEach(cat => checkCategoryStatus(cat.id))}
             disabled={Object.values(loading).some(l => l)}
           >
@@ -324,7 +324,7 @@ export default function ClientMigration() {
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {categories.map((category) => {
@@ -342,29 +342,24 @@ export default function ClientMigration() {
                     {/* Category Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">{category.icon}</span>
+                        {/* <span className="text-lg">{category.icon}</span> */}
                         <div>
                           <h3 className="font-medium">{category.name}</h3>
-                          <p className="text-xs text-muted-foreground">
-                            {status?.availableInSheets !== undefined 
-                              ? `${status.availableInSheets} available in sheets`
-                              : `${category.itemCount} expected items`
-                            }
-                          </p>
+
                         </div>
                       </div>
-                      
-                      {status && (
+
+                      {/* {status && (
                         <Badge variant={status.exists ? "default" : "secondary"}>
                           {status.exists ? `${status.productCount} migrated` : "Not migrated"}
                         </Badge>
-                      )}
+                      )} */}
                     </div>
 
                     {/* Action Buttons */}
                     <div className="space-y-2">
                       {!status?.exists ? (
-                        <Button 
+                        <Button
                           onClick={() => migrateCategory(categoryId, false)}
                           disabled={isMigrating || isLoading}
                           size="sm"
@@ -384,7 +379,7 @@ export default function ClientMigration() {
                         </Button>
                       ) : (
                         <div className="space-y-1">
-                          <Button 
+                          <Button
                             onClick={() => migrateCategory(categoryId, true)}
                             disabled={isMigrating || isLoading}
                             variant="outline"
@@ -403,9 +398,9 @@ export default function ClientMigration() {
                               </>
                             )}
                           </Button>
-                          <p className="text-xs text-muted-foreground text-center">
+                          {/* <p className="text-xs text-muted-foreground text-center">
                             Force will overwrite existing data
-                          </p>
+                          </p> */}
                         </div>
                       )}
                     </div>
@@ -423,13 +418,13 @@ export default function ClientMigration() {
                             <AlertDescription className={result.success ? "text-green-800" : "text-red-800"}>
                               {result.message}
                             </AlertDescription>
-                            
+
                             {result.success && (
                               <div className="text-xs">
                                 ✓ Migrated {result.migratedProducts} of {result.totalProducts} products
                               </div>
                             )}
-                            
+
                             {result.errors && result.errors.length > 0 && (
                               <details className="text-xs">
                                 <summary className="cursor-pointer text-muted-foreground">

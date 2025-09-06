@@ -108,77 +108,80 @@ const PasscodeProtection: React.FC<PasscodeProtectionProps> = ({
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-          <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-              Admin Login
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Please sign in with your admin credentials
-            </p>
-          </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email" className="sr-only">
-                  Email address
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Admin email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-red-600 text-sm">{error}</p>
-              </div>
-            )}
-            <div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign in to Admin Panel'
-                )}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
+
+    router.push('/login')
+    return
+    // return (
+    //   <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    //     <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
+    //       <div className="text-center">
+    //         <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+    //           Admin Login
+    //         </h2>
+    //         <p className="mt-2 text-sm text-gray-600">
+    //           Please sign in with your admin credentials
+    //         </p>
+    //       </div>
+    //       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+    //         <div className="space-y-4">
+    //           <div>
+    //             <label htmlFor="email" className="sr-only">
+    //               Email address
+    //             </label>
+    //             <Input
+    //               id="email"
+    //               name="email"
+    //               type="email"
+    //               autoComplete="email"
+    //               required
+    //               className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+    //               placeholder="Admin email address"
+    //               value={email}
+    //               onChange={(e) => setEmail(e.target.value)}
+    //             />
+    //           </div>
+    //           <div>
+    //             <label htmlFor="password" className="sr-only">
+    //               Password
+    //             </label>
+    //             <Input
+    //               id="password"
+    //               name="password"
+    //               type="password"
+    //               autoComplete="current-password"
+    //               required
+    //               className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+    //               placeholder="Password"
+    //               value={password}
+    //               onChange={(e) => setPassword(e.target.value)}
+    //             />
+    //           </div>
+    //         </div>
+    //         {error && (
+    //           <div className="bg-red-50 border border-red-200 rounded-md p-3">
+    //             <p className="text-red-600 text-sm">{error}</p>
+    //           </div>
+    //         )}
+    //         <div>
+    //           <Button
+    //             type="submit"
+    //             disabled={loading}
+    //             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+    //           >
+    //             {loading ? (
+    //               <>
+    //                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+    //                 Signing in...
+    //               </>
+    //             ) : (
+    //               'Sign in to Admin Panel'
+    //             )}
+    //           </Button>
+    //         </div>
+    //       </form>
+    //     </div>
+    //   </div>
+    // );
   }
 
   return (
