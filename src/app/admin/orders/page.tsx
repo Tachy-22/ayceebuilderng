@@ -44,13 +44,16 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { collection, query, orderBy, getDocs, doc, updateDoc, where, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { getUserProfile } from '@/lib/firestore';
 import { Order, OrderStatus } from '@/types/order';
+import { UserProfile } from '@/types/user';
 import Image from 'next/image';
 import { toJSDate } from '@/lib/formatOrderDate';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [customers, setCustomers] = useState<Record<string, UserProfile>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
@@ -66,6 +69,21 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     filterOrders();
   }, [orders, searchTerm, statusFilter]);
+
+  // Add escape key handler to close dialogs
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowOrderDetails(false);
+        setSelectedOrder(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
 
   const fetchOrders = async () => {
     try {
@@ -86,6 +104,25 @@ export default function AdminOrdersPage() {
       })) as Order[];
 
       setOrders(ordersData);
+
+      // Fetch customer details for all unique userIds
+      const uniqueUserIds = Array.from(new Set(ordersData.map(order => order.userId).filter(Boolean)));
+      const customerProfiles: Record<string, UserProfile> = {};
+
+      await Promise.all(
+        uniqueUserIds.map(async (userId) => {
+          try {
+            const profile = await getUserProfile(userId);
+            if (profile) {
+              customerProfiles[userId] = profile;
+            }
+          } catch (error) {
+            console.error(`Error fetching profile for user ${userId}:`, error);
+          }
+        })
+      );
+
+      setCustomers(customerProfiles);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
@@ -103,13 +140,19 @@ export default function AdminOrdersPage() {
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(order =>
-        order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customerEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.items.some(item =>
-          item.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
+      filtered = filtered.filter(order => {
+        const customerName = getCustomerName(order);
+        const customerEmail = getCustomerEmail(order);
+        
+        return (
+          order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.items.some(item =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        );
+      });
     }
 
     // Filter by status
@@ -207,6 +250,26 @@ export default function AdminOrdersPage() {
     }).format(amount);
   };
 
+  const getCustomerName = (order: Order) => {
+    const customer = customers[order.userId];
+    if (customer?.name) {
+      return customer.name;
+    }
+    // Fallback to shipping address name if customer profile not found
+    return order.shippingAddress?.name || 'N/A';
+  };
+
+  const getCustomerEmail = (order: Order) => {
+    const customer = customers[order.userId];
+    return customer?.email || order.customerEmail || 'N/A';
+  };
+
+  // Cleanup function to reset all dialog states
+  const resetDialogStates = () => {
+    setShowOrderDetails(false);
+    setSelectedOrder(null);
+  };
+
   const getStatusActions = (currentStatus: OrderStatus): OrderStatus[] => {
     switch (currentStatus) {
       case 'pending':
@@ -239,6 +302,8 @@ export default function AdminOrdersPage() {
       </div>
     );
   }
+
+  console.log({ orders })
 
   return (
     <div className="space-y-6">
@@ -332,7 +397,7 @@ export default function AdminOrdersPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search by order number, customer email, or product..."
+                  placeholder="Search by order number, customer name, email, or product..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -414,7 +479,7 @@ export default function AdminOrdersPage() {
                             })}
                           </p>
                           <p className="text-sm text-gray-500">
-                            Customer: {order.customerEmail || 'N/A'}
+                            Customer: {getCustomerName(order)}
                           </p>
                         </div>
                       </div>
@@ -440,8 +505,11 @@ export default function AdminOrdersPage() {
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem
                             onClick={() => {
-                              setSelectedOrder(order);
-                              setShowOrderDetails(true);
+                              resetDialogStates();
+                              setTimeout(() => {
+                                setSelectedOrder(order);
+                                setShowOrderDetails(true);
+                              }, 10);
                             }}
                           >
                             <Eye className="h-4 w-4 mr-2" />
@@ -472,7 +540,12 @@ export default function AdminOrdersPage() {
       </Card>
 
       {/* Order Details Dialog */}
-      <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
+      <Dialog open={showOrderDetails} onOpenChange={(open) => {
+        setShowOrderDetails(open);
+        if (!open) {
+          setSelectedOrder(null);
+        }
+      }}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Order Details - #{selectedOrder?.orderNumber}</DialogTitle>
@@ -489,7 +562,8 @@ export default function AdminOrdersPage() {
                   <h4 className="font-semibold mb-2">Order Information</h4>
                   <div className="space-y-2 text-sm">
                     <p><span className="font-medium">Order Date:</span> {selectedOrder.orderDate.toLocaleString()}</p>
-                    <p><span className="font-medium">Customer Email:</span> {selectedOrder.customerEmail || 'N/A'}</p>
+                    <p><span className="font-medium">Customer:</span> {getCustomerName(selectedOrder)}</p>
+                    <p><span className="font-medium">Customer Email:</span> {getCustomerEmail(selectedOrder)}</p>
                     <p><span className="font-medium">Total Amount:</span> {formatCurrency(selectedOrder.totalAmount)}</p>
                     <p><span className="font-medium">Status:</span>
                       <Badge className={`ml-2 ${getOrderStatusColor(selectedOrder.status)}`}>
@@ -559,7 +633,7 @@ export default function AdminOrdersPage() {
                   Mark as {status}
                 </Button>
               ))}
-              <Button variant="outline" onClick={() => setShowOrderDetails(false)}>
+              <Button variant="outline" onClick={resetDialogStates}>
                 Close
               </Button>
             </div>

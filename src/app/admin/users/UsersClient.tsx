@@ -58,6 +58,21 @@ export default function UsersClient({ users }: UsersClientProps) {
     filterUsers();
   }, [users, searchTerm]);
 
+  // Add escape key handler to close dialogs
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowUserDetails(false);
+        setSelectedUser(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
+
   const filterUsers = () => {
     let filtered = users;
 
@@ -78,9 +93,18 @@ export default function UsersClient({ users }: UsersClientProps) {
     }).format(amount);
   };
 
+  // Cleanup function to reset all dialog states
+  const resetDialogStates = () => {
+    setShowUserDetails(false);
+    setSelectedUser(null);
+  };
+
   const handleViewUser = (user: UserWithStats) => {
-    setSelectedUser(user);
-    setShowUserDetails(true);
+    resetDialogStates();
+    setTimeout(() => {
+      setSelectedUser(user);
+      setShowUserDetails(true);
+    }, 10);
   };
 
   const totalUsers = users.length;
@@ -247,7 +271,12 @@ export default function UsersClient({ users }: UsersClientProps) {
       </Card>
 
       {/* User Details Dialog */}
-      <Dialog open={showUserDetails} onOpenChange={setShowUserDetails}>
+      <Dialog open={showUserDetails} onOpenChange={(open) => {
+        setShowUserDetails(open);
+        if (!open) {
+          setSelectedUser(null);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>User Profile Details</DialogTitle>

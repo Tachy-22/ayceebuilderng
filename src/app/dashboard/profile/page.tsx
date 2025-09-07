@@ -375,7 +375,7 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleAddressSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="addressType">Address Type</Label>
                       <Select 
@@ -392,7 +392,7 @@ export default function ProfilePage() {
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="space-y-2">
                     <Label htmlFor="street">Street Address</Label>
@@ -513,9 +513,9 @@ export default function ProfilePage() {
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2">
                           <h4 className="font-medium">{address.name}</h4>
-                          <Badge variant={address.type === 'home' ? 'default' : 'secondary'}>
+                          {/* <Badge variant={address.type === 'home' ? 'default' : 'secondary'}>
                             {address.type}
-                          </Badge>
+                          </Badge> */}
                           {address.isDefault && (
                             <Badge variant="outline">Default</Badge>
                           )}
