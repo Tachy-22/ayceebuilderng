@@ -267,6 +267,8 @@ export default function AdminProductsPage() {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: settings?.currency || 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -284,11 +286,12 @@ export default function AdminProductsPage() {
     );
   };
 
-  // Calculate stats
-  const totalProducts = products.length;
-  const inStockProducts = products.filter(p => p.inStock).length;
+  // Calculate stats based on filtered products
+  const totalProducts = filteredProducts.length;
+  const inStockProducts = filteredProducts.filter(p => p.inStock).length;
   const outOfStockProducts = totalProducts - inStockProducts;
-  const averagePrice = totalProducts > 0 ? products.reduce((sum, p) => sum + p.price, 0) / totalProducts : 0;
+  const totalPrice = filteredProducts.reduce((sum, p) => sum + p.price, 0);
+  const averagePrice = totalProducts > 0 ? totalPrice / totalProducts : 0;
 
   if (loading) {
     return (
@@ -357,7 +360,7 @@ export default function AdminProductsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
               <div className="p-2 bg-red-100 rounded-full mr-4">
@@ -369,7 +372,7 @@ export default function AdminProductsPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card>
           <CardContent className="p-6">
@@ -380,6 +383,20 @@ export default function AdminProductsPage() {
               <div>
                 <p className="text-2xl font-bold">{formatCurrency(averagePrice)}</p>
                 <p className="text-sm text-gray-600">Average Price</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-100 rounded-full mr-4">
+                <Package className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{formatCurrency(totalPrice)}</p>
+                <p className="text-sm text-gray-600">Total Value</p>
               </div>
             </div>
           </CardContent>
