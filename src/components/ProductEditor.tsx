@@ -13,7 +13,7 @@ import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { Product } from "@/data/products";
+import { Product, ProductVariant } from "@/data/products";
 import Image from "next/image";
 import GooglePlacesAutocomplete from "./ui/GooglePlacesAutocomplete";
 
@@ -57,6 +57,8 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
     weight: 0,
     colors: [],
     selectedColor: "",
+    variants: [],
+    selectedVariant: undefined,
   };
 
   const [productData, setProductData] = useState<Omit<Product, 'id'>>(
@@ -66,6 +68,8 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
   const [featureInput, setFeatureInput] = useState("");
   const [specKey, setSpecKey] = useState("");
   const [specValue, setSpecValue] = useState("");
+  const [variantName, setVariantName] = useState("");
+  const [variantPrice, setVariantPrice] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleUploadComplete = (files: FileMetadata[]) => {
@@ -207,6 +211,44 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         specifications: newSpecs,
       };
     });
+  };
+
+  const handleAddVariant = () => {
+    if (variantName.trim() && variantPrice.trim()) {
+      const price = parseFloat(variantPrice.trim());
+      if (price <= 0) {
+        toast.error("Variant price must be greater than 0");
+        return;
+      }
+      
+      const newVariant: ProductVariant = {
+        id: `variant-${Date.now()}`,
+        variant_name: variantName.trim(),
+        variant_price: price,
+        inStock: true,
+      };
+      
+      // Check if variant with same name already exists
+      const existingVariant = productData.variants?.find(v => v.variant_name === newVariant.variant_name);
+      if (existingVariant) {
+        toast.error("A variant with this name already exists");
+        return;
+      }
+      
+      setProductData((prev) => ({
+        ...prev,
+        variants: [...(prev.variants || []), newVariant],
+      }));
+      setVariantName("");
+      setVariantPrice("");
+    }
+  };
+
+  const handleRemoveVariant = (variantToRemove: ProductVariant) => {
+    setProductData((prev) => ({
+      ...prev,
+      variants: prev.variants?.filter((variant) => variant.id !== variantToRemove.id) || [],
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -560,6 +602,62 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
                     type="button"
                     onClick={handleAddSpecification}
                     className="bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Product Variants */}
+              <div className="border-t pt-4">
+                <label className="block font-medium text-gray-700 mb-1">Product Variants</label>
+                <p className="text-sm text-gray-500 mb-3">Add different size or type variants with their prices</p>
+                <div className="space-y-2 mb-3">
+                  {productData.variants?.map((variant) => (
+                    <div key={variant.id} className="flex items-center justify-between bg-gray-100 p-3 rounded">
+                      <div className="flex items-center space-x-4">
+                        <span><strong>{variant.variant_name}:</strong> ₦{variant.variant_price.toLocaleString()}</span>
+                        <Badge variant={variant.inStock ? "default" : "secondary"}>
+                          {variant.inStock ? "In Stock" : "Out of Stock"}
+                        </Badge>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveVariant(variant)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {!productData.variants?.length && (
+                    <p className="text-sm text-gray-400 italic">No variants added yet. Add variants like sizes (SM, MD, LG) or types.</p>
+                  )}
+                </div>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={variantName}
+                    onChange={(e) => setVariantName(e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Variant name (e.g., Small, Large, 25kg)"
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddVariant())}
+                  />
+                  <input
+                    type="number"
+                    value={variantPrice}
+                    onChange={(e) => setVariantPrice(e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Price (₦)"
+                    min="0"
+                    step="0.01"
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddVariant())}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleAddVariant}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-700"
+                    disabled={!variantName.trim() || !variantPrice.trim()}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>

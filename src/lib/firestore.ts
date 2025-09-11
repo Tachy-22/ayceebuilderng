@@ -18,10 +18,51 @@ import { Order, OrderItem, OrderStatus } from '@/types/order';
 import { UserProfile } from '@/types/user';
 import { toJSDate } from './formatOrderDate';
 
+// Helper function to remove undefined values from objects
+const cleanObjectForFirestore = (obj: unknown): unknown => {
+  if (obj === null || obj === undefined) {
+    return null;
+  }
+  
+  // Preserve Firestore Timestamp objects as-is
+  if (obj instanceof Timestamp) {
+    return obj;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(cleanObjectForFirestore);
+  }
+  
+  if (typeof obj === 'object' && obj !== null) {
+    const cleaned: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        cleaned[key] = cleanObjectForFirestore(value);
+      }
+    }
+    return cleaned;
+  }
+  
+  return obj;
+};
+
 // Order Management Functions
 export const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate' | 'updatedAt'>) => {
   try {
+    console.log('🚀 Starting order creation process...');
+    console.log('📦 Order data received:', JSON.stringify(orderData, null, 2));
+    
+    // Check if db is initialized
+    if (!db) {
+      console.error('❌ Firestore database not initialized');
+      throw new Error('Firestore database not initialized');
+    }
+    
+    console.log('✅ Firestore database is initialized');
+    
     const orderNumber = generateOrderNumber();
+    console.log('🔢 Generated order number:', orderNumber);
+    
     const order: Omit<Order, 'id'> = {
       ...orderData,
       orderNumber,
@@ -29,15 +70,35 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate' | 'u
       updatedAt: new Date(),
     };
 
-    const docRef = await addDoc(collection(db, 'orders'), {
-      ...order,
-      orderDate: Timestamp.fromDate(toJSDate(order.orderDate)),
-      updatedAt: Timestamp.fromDate(order.updatedAt),
-    });
+    console.log('📝 Prepared order object:', JSON.stringify(order, null, 2));
 
-    return { id: docRef.id, ...order };
+    // Clean the order data to remove undefined values
+    const orderForFirestore = {
+      ...order,
+      orderDate: Timestamp.fromDate(order.orderDate),
+      updatedAt: Timestamp.fromDate(order.updatedAt),
+      estimatedDeliveryDate: Timestamp.fromDate(order.estimatedDeliveryDate),
+    };
+
+    const cleanedOrder = cleanObjectForFirestore(orderForFirestore);
+    console.log('🧹 Cleaned order object:', JSON.stringify(cleanedOrder, null, 2));
+
+    const docRef = await addDoc(collection(db, 'orders'), cleanedOrder);
+
+    console.log('✅ Order successfully created with ID:', docRef.id);
+    const result = { id: docRef.id, ...order };
+    console.log('🎉 Returning order result:', JSON.stringify(result, null, 2));
+    
+    return result;
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error('❌ Error creating order:', error);
+    if (error instanceof Error) {
+      console.error('❌ Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+    }
     throw error;
   }
 };

@@ -13,7 +13,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Product } from '@/data/products';
+import { Product, ProductVariant } from '@/data/products';
 import { 
   getCollection, 
   addDocument, 
@@ -28,60 +28,51 @@ export interface CartItem {
   productId: string;
   quantity: number;
   color?: string;
+  variant?: ProductVariant;
   addedAt: Date;
   updatedAt: Date;
   // Product details stored for faster access
   product: Product
-
 }
 
 // Add item to cart
-export const addToCart = async (userId: string, productData: any, quantity: number = 1, color?: string) => {
+export const addToCart = async (userId: string, productData: any, quantity: number = 1, color?: string, variant?: ProductVariant) => {
   try {
     console.log('🛒 Adding to cart:', {
       userId,
       productId: productData?.id,
       productName: productData?.name,
       quantity,
-      color
+      color,
+      variant: variant?.variant_name
     });
 
     if (!db) {
       throw new Error('Database not initialized');
     }
 
-    // Check if item already exists in cart
+    // Check if item already exists in cart (need to fetch all and filter client-side due to complex variant matching)
     const cartRef = collection(db, 'carts');
-    let existingItemQuery;
-    
-    if (color) {
-      existingItemQuery = query(
-        cartRef,
-        where('userId', '==', userId),
-        where('productId', '==', productData.id),
-        where('color', '==', color)
-      );
-    } else {
-      existingItemQuery = query(
-        cartRef,
-        where('userId', '==', userId),
-        where('productId', '==', productData.id)
-      );
-    }
+    const existingItemQuery = query(
+      cartRef,
+      where('userId', '==', userId),
+      where('productId', '==', productData.id)
+    );
     
     const existingItems = await getDocs(existingItemQuery);
     console.log('🔍 Found', existingItems.size, 'existing items for this product');
     
-    // Find exact match (considering color field presence)
+    // Find exact match (considering color and variant)
     let matchingItem = null;
     if (!existingItems.empty) {
-      if (color) {
-        // Looking for item with specific color
-        matchingItem = existingItems.docs.find(doc => doc.data().color === color);
-      } else {
-        // Looking for item without color field or with null/undefined color
-        matchingItem = existingItems.docs.find(doc => !doc.data().color);
-      }
+      matchingItem = existingItems.docs.find(doc => {
+        const data = doc.data();
+        const colorMatch = (data.color || null) === (color || null);
+        const variantMatch = variant 
+          ? (data.variant?.id === variant.id)
+          : !data.variant;
+        return colorMatch && variantMatch;
+      });
     }
     
     if (matchingItem) {
@@ -119,6 +110,11 @@ export const addToCart = async (userId: string, productData: any, quantity: numb
       // Only add color field if it has a value
       if (color) {
         cartItem.color = color;
+      }
+
+      // Only add variant field if it has a value
+      if (variant) {
+        cartItem.variant = variant;
       }
 
       const docRef = await addDoc(cartRef, {
@@ -239,7 +235,11 @@ export const getCartItemCount = (cartItems: CartItem[]): number => {
 // Get cart total
 export const getCartTotal = (cartItems: CartItem[]): number => {
   return cartItems.reduce((total, item) => {
-    const price = item.product.discountPrice || item.product.price;
+    // Use variant price if available, otherwise use product price
+    let price = item.product.discountPrice || item.product.price;
+    if (item.variant && typeof item.variant.variant_price === 'number') {
+      price = item.variant.variant_price;
+    }
     return total + (price * item.quantity);
   }, 0);
 };
@@ -255,14 +255,16 @@ export const mergeGuestCartWithUserCart = async (userId: string, guestCartItems:
         productId: guestItem.product?.id,
         productName: guestItem.product?.name,
         quantity: guestItem.quantity,
-        color: guestItem.color
+        color: guestItem.color,
+        variant: guestItem.variant?.variant_name
       });
       
       const result = await addToCart(
         userId, 
         guestItem.product, 
         guestItem.quantity, 
-        guestItem.color
+        guestItem.color,
+        guestItem.variant
       );
       
       console.log(`✅ Item ${index + 1} merged successfully:`, result?.id);

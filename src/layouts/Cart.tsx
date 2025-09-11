@@ -65,6 +65,18 @@ const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, loading: cartLoading } = useCart();
   const { settings } = useSettings();
 
+  // Debug logging
+  console.log('Cart items:', cartItems);
+  cartItems.forEach((item, index) => {
+    console.log(`Item ${index}:`, {
+      name: item.product.name,
+      variant: item.variant,
+      price: item.product.price,
+      discountPrice: item.product.discountPrice,
+      variantPrice: item.variant?.variant_price
+    });
+  });
+
   // Wrapper functions to handle async cart operations
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     try {
@@ -556,7 +568,11 @@ const Cart = () => {
 
   // Calculate cart totals
   const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.product.discountPrice || item.product.price;
+    // Use variant price if available, otherwise use product price
+    let price = item.product.discountPrice || item.product.price;
+    if (item.variant && typeof item.variant.variant_price === 'number') {
+      price = item.variant.variant_price;
+    }
     return sum + price * item.quantity;
   }, 0);
 
@@ -600,9 +616,12 @@ const Cart = () => {
       if (selectedAddress && user && userProfile) {
         const itemsForReceipt = cartItems.map((item) => ({
           productName: item.product.name,
-          unitPrice: item.product.discountPrice || item.product.price,
+          unitPrice: (item.variant && typeof item.variant.variant_price === 'number') 
+            ? item.variant.variant_price 
+            : (item.product.discountPrice || item.product.price),
           quantity: item.quantity,
           color: item.color,
+          variant: item.variant?.variant_name,
         }));
 
         // Create order items for Firestore
@@ -610,10 +629,14 @@ const Cart = () => {
           productId: item.product.id,
           name: item.product.name,
           quantity: item.quantity,
-          price: item.product.discountPrice || item.product.price,
+          price: (item.variant && typeof item.variant.variant_price === 'number') 
+            ? item.variant.variant_price 
+            : (item.product.discountPrice || item.product.price),
           image: item.product.image,
           category: item.product.category,
           vendor: item.product.vendor?.name,
+          color: item.color,
+          variant: item.variant?.variant_name,
         }));
 
         // Use the selected address for shipping
@@ -631,11 +654,16 @@ const Cart = () => {
 
         // Create order in Firestore
         try {
+          console.log('🛒 Starting order creation for user:', user.uid);
+          console.log('📦 Selected address:', shippingAddress);
+          console.log('🛍️ Order items:', orderItems);
+          console.log('💰 Total amount:', total);
+          
           // Calculate estimated delivery date (3 weeks from now)
           const estimatedDeliveryDate = new Date();
           estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 21); // 3 weeks = 21 days
 
-          const order = await createOrder({
+          const orderData = {
             userId: user.uid,
             orderNumber: '', // Will be generated automatically
             status: 'confirmed' as OrderStatus,
@@ -644,11 +672,22 @@ const Cart = () => {
             shippingAddress,
             estimatedDeliveryDate,
             notes: `Payment Reference: ${reference.reference}`,
-          });
+          };
 
-          console.log('Order created:', order);
+          console.log('📋 Order data prepared:', JSON.stringify(orderData, null, 2));
+
+          const order = await createOrder(orderData);
+
+          console.log('✅ Order created successfully:', order);
         } catch (firestoreError) {
-          console.error('Error creating order in Firestore:', firestoreError);
+          console.error('❌ Error creating order in Firestore:', firestoreError);
+          if (firestoreError instanceof Error) {
+            console.error('❌ Firestore error details:', {
+              name: firestoreError.name,
+              message: firestoreError.message,
+              stack: firestoreError.stack
+            });
+          }
           // Continue with the original flow even if Firestore fails
         }
 
@@ -1255,25 +1294,53 @@ const Cart = () => {
                                     Color: {item.color}
                                   </div>
                                 )}
+                                {item.variant && (
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    Variant: {item.variant.variant_name}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
 
                           <div className="col-span-2 text-center">
-                            {item.product.discountPrice ? (
-                              <div>
-                                <div className="font-medium">
-                                  ₦{item.product.discountPrice.toLocaleString()}
-                                </div>
-                                <div className="text-xs text-muted-foreground line-through">
-                                  ₦{item.product.price.toLocaleString()}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="font-medium">
-                                ₦{item.product.price.toLocaleString()}
-                              </div>
-                            )}
+                            {/* Use variant price if available, otherwise use product price */}
+                            {(() => {
+                              console.log('Cart item for price display:', {
+                                productName: item.product.name,
+                                hasVariant: !!item.variant,
+                                variantName: item.variant?.variant_name,
+                                variantPrice: item.variant?.variant_price,
+                                productPrice: item.product.price,
+                                productDiscountPrice: item.product.discountPrice
+                              });
+                              
+                              if (item.variant && typeof item.variant.variant_price === 'number') {
+                                return (
+                                  <div className="font-medium">
+                                    <div>₦{item.variant.variant_price.toLocaleString()}</div>
+                                    <div className="text-xs text-green-600">Variant: {item.variant.variant_name}</div>
+                                  </div>
+                                );
+                              } else if (item.product.discountPrice) {
+                                return (
+                                  <div>
+                                    <div className="font-medium">
+                                      ₦{item.product.discountPrice.toLocaleString()}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground line-through">
+                                      ₦{item.product.price.toLocaleString()}
+                                    </div>
+                                  </div>
+                                );
+                              } else {
+                                return (
+                                  <div className="font-medium">
+                                    ₦{item.product.price.toLocaleString()}
+                                  </div>
+                                );
+                              }
+                            })()}
                           </div>
 
                           <div className="col-span-2 flex justify-center">
@@ -1317,10 +1384,14 @@ const Cart = () => {
                           <div className="col-span-2 text-right">
                             <div className="font-medium">
                               ₦
-                              {(
-                                (item.product.discountPrice ||
-                                  item.product.price) * item.quantity
-                              ).toLocaleString()}
+                              {(() => {
+                                let unitPrice = item.product.discountPrice || item.product.price;
+                                if (item.variant && item.variant.variant_price) {
+                                  unitPrice = item.variant.variant_price;
+                                }
+                                console.log('Line total calculation:', { itemName: item.product.name, unitPrice, quantity: item.quantity, total: unitPrice * item.quantity });
+                                return (unitPrice * item.quantity).toLocaleString();
+                              })()}
                             </div>
                             <Button
                               variant="ghost"

@@ -129,6 +129,7 @@ const getColorBorder = (colorName: string): string => {
 import {
   Product,
   ProductNew,
+  ProductVariant,
   mapNewProductToProduct,
   mapNewProductsToProducts,
 } from "@/data/products";
@@ -161,8 +162,9 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
-    "Burgundy"
+    undefined
   );
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
   const [centerColorIndex, setCenterColorIndex] = useState(0);
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -193,10 +195,18 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
     }
   }, [id, product, mappedProducts, rawProduct]);
 
-  // Initialize selected color from product if available
+  // Initialize selected color only for paint products
   useEffect(() => {
-    if (product && product.selectedColor) {
-      setSelectedColor(product.selectedColor);
+    if (product) {
+      if (product.selectedColor) {
+        setSelectedColor(product.selectedColor);
+      } else if (product.category.toLowerCase() === "paint") {
+        // Set default color only for paint products
+        setSelectedColor("Burgundy");
+      } else {
+        // Clear color for non-paint products
+        setSelectedColor(undefined);
+      }
     }
   }, [product]);
 
@@ -229,18 +239,29 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
       return;
     }
 
-    // Create a product copy with the selected color if needed
-    const productToAdd = selectedColor
-      ? { ...product, selectedColor }
-      : product;
+    // Create a product copy with the selected color and variant if needed
+    const productToAdd = {
+      ...product,
+      ...(selectedColor && { selectedColor }),
+      ...(selectedVariant && { selectedVariant }),
+    };
 
-    // Add product to cart
-    addToCart(productToAdd, quantity);
+    // Debug logging
+    console.log('Adding to cart:', {
+      product: productToAdd.name,
+      selectedVariant,
+      quantity,
+      variantPrice: selectedVariant?.variant_price
+    });
+
+    // Add product to cart with variant
+    addToCart(productToAdd, quantity, selectedVariant);
 
     const colorInfo = selectedColor ? ` (${selectedColor})` : "";
+    const variantInfo = selectedVariant ? ` - ${selectedVariant.variant_name}` : "";
     toast({
       title: "Added to Cart",
-      description: `${product.name}${colorInfo} added to cart`,
+      description: `${product.name}${variantInfo}${colorInfo} added to cart`,
     });
   };
 
@@ -370,29 +391,76 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                 </div>
               </div>
               <div>
-                {hasDiscount && product.discountPrice ? (
-                  <div className="flex items-baseline gap-2">
+                {/* Display variant price if selected, otherwise display original price */}
+                {selectedVariant ? (
+                  <div className="space-y-2">
                     <span className="text-3xl font-bold">
-                      ₦{product.discountPrice.toLocaleString()}
+                      ₦{selectedVariant.variant_price.toLocaleString()}
                     </span>
-                    <span className="text-xl text-muted-foreground line-through">
-                      ₦{product.price.toLocaleString()}
-                    </span>
-                    <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-sm">
-                      {Math.round(
-                        ((product.price - product.discountPrice) /
-                          product.price) *
-                          100
-                      )}
-                      % OFF
-                    </span>
+                    <div className="text-sm text-muted-foreground">
+                      Base price: ₦{(hasDiscount && product.discountPrice ? product.discountPrice : product.price).toLocaleString()}
+                    </div>
                   </div>
                 ) : (
-                  <span className="text-3xl font-bold">
-                    ₦{product.price.toLocaleString()}
-                  </span>
+                  <>
+                    {hasDiscount && product.discountPrice ? (
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-bold">
+                          ₦{product.discountPrice.toLocaleString()}
+                        </span>
+                        <span className="text-xl text-muted-foreground line-through">
+                          ₦{product.price.toLocaleString()}
+                        </span>
+                        <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-sm">
+                          {Math.round(
+                            ((product.price - product.discountPrice) /
+                              product.price) *
+                              100
+                          )}
+                          % OFF
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-3xl font-bold">
+                        ₦{product.price.toLocaleString()}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
+              {/* Variant Selection */}
+              {product.variants && product.variants.length > 0 && (
+                <div className="pt-4 border-t">
+                  <h3 className="font-medium mb-3">Select Variant</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {product.variants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`p-3 border rounded-lg text-left transition-all ${
+                          selectedVariant?.id === variant.id
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="font-medium text-sm">{variant.variant_name}</div>
+                        <div className="text-lg font-bold">
+                          ₦{variant.variant_price.toLocaleString()}
+                        </div>
+                        {!variant.inStock && (
+                          <div className="text-xs text-red-500 mt-1">Out of Stock</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {selectedVariant && (
+                    <div className="mt-3 text-sm text-muted-foreground">
+                      Selected: {selectedVariant.variant_name} - ₦{selectedVariant.variant_price.toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Features List - Quick view */}
               {product.features && product.features.length > 0 && (
                 <div className="pt-4 border-t">

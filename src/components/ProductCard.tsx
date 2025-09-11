@@ -152,20 +152,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         <div className="flex items-baseline mb-3">
-          {product.discountPrice ? (
-            <>
+          <div className="flex-1">
+            {product.discountPrice ? (
+              <>
+                <span className="text-lg font-bold">
+                  ₦{product.discountPrice.toLocaleString()}
+                </span>
+                <span className="text-sm text-muted-foreground line-through ml-2">
+                  ₦{product.price.toLocaleString()}
+                </span>
+              </>
+            ) : (
               <span className="text-lg font-bold">
-                ₦{product.discountPrice.toLocaleString()}
-              </span>
-              <span className="text-sm text-muted-foreground line-through ml-2">
                 ₦{product.price.toLocaleString()}
               </span>
-            </>
-          ) : (
-            <span className="text-lg font-bold">
-              ₦{product.price.toLocaleString()}
-            </span>
-          )}
+            )}
+            {product.variants && product.variants.length > 0 && (
+              <div className="text-xs text-muted-foreground mt-1">
+                {product.variants.length} variant{product.variants.length > 1 ? 's' : ''} available
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center justify-between text-sm mb-4">

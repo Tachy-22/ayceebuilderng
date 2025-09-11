@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { Product } from "@/data/products";
+import { Product, ProductVariant } from "@/data/products";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "./AuthContext";
 import {
@@ -18,11 +18,12 @@ type LocalCartItem = {
   product: Product;
   quantity: number;
   color?: string;
+  variant?: ProductVariant;
 };
 
 interface CartContextType {
   cartItems: LocalCartItem[];
-  addToCart: (product: Product, quantity: number) => void;
+  addToCart: (product: Product, quantity: number, variant?: ProductVariant) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -58,6 +59,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       product: firebaseItem.product,
       quantity: firebaseItem.quantity,
       color: firebaseItem.color,
+      variant: firebaseItem.variant,
     };
   };
 
@@ -152,23 +154,29 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [cartItems, user]);
   // Add product to cart
-  const addToCart = async (product: Product, quantity: number) => {
+  const addToCart = async (product: Product, quantity: number, variant?: ProductVariant) => {
     const productColor = product.selectedColor || undefined;
+    const productVariant = variant || product.selectedVariant || undefined;
 
     try {
       if (user) {
         // User is authenticated - add to Firebase
-        await addToFirebaseCart(user.uid, product, quantity, productColor);
+        await addToFirebaseCart(user.uid, product, quantity, productColor, productVariant);
+        
+        const variantText = productVariant ? ` (${productVariant.variant_name})` : "";
+        const colorText = productColor ? ` (${productColor})` : "";
+        
         toast({
           title: "Added to cart",
-          description: `${product.name} ${productColor ? `(${productColor})` : ""} has been added to your cart`,
+          description: `${product.name}${variantText}${colorText} has been added to your cart`,
         });
       } else {
         // Guest user - add to local state
         setCartItems((prevItems) => {
-          const cartItemId = productColor
-            ? `${product.id}-${productColor}`
-            : product.id;
+          // Create unique ID based on product, color, and variant
+          let cartItemId = product.id;
+          if (productColor) cartItemId += `-${productColor}`;
+          if (productVariant) cartItemId += `-${productVariant.id}`;
 
           const existingItemIndex = prevItems.findIndex(
             (item) => item.id === cartItemId
@@ -178,26 +186,37 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
             const updatedItems = [...prevItems];
             updatedItems[existingItemIndex].quantity += quantity;
 
+            const variantText = productVariant ? ` (${productVariant.variant_name})` : "";
+            const colorText = productColor ? ` (${productColor})` : "";
+
             toast({
               title: "Cart updated",
-              description: `${product.name} ${productColor ? `(${productColor})` : ""} quantity updated in your cart`,
+              description: `${product.name}${variantText}${colorText} quantity updated in your cart`,
             });
 
             return updatedItems;
           } else {
+            const variantText = productVariant ? ` (${productVariant.variant_name})` : "";
+            const colorText = productColor ? ` (${productColor})` : "";
+            
             toast({
               title: "Added to cart",
-              description: `${product.name} ${productColor ? `(${productColor})` : ""} has been added to your cart`,
+              description: `${product.name}${variantText}${colorText} has been added to your cart`,
             });
 
+            const newCartItem = {
+              id: cartItemId,
+              product,
+              quantity,
+              color: productColor,
+              variant: productVariant,
+            };
+            
+            console.log('Adding to cart (guest):', newCartItem);
+            
             return [
               ...prevItems,
-              {
-                id: cartItemId,
-                product,
-                quantity,
-                color: productColor,
-              },
+              newCartItem,
             ];
           }
         });
@@ -293,7 +312,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = item.product.discountPrice || item.product.price;
+      // Use variant price if available, otherwise use product price
+      let price = item.product.discountPrice || item.product.price;
+      if (item.variant && typeof item.variant.variant_price === 'number') {
+        price = item.variant.variant_price;
+      }
       return total + price * item.quantity;
     }, 0);
   };

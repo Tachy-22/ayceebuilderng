@@ -1,3 +1,10 @@
+export interface ProductVariant {
+  id: string;
+  variant_name: string;
+  variant_price: number;
+  inStock?: boolean;
+}
+
 export interface Product {
   id: string;
   createdAt?: Date;
@@ -26,6 +33,8 @@ export interface Product {
   weight: number;
   colors?: string[]; // Array of available colors
   selectedColor?: string; // Selected color
+  variants?: ProductVariant[]; // Array of product variants
+  selectedVariant?: ProductVariant; // Currently selected variant
 }
 
 export const categories = [
@@ -76,6 +85,8 @@ export interface ProductNew {
   discountPrice?: number;
   category?: string;
   subCategory?: string;
+  variants?: ProductVariant[] | string; // Variants as array or string format
+  Variants?: string; // Alternative capitalization for variants
 }
 
 // Helper function to parse specifications string into object
@@ -155,6 +166,49 @@ function parseColors(colorsString: string): string[] {
       : [cleanString.trim()];
   } catch (error) {
     console.error("Error parsing colors:", error);
+    return [];
+  }
+}
+
+// Helper function to parse variants string into array
+function parseVariants(variantsString: string): ProductVariant[] {
+  if (!variantsString || typeof variantsString !== "string") return [];
+
+  try {
+    // Handle JSON format first
+    try {
+      const parsed = JSON.parse(variantsString);
+      if (Array.isArray(parsed)) {
+        return parsed.map((variant, index) => ({
+          id: variant.id || `variant-${index}`,
+          variant_name: variant.variant_name || variant.name || `Variant ${index + 1}`,
+          variant_price: Number(variant.variant_price || variant.price || 0),
+          inStock: variant.inStock !== false
+        }));
+      }
+    } catch (jsonError) {
+      // Not JSON, try other formats
+    }
+
+    // Handle custom format: "name1:price1,name2:price2"
+    const variants: ProductVariant[] = [];
+    const variantPairs = variantsString.split(',');
+
+    variantPairs.forEach((pair, index) => {
+      const [name, price] = pair.split(':').map(s => s.trim());
+      if (name && price) {
+        variants.push({
+          id: `variant-${index}`,
+          variant_name: name,
+          variant_price: Number(price) || 0,
+          inStock: true
+        });
+      }
+    });
+
+    return variants;
+  } catch (error) {
+    console.error("Error parsing variants:", error);
     return [];
   }
 }
@@ -243,7 +297,30 @@ export function mapNewProductToProduct(
     // For paint products, ensure at least one color is available
     if (product.sheetName?.toLowerCase() === "paint" && colors.length === 0) {
       colors = ["White"];
-    } // Handle image arrays and different image formats
+    }
+
+    // Parse variants similarly to colors
+    let variants: ProductVariant[] = [];
+
+    // Check for variants in different possible fields
+    if (product.variants) {
+      if (Array.isArray(product.variants)) {
+        variants = product.variants;
+      } else if (typeof product.variants === 'string') {
+        variants = parseVariants(product.variants);
+      }
+    } else if (product.Variants) {
+      variants = parseVariants(product.Variants);
+    }
+
+    // Log extracted variants
+    console.log("Extracted variants:", {
+      productId: product.id,
+      productTitle: product.Title,
+      variants: variants,
+    });
+
+    // Handle image arrays and different image formats
     let imageUrl = "https://placehold.co/600x400?text=No+Image";
     let imageArray: string[] = [];
 
@@ -328,6 +405,8 @@ export function mapNewProductToProduct(
       weight: product.weight || 0,
       colors: colors.length > 0 ? colors : undefined,
       selectedColor: undefined,
+      variants: variants.length > 0 ? variants : undefined,
+      selectedVariant: undefined,
     };
   } catch (error) {
     console.error("Error mapping product:", error, product);
@@ -355,6 +434,7 @@ export function mapNewProductToProduct(
       },
       weight: 0,
       colors: [], // Empty colors array for fallback product
+      variants: [], // Empty variants array for fallback product
     };
   }
 }
@@ -409,6 +489,7 @@ export function mapNewProductsToProducts(products: ProductNew[]): Product[] {
         },
         weight: 0,
         colors: [], // Empty colors array for fallback product
+        variants: [], // Empty variants array for fallback product
       };
     }
   });

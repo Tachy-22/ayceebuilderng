@@ -757,6 +757,27 @@ export default function AdminProductsPage() {
                       </div>
                     )}
 
+                    {selectedProduct.variants && selectedProduct.variants.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-2">Available Variants</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {selectedProduct.variants.map((variant) => (
+                            <div key={variant.id} className="bg-gray-50 rounded-lg p-4 border">
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="font-medium text-gray-900">{variant.variant_name}</h4>
+                                <Badge variant={variant.inStock ? "default" : "secondary"}>
+                                  {variant.inStock ? "Available" : "Out of Stock"}
+                                </Badge>
+                              </div>
+                              <div className="text-lg font-semibold text-primary">
+                                {formatCurrency(variant.variant_price)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {selectedProduct.images.length > 1 && (
                       <div>
                         <h3 className="text-lg font-semibold mb-2">Additional Images</h3>

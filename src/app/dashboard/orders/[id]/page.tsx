@@ -303,6 +303,12 @@ export default function OrderDetailsPage() {
                       {item.vendor && (
                         <p className="text-sm text-gray-600">Vendor: {item.vendor}</p>
                       )}
+                      {item.variant && (
+                        <p className="text-sm text-blue-600 font-medium">Variant: {item.variant}</p>
+                      )}
+                      {item.color && (
+                        <p className="text-sm text-gray-600">Color: {item.color}</p>
+                      )}
                       <div className="flex items-center space-x-4 mt-2">
                         <span className="text-sm text-gray-600">Qty: {item.quantity}</span>
                         <span className="text-sm font-medium">{formatCurrency(item.price)} each</span>

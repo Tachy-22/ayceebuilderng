@@ -605,6 +605,12 @@ export default function AdminOrdersPage() {
                         <p className="text-sm text-gray-500">
                           Quantity: {item.quantity} × {formatCurrency(item.price)}
                         </p>
+                        {item.variant && (
+                          <p className="text-sm text-blue-600 font-medium">Variant: {item.variant}</p>
+                        )}
+                        {item.color && (
+                          <p className="text-sm text-gray-500">Color: {item.color}</p>
+                        )}
                       </div>
                       <div className="text-right">
                         <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>

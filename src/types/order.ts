@@ -22,6 +22,8 @@ export interface OrderItem {
   image: string;
   category?: string;
   vendor?: string;
+  color?: string;
+  variant?: string;
 }
 
 export type OrderStatus =
