@@ -1,25 +1,9 @@
-import Tradesmen from "@/layouts/Tradesmen";
-import React from "react";
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Construction Tradesmen",
-  description:
-    "Find skilled construction professionals in Nigeria. Connect with carpenters, electricians, plumbers, painters, and more for your building projects.",
-  keywords: [
-    "construction tradesmen",
-    "skilled workers",
-    "nigeria contractors",
-    "carpenters",
-    "electricians",
-    "plumbers",
-  ],
-  openGraph: {
-    title: "Construction Tradesmen | Ayceebuilder Nigeria",
-    description:
-      "Find skilled construction professionals in Nigeria. Connect with carpenters, electricians, plumbers, painters, and more for your building projects.",
-  },
-};
+import Tradesmen from "@/layouts/Tradesmen";
+import React, { useState, useEffect } from "react";
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // Tradesman interface matching the layout component
 interface Tradesman {
@@ -50,36 +34,56 @@ interface Tradesman {
   status: 'pending' | 'approved' | 'rejected' | 'suspended';
 }
 
-const TradesmenPage = async () => {
-  // Fetch tradesmen data from our Firebase API
-  let tradesmenData: Tradesman[] = [];
+const TradesmenPage = () => {
+  const [tradesmenData, setTradesmenData] = useState<Tradesman[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  try {
-    const timestamp = Date.now();
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/tradesmen?t=${timestamp}`, {
-      next: { revalidate: 0 },
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-      },
-    });
-    console.log({ res })
-    if (!res.ok) {
-      throw new Error(`Failed to fetch tradesmen: ${res.status}`);
+  const fetchTradesmen = async () => {
+    try {
+      setLoading(true);
+      
+      if (!db) {
+        throw new Error('Database not initialized');
+      }
+
+      const tradesmenRef = collection(db, 'tradesmen');
+      const q = query(
+        tradesmenRef, 
+        where('status', '==', 'approved'),
+        orderBy('featured', 'desc'),
+        orderBy('rating', 'desc')
+      );
+      const snapshot = await getDocs(q);
+
+      const fetchedTradesmen = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Tradesman[];
+
+      setTradesmenData(fetchedTradesmen);
+    } catch (error) {
+      console.error("Error fetching tradesmen data:", error);
+      setTradesmenData([]);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const response = await res.json();
-    tradesmenData = response.success ? response.data : [];
-  } catch (error) {
-    console.error("Error fetching tradesmen data:", error);
-    // Component will show empty state
+  useEffect(() => {
+    fetchTradesmen();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+      </div>
+    );
   }
 
-  console.log({ tradesmenData })
   return (
     <div>
-      <Tradesmen fetchedTradesmen={tradesmenData || []} />
+      <Tradesmen fetchedTradesmen={tradesmenData} />
     </div>
   );
 };
