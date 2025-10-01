@@ -55,8 +55,14 @@ const TradesmenPage = async () => {
   let tradesmenData: Tradesman[] = [];
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/tradesmen`, {
-      next: { revalidate: 0 }, 
+    const timestamp = Date.now();
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/tradesmen?t=${timestamp}`, {
+      next: { revalidate: 0 },
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
     });
     console.log({ res })
     if (!res.ok) {
