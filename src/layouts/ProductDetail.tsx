@@ -432,7 +432,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
               {product.variants && product.variants.length > 0 && (
                 <div className="pt-4 border-t">
                   <h3 className="font-medium mb-3">Select Variant</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="flex flex-wrap gap-3">
                     {product.variants.map((variant) => (
                       <button
                         key={variant.id}
@@ -444,9 +444,9 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                         }`}
                       >
                         <div className="font-medium text-sm">{variant.variant_name}</div>
-                        <div className="text-lg font-bold">
+                        {/* <div className="text-lg font-bold">
                           ₦{variant.variant_price.toLocaleString()}
-                        </div>
+                        </div> */}
                         {!variant.inStock && (
                           <div className="text-xs text-red-500 mt-1">Out of Stock</div>
                         )}
