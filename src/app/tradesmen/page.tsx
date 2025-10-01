@@ -56,7 +56,7 @@ const TradesmenPage = async () => {
 
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/tradesmen`, {
-      next: { revalidate: 0 }, // Revalidate once per hour
+      next: { revalidate: 0 }, 
     });
     console.log({ res })
     if (!res.ok) {
