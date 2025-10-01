@@ -21,7 +21,13 @@ export async function GET() {
         return b.rating - a.rating;
       });
 
-    return NextResponse.json({ success: true, data: approvedTradesmen });
+    return NextResponse.json({ success: true, data: approvedTradesmen }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
+    });
   } catch (error) {
     console.error('Error fetching tradesmen:', error);
     return NextResponse.json(
