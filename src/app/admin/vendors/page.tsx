@@ -440,9 +440,9 @@ export default function AdminVendorsPage() {
                               {vendor.featured && (
                                 <Badge variant="secondary">Featured</Badge>
                               )}
-                              {vendor.verified && (
+                              {/* {vendor.approved && (
                                 <Badge variant="secondary">Verified</Badge>
-                              )}
+                              )} */}
                             </div>
                           </div>
                         </div>

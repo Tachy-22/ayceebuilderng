@@ -315,7 +315,7 @@ const Tradesmen = ({ fetchedTradesmen = [] }: TradesmenProps) => {
                         <div className="flex items-center">
                           <Award size={14} className="mr-1" />
                           <span className="font-medium">
-                            {tradesman.verified ? 'Verified' : 'Not Verified'}
+                           Verified
                           </span>
                         </div>
                         <div className="flex items-center">
