@@ -172,7 +172,7 @@ const Home = () => {
                   
                   width={7495}
                   height={4996}
-                  src="/hero-img.webp"
+                  src="/hero-img2.jpg"
                   alt="Construction materials"
                   className="w-full h-full object-cover"
                 />
