@@ -11,7 +11,7 @@ export const optimizeBlogImage = (
   size: "thumbnail" | "medium" | "large" = "medium"
 ): string => {
   // Default fallback image
-  const fallbackImage = "/hero-img.webp";
+  const fallbackImage = "/hero-img2.jpg";
 
   // If no image URL provided, return fallback
   if (!imageUrl) {
