@@ -98,7 +98,7 @@ const Home = () => {
 
   useEffect(() => {
     setIsLoaded(true);
-    
+
     // Fetch real-time statistics from Firebase
     const fetchStats = async () => {
       try {
@@ -112,10 +112,22 @@ const Home = () => {
     // Fetch featured products
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await fetch('/api/products?featured=true&limit=6');
-        const data = await response.json();
-        if (data.success && data.data) {
+        // First try to get featured products
+        let response = await fetch('/api/products?featured=true&limit=6');
+        let data = await response.json();
+        
+        // If no featured products found, get some regular products as fallback
+        if (data.success && (!data.data || data.data.length === 0)) {
+          console.log('No featured products found, fetching recent products as fallback');
+          response = await fetch('/api/products?limit=6&sortBy=createdAt&sortDirection=desc');
+          data = await response.json();
+        }
+        
+        if (data.success && data.data && data.data.length > 0) {
           setFeaturedProducts(data.data);
+          console.log('Fetched products for slideshow:', data.data.length);
+        } else {
+          console.log('No products found for slideshow');
         }
       } catch (error) {
         console.error('Error fetching featured products:', error);
@@ -187,17 +199,7 @@ const Home = () => {
                   WhatsApp Us
                 </Button>
               </a>
-              <Link href="/building-quotation" aria-label="Get Free Quotation">
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="w-full sm:w-auto bg-[#004d40] hover:bg-[#004d40]/90 text-white"
-                  aria-label="Get Free Quotation"
-                >
-                  <Calculator size={16} className="mr-2" aria-hidden="true" />
-                  Get Free Quotation
-                </Button>
-              </Link>
+
             </div>
             <div className=" items-center mt-10 justify-between md:justify-start  lg:flex hidden gap-4">
               <div className="flex items-center">
@@ -218,7 +220,7 @@ const Home = () => {
             <div className="w-full  h-[400px] lg:h-[500px]">
               <div className=" w-full h-full rounded-xl overflow-hidden">
                 <img
-                  
+
                   width={7495}
                   height={4996}
                   src="/hero-img2.jpg"
@@ -259,7 +261,7 @@ const Home = () => {
                   aria-label="Try Building Quotation Tool"
                 >
                   <Button size="lg" aria-label="Try Building Quotation Tool">
-                    Try Building Quotation Tool
+                    Get free Building Quotation
                     <Building size={16} className="ml-2" aria-hidden="true" />
                   </Button>
                 </Link>
@@ -390,12 +392,14 @@ const Home = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true, margin: "-100px" }}
             >
-              <Badge className="mb-4">Featured Products</Badge>
+              <Badge className="mb-4">
+                {featuredProducts.some(p => p.featured) ? 'Featured Products' : 'Latest Products'}
+              </Badge>
               <h2 className="text-3xl font-bold mb-4 text-grey-800">
                 Top Quality Products
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Discover our hand-picked selection of premium construction materials
+                Discover our selection of premium construction materials
               </p>
             </motion.div>
 
@@ -424,9 +428,11 @@ const Home = () => {
                                 alt={product.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                               />
-                              <div className="absolute top-3 left-3">
-                                <Badge className="bg-primary text-white">Featured</Badge>
-                              </div>
+                              {product.featured && (
+                                <div className="absolute top-3 left-3">
+                                  <Badge className="bg-primary text-white">Featured</Badge>
+                                </div>
+                              )}
                             </div>
                             <div className="p-4">
                               <h3 className="font-semibold text-lg mb-2 line-clamp-2">
