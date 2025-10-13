@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const searchTerm = searchParams.get('search') || '';
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortDirection = searchParams.get('sortDirection') || 'asc';
+    const featured = searchParams.get('featured') === 'true';
 
     console.log('Products API called with params:', {
       page,
@@ -19,7 +20,8 @@ export async function GET(request: NextRequest) {
       category,
       searchTerm,
       sortBy,
-      sortDirection
+      sortDirection,
+      featured
     });
 
     console.log('Raw URL search params:', {
@@ -36,6 +38,12 @@ export async function GET(request: NextRequest) {
       filters.push({ field: 'category', operator: '==', value: category });
     } else {
       console.log('No category filter applied, category:', category);
+    }
+
+    // Apply featured filter
+    if (featured) {
+      console.log('Adding featured filter:', { field: 'featured', operator: '==', value: true });
+      filters.push({ field: 'featured', operator: '==', value: true });
     }
 
     // Apply search filter for name (basic text search)
