@@ -47,7 +47,7 @@ const Footer = () => {
   const { settings } = useSettings();
 
   return (
-    <footer className="bg-secondary mt-16">
+    <footer className="bg-secondary ">
       <div className="max-w-7xl w-full mx-auto px-4 pt-16 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Brand and newsletter */}
