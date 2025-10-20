@@ -608,7 +608,7 @@ const ProductsPage = ({
                   </div>
                 </div>
 
-                <div className="border-t pt-6">
+                {/* <div className="border-t pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-medium">Price Range</h3>
                     <Button
@@ -639,7 +639,7 @@ const ProductsPage = ({
                       ₦{priceRange[1].toLocaleString()}
                     </span>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="border-t pt-6">
                   <Button
@@ -804,7 +804,7 @@ const ProductsPage = ({
               </div>
 
               {/* Mobile price range */}
-              <div className="border-t pt-6">
+              {/* <div className="border-t pt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-medium">Price Range</h3>
                   <Button
@@ -833,7 +833,7 @@ const ProductsPage = ({
                     ₦{priceRange[1].toLocaleString()}
                   </span>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Mobile filter footer */}

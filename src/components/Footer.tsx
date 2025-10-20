@@ -29,7 +29,7 @@ const footerLinks = [
   {
     title: "Tools",
     links: [
-      { name: "Building Quotation", href: "/building-quotation" },
+      { name: "Free Quotation", href: "/building-quotation" },
       { name: "Tradesmen", href: "/tradesmen" },
       { name: "Vendors", href: "/vendors" },
     ],

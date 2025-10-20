@@ -714,7 +714,7 @@ const BuildingQuotation = () => {
                   Home
                 </Link>
                 <ChevronRight size={14} className="mx-2" />
-                <span>Building Quotation</span>
+                <span>  Free Quotation</span>
               </div>
             </motion.div>
           </div>

@@ -79,7 +79,7 @@ const Navbar = () => {
     { name: "Products", path: "/products" },
     { name: "Blog", path: "/blog" },
 
-    { name: "Building Quotation", path: "/building-quotation" },
+    { name: "Free Quotation", path: "/building-quotation" },
     { name: "Tradesmen", path: "/tradesmen" },
     { name: "Vendors", path: "/vendors" },
 
