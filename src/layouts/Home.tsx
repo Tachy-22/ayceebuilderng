@@ -414,14 +414,14 @@ const Home = () => {
                   align: "start",
                   loop: true,
                 }}
-                className="w-full"
+                className="w-full "
               >
                 <CarouselContent>
                   {featuredProducts.map((product) => (
                     <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/3">
-                      <div className="p-1">
+                      <div className="p-1 ">
                         <Card className="hover-lift">
-                          <CardContent className="p-0">
+                          <CardContent className="p-0 ">
                             <div className="relative aspect-square overflow-hidden rounded-t-lg">
                               <img
                                 src={product.image || product.images?.[0] || "https://placehold.co/300x300?text=No+Image"}
@@ -877,7 +877,7 @@ const Home = () => {
                   </h3>
                   <p className="text-muted-foreground">
                     All our products undergo strict quality control. We only
-                    partner with trusted manufacturers and vendors we are meet
+                    partner with trusted manufacturers and vendors that meet
                     our standards.
                   </p>
                 </CardContent>
