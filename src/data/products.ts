@@ -68,6 +68,7 @@ export interface ProductNew {
   Price: number;
   discountedPrice?: number;
   Description?: string;
+  description?: string;
   Specification?: string; // Format: "key1:value1,key2:value2,..."
   inStock?: boolean;
   Features?: string; // Features as comma-separated string
@@ -387,7 +388,7 @@ export function mapNewProductToProduct(
       images: imageArray,
       rating: product.rating || 4.0,
       reviewCount: product.reviewCount || 0,
-      description: product.Description || "No description available",
+      description: product.description|| product.Description || "No description available",
       features: features,
       specifications: specifications,
       inStock: product.inStock === false ? false : true,
