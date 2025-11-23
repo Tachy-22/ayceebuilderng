@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Search } from "lucide-react";
+import { analytics } from "@/lib/analytics";
 
 const BlogSearch = () => {
   const router = useRouter();
@@ -14,6 +15,11 @@ const BlogSearch = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Track blog search event
+    if (searchQuery.trim()) {
+      analytics.trackSearch(searchQuery.trim(), 'blog');
+    }
 
     // Create a new URLSearchParams object using the current params
     const params = new URLSearchParams(searchParams.toString());

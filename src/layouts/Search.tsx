@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import ProductCard from "@/components/ProductCard";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { analytics } from "@/lib/analytics";
 
 const Search = () => {
   const pathname = usePathname();
@@ -27,6 +28,11 @@ const Search = () => {
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Track product search event
+    if (searchQuery.trim()) {
+      analytics.trackSearch(searchQuery.trim(), 'product', searchResults.length);
+    }
 
     // Update URL
     const params = new URLSearchParams(location.search);

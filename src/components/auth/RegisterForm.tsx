@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { analytics } from '@/lib/analytics';
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -62,12 +63,23 @@ export default function RegisterForm() {
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    // Track form start
+    analytics.trackFormStart('registration');
+    
+    if (!validateForm()) {
+      analytics.trackFormSubmit('registration', false);
+      return;
+    }
 
     try {
       setError('');
       setLoading(true);
       await register(formData.email, formData.password, formData.name);
+      
+      // Track successful registration
+      analytics.trackSignUp('email');
+      analytics.trackFormSubmit('registration', true);
+      
       toast({
         title: "Account created successfully",
         description: "Welcome to AyceeBuilder!",
@@ -82,6 +94,9 @@ export default function RegisterForm() {
     } catch (error: any) {
       console.error('Registration error:', error);
       setError(error.message || 'Failed to create account');
+      
+      // Track failed registration
+      analytics.trackFormSubmit('registration', false);
     } finally {
       setLoading(false);
     }

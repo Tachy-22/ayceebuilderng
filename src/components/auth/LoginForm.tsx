@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { analytics } from '@/lib/analytics';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -26,8 +27,12 @@ export default function LoginForm() {
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Track form start
+    analytics.trackFormStart('login');
+    
     if (!email || !password) {
       setError('Please fill in all fields');
+      analytics.trackFormSubmit('login', false);
       return;
     }
 
@@ -35,6 +40,11 @@ export default function LoginForm() {
       setError('');
       setLoading(true);
       await login(email, password);
+      
+      // Track successful login
+      analytics.trackSignIn('email');
+      analytics.trackFormSubmit('login', true);
+      
       toast({
         title: "Login successful",
         description: "Welcome back!",
@@ -49,6 +59,9 @@ export default function LoginForm() {
     } catch (error: any) {
       console.error('Login error:', error);
       setError(error.message || 'Failed to login');
+      
+      // Track failed login
+      analytics.trackFormSubmit('login', false);
     } finally {
       setLoading(false);
     }
@@ -59,6 +72,10 @@ export default function LoginForm() {
       setError('');
       setLoading(true);
       await loginWithGoogle();
+      
+      // Track Google login
+      analytics.trackSignIn('google');
+      
       toast({
         title: "Login successful",
         description: "Welcome back!",

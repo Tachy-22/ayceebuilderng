@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import { analytics } from "@/lib/analytics";
 
 import { motion } from "framer-motion";
 import {
@@ -80,6 +81,21 @@ const Cart = () => {
   // Wrapper functions to handle async cart operations
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     try {
+      // Find the cart item to track the change
+      const cartItem = cartItems.find(item => item.id === itemId);
+      if (cartItem) {
+        const oldQuantity = cartItem.quantity;
+        const action = newQuantity > oldQuantity ? 'increase' : 'decrease';
+        
+        // Track quantity change event
+        analytics.trackQuantityChange(
+          cartItem.product.id,
+          cartItem.product.name,
+          action,
+          newQuantity
+        );
+      }
+      
       await updateQuantity(itemId, newQuantity);
     } catch (error) {
       console.error('Error updating quantity:', error);
@@ -88,6 +104,23 @@ const Cart = () => {
 
   const handleRemoveFromCart = async (itemId: string) => {
     try {
+      // Find the cart item to track removal
+      const cartItem = cartItems.find(item => item.id === itemId);
+      if (cartItem) {
+        const price = (cartItem.variant && cartItem.variant.variant_price) 
+          ? cartItem.variant.variant_price 
+          : (cartItem.product.discountPrice || cartItem.product.price);
+        
+        // Track remove from cart event
+        analytics.trackRemoveFromCart(
+          cartItem.product.id,
+          cartItem.product.name,
+          cartItem.product.category,
+          price,
+          cartItem.quantity
+        );
+      }
+      
       await removeFromCart(itemId);
     } catch (error) {
       console.error('Error removing from cart:', error);
@@ -595,6 +628,10 @@ const Cart = () => {
       const discount = subtotal * 0.1; // 10% discount
       setDiscountAmount(discount);
       setPromoApplied(true);
+      
+      // Track promo code application
+      analytics.trackPromoCodeApply(promoCode.toUpperCase(), true, discount);
+      
       toast({
         title: "Promo code applied",
         description: "10% discount has been applied to your order",
@@ -602,6 +639,10 @@ const Cart = () => {
     } else {
       setPromoApplied(false);
       setDiscountAmount(0);
+      
+      // Track failed promo code attempt
+      analytics.trackPromoCodeApply(promoCode, false);
+      
       toast({
         variant: "destructive",
         title: "Invalid promo code",
@@ -613,6 +654,10 @@ const Cart = () => {
   const handlePaystackSuccess = async (reference: any) => {
     try {
       setIsProcessingPayment(true);
+      
+      // Track begin checkout event when payment starts
+      analytics.trackBeginCheckout(total, cartItems.length);
+      
       if (selectedAddress && user && userProfile) {
         const itemsForReceipt = cartItems.map((item) => ({
           productName: item.product.name,
@@ -714,6 +759,14 @@ const Cart = () => {
         console.log({ res })
         if (res.ok) {
           console.log('Payment verification successful:', { res });
+          
+          // Track successful purchase
+          analytics.trackPurchaseCompleted(
+            reference.reference,
+            total,
+            orderItems
+          );
+          
           setOrderReference(reference.reference);
           setConfirmedItems(itemsForReceipt);
           setConfirmedTotal(total);

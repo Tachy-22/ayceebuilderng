@@ -8,6 +8,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { updateProduct } from "@/lib/redux/productSlice";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
+import { analytics } from "@/lib/analytics";
 
 export interface ProductCardProps {
   product: Product;
@@ -56,6 +57,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Track add to cart event
+    analytics.trackAddToCart(
+      product.id,
+      product.name,
+      product.category,
+      product.discountPrice || product.price,
+      1
+    );
+    
     addToCart(product, 1);
   };
 
@@ -64,8 +75,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
     e.stopPropagation();
 
     if (wishlisted) {
+      // Track wishlist remove event
+      analytics.trackRemoveFromWishlist(product.id, product.name, product.category);
       removeFromWishlist(product.id);
     } else {
+      // Track wishlist add event
+      analytics.trackAddToWishlist(product.id, product.name, product.category);
       addToWishlist(product);
     }
   };
@@ -80,6 +95,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const handleImageClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Track product image click
+    analytics.trackProductView(
+      product.id,
+      product.name,
+      product.category,
+      product.discountPrice || product.price
+    );
 
     // Store product in Redux for quick access
     dispatch(updateProduct(product));
