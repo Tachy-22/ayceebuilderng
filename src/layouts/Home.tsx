@@ -487,7 +487,7 @@ const Home = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
                   <img
-                    src={`https://media.istockphoto.com/id/1469656864/photo/electrician-engineer-uses-a-multimeter-to-test-the-electrical-installation-and-power-line.jpg?s=612x612&w=0&k=20&c=h70UOpNbJYT5G2oGT-KUeIE3yXwEgsCpr25yR1rnGtU=`}
+                    src={`https://media.istockphoto.com/id/1472464806/photo/decorative-antique-edison-style-filament-light-bulbs-hanging-an-electrician-is-installing.jpg?s=612x612&w=0&k=20&c=3wirHrNX0E-pN-UTaAJhQ18jyoCuUM3ZwOaUHwqbls0=`}
                     alt={categories[1].name}
                     width={500}
                     height={300}
@@ -521,7 +521,7 @@ const Home = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
                   <img
-                    src={`https://5.imimg.com/data5/IR/AL/PO/SELLER-43531398/sanitary-ware.JPG`}
+                    src="https://www.nobroker.in/blog/wp-content/uploads/2023/07/emulsion-paint-1200x673.webp"
                     alt={categories[2].name}
                     width={400}
                     height={300}
@@ -555,7 +555,8 @@ const Home = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
                   <img
-                    src={`https://media.istockphoto.com/id/2150737447/photo/living-room-designed-in-a-modern-minimalist-style.jpg?s=612x612&w=0&k=20&c=dLISljRiuau099SmQboAzWvnHYQzM6ezn_7XD_WzPS0=`}
+                    src={`https://5.imimg.com/data5/IR/AL/PO/SELLER-43531398/sanitary-ware.JPG`}
+
                     alt={categories[3].name}
                     width={400}
                     height={300}
@@ -589,7 +590,9 @@ const Home = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
                   <img
-                    src={`https://media.istockphoto.com/id/1314469297/photo/pouring-glue-into-glue-container.jpg?s=612x612&w=0&k=20&c=z5biCsx3lpS-g0aNDpRYnLGP5d5yHF705ZQa2uLD3D8=`}
+                    src={`https://media.istockphoto.com/id/2150737447/photo/living-room-designed-in-a-modern-minimalist-style.jpg?s=612x612&w=0&k=20&c=dLISljRiuau099SmQboAzWvnHYQzM6ezn_7XD_WzPS0=`}
+
+
                     alt={categories[4].name}
                     width={400}
                     height={300}
@@ -623,7 +626,7 @@ const Home = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
                   <img
-                    src={`https://media.istockphoto.com/id/1135314838/photo/repair-of-hydraulic-heating-system-in-the-house.jpg?s=612x612&w=0&k=20&c=Z8-BohVX0_Niqp72nroZzeK3m8C69U2xLcvQYE_iHuA=`}
+                    src={`https://media.istockphoto.com/id/1314469297/photo/pouring-glue-into-glue-container.jpg?s=612x612&w=0&k=20&c=z5biCsx3lpS-g0aNDpRYnLGP5d5yHF705ZQa2uLD3D8=`}
                     alt={categories[5].name}
                     width={800}
                     height={300}
@@ -656,7 +659,7 @@ const Home = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/5 to-black/90 z-10" />
                 <div className="relative h-full w-full bg-gray-200 overflow-hidden">
                   <img
-                    src={`https://media.istockphoto.com/id/1472464806/photo/decorative-antique-edison-style-filament-light-bulbs-hanging-an-electrician-is-installing.jpg?s=612x612&w=0&k=20&c=3wirHrNX0E-pN-UTaAJhQ18jyoCuUM3ZwOaUHwqbls0=`}
+                    src={`https://media.istockphoto.com/id/1135314838/photo/repair-of-hydraulic-heating-system-in-the-house.jpg?s=612x612&w=0&k=20&c=Z8-BohVX0_Niqp72nroZzeK3m8C69U2xLcvQYE_iHuA=`}
                     alt={categories[6].name}
                     width={800}
                     height={300}
@@ -666,11 +669,11 @@ const Home = () => {
                 <div className="absolute bottom-0 left-0 right-0 p-4 transform  z-20">
                   <div className="backdrop-blur-sm p-3 rounded-lg shadow-md">
                     <h3 className="font-medium text-white">
-                      {categories[5].name}
+                      {categories[6].name}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-gray-300  transition-all duration-300 group-hover:opacity-100 group-hover:max-h-20">
-                        {getCategoryDescription(categories[5].name)}
+                        {getCategoryDescription(categories[6].name)}
                       </p>
                     </div>
                   </div>
