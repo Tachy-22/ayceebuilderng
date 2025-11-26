@@ -50,6 +50,8 @@ const VendorsPage = async () => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/vendors`, {
       next: { revalidate: 0 }, // Revalidate once per hour
+      cache: "no-store",
+
     });
 
     if (!res.ok) {
@@ -72,3 +74,6 @@ const VendorsPage = async () => {
 };
 
 export default VendorsPage;
+
+export const revalidate = 0;
+export const dynamic = "force-dynamic";

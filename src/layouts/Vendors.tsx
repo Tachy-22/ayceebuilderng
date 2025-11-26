@@ -51,36 +51,12 @@ interface VendorsProps {
   fetchedVendors?: Vendor[];
 }
 
-// Fallback vendors data in case Firebase fails
-const fallbackVendors: Vendor[] = [
-  {
-    id: "v1",
-    name: "John Adebayo",
-    businessName: "Superior Building Supplies",
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500&auto=format&fit=crop&q=60",
-    businessType: "Wholesaler",
-    location: "Lagos, Nigeria",
-    rating: 4.8,
-    reviewCount: 124,
-    yearsOfExperience: 12,
-    description: "Premium quality building materials supplier with over 10 years of experience in the construction industry.",
-    verified: true,
-    featured: true,
-    whatsAppNumber: "2348123456789",
-    email: "john@superiorsupplies.com",
-    phone: "+234 812 345 6789",
-    services: ["Cement Supply", "Steel Distribution", "Block Supply"],
-    specializations: ["Bulk Orders", "Delivery Service", "Quality Assurance"],
-    priceRange: "mid-range",
-    status: "approved",
-  },
-];
+
 
 const Vendors: React.FC<VendorsProps> = ({ fetchedVendors = [] }) => {
   const [vendors, setVendors] = useState<Vendor[]>(fetchedVendors);
   const [filteredVendors, setFilteredVendors] = useState<Vendor[]>(fetchedVendors);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState("browse");
   const [isLoaded, setIsLoaded] = useState(true);
