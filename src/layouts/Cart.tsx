@@ -2067,23 +2067,36 @@ const Cart = () => {
                         </div>
                       </div>
                     ) : (
-                      <PaystackButton
-                        text={
-                          !selectedAddress
-                            ? "Select delivery address to proceed"
-                            : calculatedDistance === null
-                              ? "Calculate delivery distance to proceed"
-                              : "Proceed to Checkout"
-                        }
-                        disabled={!selectedAddress || calculatedDistance === null}
-                        className={`w-full px-4 py-2 rounded-xl shadow transition-all ${!selectedAddress || calculatedDistance === null
-                          ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                          : "bg-primary text-white hover:bg-primary/80"
-                          }`}
-                        {...config}
-                        onSuccess={handlePaystackSuccess}
-                        onClose={handlePaystackClose}
-                      />
+                      <div 
+                        onClick={() => {
+                          if (selectedAddress && calculatedDistance !== null) {
+                            analytics.trackProceedToCheckout(
+                              total,
+                              cartItems.length,
+                              'NGN',
+                              `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}`
+                            );
+                          }
+                        }}
+                      >
+                        <PaystackButton
+                          text={
+                            !selectedAddress
+                              ? "Select delivery address to proceed"
+                              : calculatedDistance === null
+                                ? "Calculate delivery distance to proceed"
+                                : "Proceed to Checkout"
+                          }
+                          disabled={!selectedAddress || calculatedDistance === null}
+                          className={`w-full px-4 py-2 rounded-xl shadow transition-all ${!selectedAddress || calculatedDistance === null
+                            ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                            : "bg-primary text-white hover:bg-primary/80"
+                            }`}
+                          {...config}
+                          onSuccess={handlePaystackSuccess}
+                          onClose={handlePaystackClose}
+                        />
+                      </div>
                     )}
 
                     <div className="mt-4 text-xs text-center text-muted-foreground">

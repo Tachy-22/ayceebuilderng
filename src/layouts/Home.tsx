@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { getHomePageStats } from "@/lib/firestore";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "@/hooks/use-toast";
 import {
   ArrowRight,
   ChevronRight,
@@ -95,6 +97,7 @@ const Home = () => {
     customers: 0
   });
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -350,9 +353,9 @@ const Home = () => {
               >
                 <CarouselContent>
                   {featuredProducts.map((product) => (
-                    <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/4">
+                    <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/5">
                       <div className="p-1 ">
-                        <Card className="hover-lift">
+                        <Card className="hover-lift cursor-pointer" onClick={() => window.location.href = `/products/${product.id}`}>
                           <CardContent className="p-0 ">
                             <div className="relative aspect-square overflow-hidden rounded-t-lg">
                               <img
@@ -373,7 +376,7 @@ const Home = () => {
                               <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                                 {product.description}
                               </p>
-                              <div className="flex items-center justify-between">
+                              <div className="flex flex-col items-start justify-start">
                                 <div className="flex flex-col">
                                   <span className="font-bold text-lg">
                                     ₦{product.price?.toLocaleString()}
@@ -384,12 +387,23 @@ const Home = () => {
                                     </span>
                                   )}
                                 </div>
-                                <Link href={`/products/${product.id}`}>
-                                  <Button size="sm">
-                                    View Details
-                                    <ArrowRight size={14} className="ml-1" />
-                                  </Button>
-                                </Link>
+                                <Button 
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    addToCart(product, 1);
+                                    toast({
+                                      title: "Added to Cart",
+                                      description: `${product.name} added to cart`,
+                                    });
+                                  }}
+                                  className="w-full"
+                                  disabled={!product.inStock}
+                                >
+                                  <ShoppingBag size={14} className="mr-1" />
+                                  Add to Cart
+                                </Button>
                               </div>
                             </div>
                           </CardContent>

@@ -139,6 +139,7 @@ import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useAppSelector } from "@/lib/redux/hooks";
+import ProductRecommendations from "@/components/ProductRecommendations";
 
 interface ProductDetailProps {
   mappedProducts?: Product[];
@@ -982,6 +983,11 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
                 </div>
               </TabsContent>
             </Tabs>
+          </div>
+
+          {/* Product Recommendations */}
+          <div className="mt-16">
+            <ProductRecommendations currentProduct={product} limit={8} />
           </div>
         </div>
       </main>

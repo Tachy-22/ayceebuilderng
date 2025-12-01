@@ -116,6 +116,21 @@ export const analytics = {
     });
   },
 
+  trackProceedToCheckout: (totalValue: number, itemCount: number, currency: string = 'NGN', deliveryAddress?: string) => {
+    trackEvent({
+      action: 'proceed_to_checkout_button_click',
+      category: 'Ecommerce',
+      value: totalValue,
+      custom_parameters: {
+        currency,
+        value: totalValue,
+        items_count: itemCount,
+        delivery_address: deliveryAddress,
+        checkout_step: 'proceed_to_payment',
+      },
+    });
+  },
+
   trackPurchaseCompleted: (transactionId: string, totalValue: number, items: any[], currency: string = 'NGN') => {
     trackEvent({
       action: 'purchase_completed',
