@@ -602,7 +602,7 @@ const Cart = () => {
   // Calculate cart totals
   const subtotal = cartItems.reduce((sum, item) => {
     // Use variant price if available, otherwise use product price
-    let price = item.product.discountPrice || item.product.price;
+    let price =  item.product.price;
     if (item.variant && typeof item.variant.variant_price === 'number') {
       price = item.variant.variant_price;
     }
@@ -1359,15 +1359,17 @@ const Cart = () => {
                           <div className="col-span-2 text-center">
                             {/* Use variant price if available, otherwise use product price */}
                             {(() => {
-                              console.log('Cart item for price display:', {
-                                productName: item.product.name,
-                                hasVariant: !!item.variant,
-                                variantName: item.variant?.variant_name,
-                                variantPrice: item.variant?.variant_price,
-                                productPrice: item.product.price,
-                                productDiscountPrice: item.product.discountPrice
-                              });
+                              // console.log('Cart item for price display:', {
+                              //   productName: item.product.name,
+                              //   hasVariant: !!item.variant,
+                              //   variantName: item.variant?.variant_name,
+                              //   variantPrice: item.variant?.variant_price,
+                              //   productPrice: item.product.price,
+                              //   productDiscountPrice: item.product.discountPrice
+                              // });
                               
+                                                              const displayPrice = item.product.price * 1.2;
+
                               if (item.variant && typeof item.variant.variant_price === 'number') {
                                 return (
                                   <div className="font-medium">
@@ -1375,21 +1377,21 @@ const Cart = () => {
                                     <div className="text-xs text-green-600">Variant: {item.variant.variant_name}</div>
                                   </div>
                                 );
-                              } else if (item.product.discountPrice) {
+                              } else if (item.product.price) {
                                 return (
                                   <div>
                                     <div className="font-medium">
-                                      ₦{item.product.discountPrice.toLocaleString()}
+                                      ₦{item.product.price.toFixed(2).toLocaleString()}
                                     </div>
                                     <div className="text-xs text-muted-foreground line-through">
-                                      ₦{item.product.price.toLocaleString()}
+                                      ₦{displayPrice}
                                     </div>
                                   </div>
                                 );
                               } else {
                                 return (
                                   <div className="font-medium">
-                                    ₦{item.product.price.toLocaleString()}
+                                    ₦{item.product.price.toFixed(2).toLocaleString()}
                                   </div>
                                 );
                               }

@@ -176,20 +176,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
         <div className="flex items-baseline mb-3">
           <div className="flex-1">
-            {product.discountPrice ? (
-              <>
+            {(() => {
+              // Calculate 0.2% increase as potential discount price
+              const calculatedDiscountPrice = product.price * 1.002;
+              const effectiveDiscountPrice = calculatedDiscountPrice 
+                
+              
+              return effectiveDiscountPrice ? (
+                <>
+                  <span className="text-lg font-bold">
+                    ₦{effectiveDiscountPrice.toFixed(2).toLocaleString()}
+                  </span>
+                  <span className="text-sm text-muted-foreground line-through ml-2">
+                    ₦{product.price.toFixed(2).toLocaleString()}
+                  </span>
+                </>
+              ) : (
                 <span className="text-lg font-bold">
-                  ₦{product.discountPrice.toLocaleString()}
+                  ₦{product.price.toFixed(2).toLocaleString()}
                 </span>
-                <span className="text-sm text-muted-foreground line-through ml-2">
-                  ₦{product.price.toLocaleString()}
-                </span>
-              </>
-            ) : (
-              <span className="text-lg font-bold">
-                ₦{product.price.toLocaleString()}
-              </span>
-            )}
+              );
+            })()}
             {product.variants && product.variants.length > 0 && (
               <div className="text-xs text-muted-foreground mt-1">
                 {product.variants.length} variant{product.variants.length > 1 ? 's' : ''} available

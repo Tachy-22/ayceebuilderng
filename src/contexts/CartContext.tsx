@@ -94,7 +94,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       setLoading(false);
     }
   }, [user]);
-
+//product.dis
   // Handle user login - merge guest cart with user cart
   useEffect(() => {
     const handleUserLogin = async () => {
@@ -312,8 +312,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      // Use variant price if available, otherwise use product price
-      let price = item.product.discountPrice || item.product.price;
+      // Use variant price if available, otherwise use regular product price (not discount price)
+      let price = item.product.price;
       if (item.variant && typeof item.variant.variant_price === 'number') {
         price = item.variant.variant_price;
       }

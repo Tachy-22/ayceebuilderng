@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   supportPhone: '+234 800 123 4567',
   paystackPublicKey: '',
   taxRate: 7.5,
-  shippingFee: 0,
+  shippingFee: 0, // Default shipping fee - no charge when no address selected
   currency:"NGN"
 };
 

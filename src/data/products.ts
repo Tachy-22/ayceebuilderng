@@ -382,13 +382,12 @@ export function mapNewProductToProduct(
           : ((Number(product.price) || Number(product.Price) || 0) * 0.95),
       discountPrice:
         Number(product.discountPrice) ||
-        Number(product.discountedPrice) ||
-        (Number(product.price) || Number(product.Price) || 0),
+        Number(product.discountedPrice),
       image: imageUrl,
       images: imageArray,
       rating: product.rating || 4.0,
       reviewCount: product.reviewCount || 0,
-      description: product.description|| product.Description || "No description available",
+      description: product.description || product.Description || "No description available",
       features: features,
       specifications: specifications,
       inStock: product.inStock === false ? false : true,

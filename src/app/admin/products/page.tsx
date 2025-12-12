@@ -71,7 +71,7 @@ export default function AdminProductsPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        
+
         if (!db) {
           throw new Error('Database not initialized');
         }
@@ -113,6 +113,7 @@ export default function AdminProductsPage() {
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
+    console.log({ filtered })
     setFilteredProducts(filtered);
   }, [products, searchTerm, categoryFilter, statusFilter]);
 
@@ -186,7 +187,7 @@ export default function AdminProductsPage() {
     if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       return;
     }
-    
+
     try {
       const result = await deleteDocument("products", productId, "/admin/products");
       if ("success" in result && result.success) {
@@ -205,7 +206,7 @@ export default function AdminProductsPage() {
     try {
       const updatedProduct = { ...product, featured: !product.featured };
       const result = await updateDocument("products", product.id, { featured: !product.featured }, "/admin/products");
-      
+
       if ("success" in result && result.success) {
         setProducts(products.map(p => p.id === product.id ? updatedProduct : p));
         toast.success(updatedProduct.featured ? "Product added to featured" : "Product removed from featured");
@@ -222,7 +223,7 @@ export default function AdminProductsPage() {
     try {
       const updatedProduct = { ...product, inStock: !product.inStock };
       const result = await updateDocument("products", product.id, { inStock: !product.inStock }, "/admin/products");
-      
+
       if ("success" in result && result.success) {
         setProducts(products.map(p => p.id === product.id ? updatedProduct : p));
         toast.success(updatedProduct.inStock ? "Product marked as in stock" : "Product marked as out of stock");
@@ -239,7 +240,7 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      
+
       if (!db) {
         throw new Error('Database not initialized');
       }
@@ -512,11 +513,11 @@ export default function AdminProductsPage() {
 
                             <div className="flex items-center space-x-4 mb-2">
                               <div className="text-lg font-semibold text-gray-900">
-                                {formatCurrency(product.discountPrice || product.price)}
+                                {formatCurrency(product.price)}
                               </div>
                               {product.discountPrice && (
                                 <div className="text-sm text-gray-500 line-through">
-                                  {formatCurrency(product.price)}
+                                  {formatCurrency(product.price + 0.2 * (product.price))}
                                 </div>
                               )}
                               {getStockStatus(product.inStock)}
@@ -569,7 +570,7 @@ export default function AdminProductsPage() {
                           {product.inStock ? 'Mark Out of Stock' : 'Mark In Stock'}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => product.id && handleDeleteProduct(product.id)}
                           className="text-red-600"
                         >
@@ -622,11 +623,11 @@ export default function AdminProductsPage() {
           </DialogHeader>
           <div className="flex-1 overflow-hidden">
             {selectedProduct && (
-              <ProductEditor 
+              <ProductEditor
                 key={selectedProduct.id}
-                update={true} 
-                product={selectedProduct} 
-                onClose={handleProductUpdated} 
+                update={true}
+                product={selectedProduct}
+                onClose={handleProductUpdated}
               />
             )}
           </div>
