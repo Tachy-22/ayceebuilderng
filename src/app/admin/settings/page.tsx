@@ -34,7 +34,7 @@ export default function AdminSettingsPage() {
     supportPhone: '',
     paystackPublicKey: '',
     taxRate: 7.5,
-    shippingFee: 1500,
+    shippingFee: 0,
   } as SiteSettings);
 
   // Load settings from Firestore on component mount
