@@ -478,7 +478,7 @@ const Cart = () => {
 
     if (!selectedAddress || calculatedDistance === null) {
       console.log('Delivery cost calculation skipped - using default shipping fee from settings');
-      return settings?.shippingFee || 1500; // Use default shipping fee from settings
+      return settings?.shippingFee || 0; // Use default shipping fee from settings
     }
 
     // Base fare
