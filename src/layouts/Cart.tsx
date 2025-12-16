@@ -970,21 +970,21 @@ const Cart = () => {
       return;
     }
 
-    // Validate state-city combination
-    if (!validateStateCity(quickAddressForm.state, quickAddressForm.city)) {
+    // Validate state-city combination (skip if we have coordinates from Google Places)
+    if (!selectedPlaceCoordinates && !validateStateCity(quickAddressForm.state, quickAddressForm.city)) {
       toast({
-        variant: "destructive",
+        variant: "destructive", 
         title: "Invalid location",
         description: `${quickAddressForm.city} is not a valid city in ${quickAddressForm.state} state.`,
       });
       return;
     }
 
-    // Basic validation for street address
-    if (quickAddressForm.street.trim().length < 10) {
+    // Basic validation for street address (skip if we have coordinates from Google Places)
+    if (!selectedPlaceCoordinates && quickAddressForm.street.trim().length < 10) {
       toast({
         variant: "destructive",
-        title: "Invalid street address",
+        title: "Invalid street address", 
         description: "Please enter a complete street address (minimum 10 characters).",
       });
       return;
@@ -1620,7 +1620,8 @@ const Cart = () => {
                                       onChange={(value) => setQuickAddressForm(prev => ({ ...prev, street: value }))}
                                       onPlaceSelect={(place) => {
                                         // Validate address before accepting it
-                                        if (!place.address || place.address.trim().length < 10) {
+                                        const addressStr = place.address || place.formatted_address || place.name || '';
+                                        if (!addressStr || addressStr.trim().length < 10) {
                                           toast({
                                             variant: "destructive",
                                             title: "Invalid address",
@@ -1628,8 +1629,6 @@ const Cart = () => {
                                           });
                                           return;
                                         }
-
-                                        const addressStr = place.address || place.formatted_address || place.name || '';
                                         
                                         // Extract city and state from the address string
                                         const addressParts = addressStr.split(',').map(part => part.trim());
