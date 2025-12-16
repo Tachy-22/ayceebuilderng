@@ -185,7 +185,8 @@ const Cart = () => {
     street: '',
     city: '',
     state: '',
-    phone: ''
+    phone: '',
+    isFromGooglePlaces: false
   });
   const [productLocation, setProductLocation] = useState(
     "Ikeja City Mall, Alausa, Obafemi Awolowo Wy, Oregun, Ikeja"
@@ -970,8 +971,8 @@ const Cart = () => {
       return;
     }
 
-    // Validate state-city combination (skip if we have coordinates from Google Places)
-    if (!selectedPlaceCoordinates && !validateStateCity(quickAddressForm.state, quickAddressForm.city)) {
+    // Validate state-city combination (skip if address is from Google Places)
+    if (!quickAddressForm.isFromGooglePlaces && !validateStateCity(quickAddressForm.state, quickAddressForm.city)) {
       toast({
         variant: "destructive", 
         title: "Invalid location",
@@ -980,8 +981,8 @@ const Cart = () => {
       return;
     }
 
-    // Basic validation for street address (skip if we have coordinates from Google Places)
-    if (!selectedPlaceCoordinates && quickAddressForm.street.trim().length < 10) {
+    // Basic validation for street address (skip if address is from Google Places)
+    if (!quickAddressForm.isFromGooglePlaces && quickAddressForm.street.trim().length < 10) {
       toast({
         variant: "destructive",
         title: "Invalid street address", 
@@ -1016,7 +1017,7 @@ const Cart = () => {
 
       setSelectedAddress(newAddress);
       setShowQuickAddressForm(false);
-      setQuickAddressForm({ name: '', street: '', city: '', state: '', phone: '' });
+      setQuickAddressForm({ name: '', street: '', city: '', state: '', phone: '', isFromGooglePlaces: false });
 
       toast({
         title: "Address saved",
@@ -1607,7 +1608,7 @@ const Cart = () => {
                                       size="sm"
                                       onClick={() => {
                                         setShowQuickAddressForm(false);
-                                        setQuickAddressForm({ name: '', street: '', city: '', state: '', phone: '' });
+                                        setQuickAddressForm({ name: '', street: '', city: '', state: '', phone: '', isFromGooglePlaces: false });
                                       }}
                                     >
                                       <X className="h-4 w-4" />
@@ -1638,9 +1639,12 @@ const Cart = () => {
                                         // Try to identify state and city from address parts
                                         const allStates = getAllStateNames();
                                         for (const part of addressParts) {
+                                          // Skip country names
+                                          if (part.toLowerCase().includes('nigeria')) continue;
+                                          
                                           const matchingState = allStates.find(state => 
-                                            part.toLowerCase().includes(state.toLowerCase()) || 
-                                            state.toLowerCase().includes(part.toLowerCase())
+                                            part.toLowerCase().includes(state.toLowerCase()) ||
+                                            (state.toLowerCase().includes(part.toLowerCase()) && part.length > 3)
                                           );
                                           if (matchingState) {
                                             extractedState = matchingState;
@@ -1667,7 +1671,8 @@ const Cart = () => {
                                           ...prev, 
                                           street: addressStr,
                                           city: extractedCity,
-                                          state: extractedState
+                                          state: extractedState,
+                                          isFromGooglePlaces: true
                                         }));
                                         // Only set coordinates if they are valid (not 0,0)
                                         if (place.lat && place.lng && (place.lat !== 0 || place.lng !== 0)) {
