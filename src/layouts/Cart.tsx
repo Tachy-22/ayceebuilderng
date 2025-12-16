@@ -1636,30 +1636,27 @@ const Cart = () => {
                                         let extractedCity = '';
                                         let extractedState = '';
                                         
-                                        // First, try to identify city and derive state from it
+                                        // First, try to identify well-known unique city names that clearly indicate the state
                                         const allStates = getAllStateNames();
+                                        const uniqueCities = ['Ikeja', 'Victoria Island', 'Lagos Island', 'Yaba', 'Surulere', 'Ikoyi', 'Lekki', 'Abuja', 'Garki', 'Wuse', 'Maitama'];
+                                        
                                         for (const part of addressParts) {
                                           // Skip country names
                                           if (part.toLowerCase().includes('nigeria')) continue;
                                           
-                                          // Try to find this part as a city first
-                                          for (const state of allStates) {
-                                            const stateCities = getCitiesForState(state);
-                                            const matchingCity = stateCities.find(city => {
-                                              const partLower = part.toLowerCase();
-                                              const cityLower = city.toLowerCase();
-                                              
-                                              // Exact match
-                                              if (partLower === cityLower) return true;
-                                              
-                                              // Word boundary match - city name as whole word
-                                              const wordBoundaryRegex = new RegExp(`\\b${cityLower}\\b`, 'i');
-                                              return wordBoundaryRegex.test(partLower);
-                                            });
-                                            if (matchingCity) {
-                                              extractedCity = matchingCity;
-                                              extractedState = state;
-                                              break;
+                                          // Check for unique/well-known cities first
+                                          for (const uniqueCity of uniqueCities) {
+                                            if (part.toLowerCase().includes(uniqueCity.toLowerCase())) {
+                                              // Find which state this city belongs to
+                                              for (const state of allStates) {
+                                                const stateCities = getCitiesForState(state);
+                                                if (stateCities.some(city => city.toLowerCase() === uniqueCity.toLowerCase())) {
+                                                  extractedCity = uniqueCity;
+                                                  extractedState = state;
+                                                  break;
+                                                }
+                                              }
+                                              if (extractedState) break;
                                             }
                                           }
                                           if (extractedState) break;
