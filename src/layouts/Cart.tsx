@@ -1645,10 +1645,17 @@ const Cart = () => {
                                           // Try to find this part as a city first
                                           for (const state of allStates) {
                                             const stateCities = getCitiesForState(state);
-                                            const matchingCity = stateCities.find(city => 
-                                              part.toLowerCase().includes(city.toLowerCase()) ||
-                                              city.toLowerCase().includes(part.toLowerCase())
-                                            );
+                                            const matchingCity = stateCities.find(city => {
+                                              const partLower = part.toLowerCase();
+                                              const cityLower = city.toLowerCase();
+                                              
+                                              // Exact match
+                                              if (partLower === cityLower) return true;
+                                              
+                                              // Word boundary match - city name as whole word
+                                              const wordBoundaryRegex = new RegExp(`\\b${cityLower}\\b`, 'i');
+                                              return wordBoundaryRegex.test(partLower);
+                                            });
                                             if (matchingCity) {
                                               extractedCity = matchingCity;
                                               extractedState = state;
@@ -1678,10 +1685,17 @@ const Cart = () => {
                                         if (extractedState && !extractedCity) {
                                           const stateCities = getCitiesForState(extractedState);
                                           for (const part of addressParts) {
-                                            const matchingCity = stateCities.find(city => 
-                                              part.toLowerCase().includes(city.toLowerCase()) || 
-                                              city.toLowerCase().includes(part.toLowerCase())
-                                            );
+                                            const matchingCity = stateCities.find(city => {
+                                              const partLower = part.toLowerCase();
+                                              const cityLower = city.toLowerCase();
+                                              
+                                              // Exact match
+                                              if (partLower === cityLower) return true;
+                                              
+                                              // Word boundary match - city name as whole word
+                                              const wordBoundaryRegex = new RegExp(`\\b${cityLower}\\b`, 'i');
+                                              return wordBoundaryRegex.test(partLower);
+                                            });
                                             if (matchingCity) {
                                               extractedCity = matchingCity;
                                               break;
