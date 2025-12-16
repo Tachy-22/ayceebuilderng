@@ -1636,24 +1636,46 @@ const Cart = () => {
                                         let extractedCity = '';
                                         let extractedState = '';
                                         
-                                        // Try to identify state and city from address parts
+                                        // First, try to identify city and derive state from it
                                         const allStates = getAllStateNames();
                                         for (const part of addressParts) {
                                           // Skip country names
                                           if (part.toLowerCase().includes('nigeria')) continue;
                                           
-                                          const matchingState = allStates.find(state => 
-                                            part.toLowerCase().includes(state.toLowerCase()) ||
-                                            (state.toLowerCase().includes(part.toLowerCase()) && part.length > 3)
-                                          );
-                                          if (matchingState) {
-                                            extractedState = matchingState;
-                                            break;
+                                          // Try to find this part as a city first
+                                          for (const state of allStates) {
+                                            const stateCities = getCitiesForState(state);
+                                            const matchingCity = stateCities.find(city => 
+                                              part.toLowerCase().includes(city.toLowerCase()) ||
+                                              city.toLowerCase().includes(part.toLowerCase())
+                                            );
+                                            if (matchingCity) {
+                                              extractedCity = matchingCity;
+                                              extractedState = state;
+                                              break;
+                                            }
+                                          }
+                                          if (extractedState) break;
+                                        }
+                                        
+                                        // If no city found, try state matching (but avoid Niger from Nigeria)
+                                        if (!extractedState) {
+                                          for (const part of addressParts) {
+                                            if (part.toLowerCase().includes('nigeria')) continue;
+                                            
+                                            const matchingState = allStates.find(state => 
+                                              part.toLowerCase() === state.toLowerCase() || // Exact match preferred
+                                              (part.toLowerCase().includes(state.toLowerCase()) && !part.toLowerCase().includes('nigeria'))
+                                            );
+                                            if (matchingState) {
+                                              extractedState = matchingState;
+                                              break;
+                                            }
                                           }
                                         }
                                         
-                                        // If we found a state, try to find a city
-                                        if (extractedState) {
+                                        // If we found a state but no city yet, try to find a city in that state
+                                        if (extractedState && !extractedCity) {
                                           const stateCities = getCitiesForState(extractedState);
                                           for (const part of addressParts) {
                                             const matchingCity = stateCities.find(city => 
