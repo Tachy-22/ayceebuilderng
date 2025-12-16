@@ -1669,12 +1669,17 @@ const Cart = () => {
                                           city: extractedCity,
                                           state: extractedState
                                         }));
-                                        setSelectedPlaceCoordinates({
-                                          lat: place.lat,
-                                          lng: place.lng,
-                                          address: addressStr,
-                                          placeId: place.placeId
-                                        });
+                                        // Only set coordinates if they are valid (not 0,0)
+                                        if (place.lat && place.lng && (place.lat !== 0 || place.lng !== 0)) {
+                                          setSelectedPlaceCoordinates({
+                                            lat: place.lat,
+                                            lng: place.lng,
+                                            address: addressStr,
+                                            placeId: place.placeId
+                                          });
+                                        } else {
+                                          setSelectedPlaceCoordinates(null);
+                                        }
 
                                         toast({
                                           title: "Address validated",

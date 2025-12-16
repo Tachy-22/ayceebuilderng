@@ -244,53 +244,31 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
     }
   };
 
-  // Handle place selection using Geocoding API
+  // Handle place selection - call onPlaceSelect with basic info
   const handlePlaceSelect = async (prediction: PlacePrediction) => {
     setIsLoading(true);
     setShowSuggestions(false);
     onChange(prediction.description);
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
-
-      // Use Geocoding API to get place details
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?place_id=${prediction.place_id}&key=${apiKey}`
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to get place details');
-      }
-
-      const data = await response.json();
-
-      if (data.status === 'OK' && data.results && data.results.length > 0) {
-        const place = data.results[0];
-
-        if (onPlaceSelect && place.geometry && place.geometry.location) {
-          onPlaceSelect({
-            address: place.formatted_address,
-            lat: place.geometry.location.lat,
-            lng: place.geometry.location.lng,
-            placeId: place.place_id,
-          });
-        }
-      } else {
-        console.error('Geocoding API error:', data.status);
-        // Don't call onPlaceSelect with invalid coordinates
-        // Let the distance calculation handle geocoding fallback
-        console.log('Geocoding failed, not calling onPlaceSelect with invalid coordinates');
+      // Call onPlaceSelect with the prediction data we have
+      // The parent component can handle geocoding if needed
+      if (onPlaceSelect) {
+        onPlaceSelect({
+          address: prediction.description,
+          formatted_address: prediction.description,
+          name: prediction.structured_formatting.main_text,
+          lat: 0, // Will be handled by parent component
+          lng: 0, // Will be handled by parent component
+          placeId: prediction.place_id,
+        });
       }
 
       // Create new session token for future requests
       setSessionToken(new window.google.maps.places.AutocompleteSessionToken());
 
     } catch (error) {
-      console.error('Error getting place details:', error);
-
-      // Don't call onPlaceSelect with invalid coordinates
-      // Let the distance calculation handle geocoding fallback
-      console.log('Error getting coordinates, not calling onPlaceSelect with invalid coordinates');
+      console.error('Error selecting place:', error);
     } finally {
       setIsLoading(false);
     }
