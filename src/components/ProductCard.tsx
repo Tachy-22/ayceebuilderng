@@ -139,14 +139,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </Button>
       </div>
 
-      {product.discountPrice && (
+      {/* {product.discountPrice && (
         <Badge
           variant="destructive"
           className="absolute top-3 left-3 z-10 px-2 py-1"
         >
           {calculateDiscountPercentage(product.price, product.discountPrice)}% OFF
         </Badge>
-      )}
+      )} */}
 
       {/* Image container with hover effect to switch images */}
       <div

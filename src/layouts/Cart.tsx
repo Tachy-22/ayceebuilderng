@@ -951,14 +951,14 @@ const Cart = () => {
     }
     
     // Check if we have city and state (should be extracted from GooglePlaces)
-    if (!quickAddressForm.city.trim() || !quickAddressForm.state.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Address incomplete",
-        description: "Please select an address from the suggestions to ensure proper delivery.",
-      });
-      return;
-    }
+    // if (!quickAddressForm.city.trim() || !quickAddressForm.state.trim()) {
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Address incomplete",
+    //     description: "Please select an address from the suggestions to ensure proper delivery.",
+    //   });
+    //   return;
+    // }
 
     // Validate phone number is required
     if (!quickAddressForm.phone.trim()) {
