@@ -610,13 +610,11 @@ const Cart = () => {
     return sum + price * item.quantity;
   }, 0);
 
-  const tax = subtotal * ((settings?.taxRate || 7.5) / 100); // VAT from settings
   const deliveryCost = calculateDeliveryCost();
-  const total = subtotal + tax + deliveryCost - discountAmount;
+  const total = subtotal + deliveryCost - discountAmount;
 
   console.log('Cart totals:', {
     subtotal,
-    tax,
     deliveryCost,
     discountAmount,
     total,
@@ -1492,12 +1490,6 @@ const Cart = () => {
                         ₦{subtotal.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">VAT (7.5%)</span>
-                      <span className="font-medium">
-                        ₦{tax.toLocaleString()}
-                      </span>
-                    </div>
 
                     {discountAmount > 0 && (
                       <div className="flex justify-between text-green-600">
@@ -1636,27 +1628,29 @@ const Cart = () => {
                                         let extractedCity = '';
                                         let extractedState = '';
                                         
-                                        // First, try to identify well-known unique city names that clearly indicate the state
+                                        // Smart city/state detection using multiple strategies
                                         const allStates = getAllStateNames();
-                                        const uniqueCities = ['Ikeja', 'Victoria Island', 'Lagos Island', 'Yaba', 'Surulere', 'Ikoyi', 'Lekki', 'Abuja', 'Garki', 'Wuse', 'Maitama'];
+                                        
+                                        // Strategy 1: Look for distinctive major cities that rarely conflict
+                                        const distinctiveCities = {
+                                          'ikeja': 'Lagos', 'victoria island': 'Lagos', 'lagos island': 'Lagos', 
+                                          'lekki': 'Lagos', 'ikoyi': 'Lagos', 'yaba': 'Lagos',
+                                          'abuja': 'Federal Capital Territory', 'garki': 'Federal Capital Territory',
+                                          'wuse': 'Federal Capital Territory', 'maitama': 'Federal Capital Territory',
+                                          'kano': 'Kano', 'ibadan': 'Oyo', 'port harcourt': 'Rivers',
+                                          'kaduna': 'Kaduna', 'jos': 'Plateau', 'maiduguri': 'Borno',
+                                          'enugu': 'Enugu', 'abeokuta': 'Ogun', 'akure': 'Ondo'
+                                        };
                                         
                                         for (const part of addressParts) {
-                                          // Skip country names
                                           if (part.toLowerCase().includes('nigeria')) continue;
                                           
-                                          // Check for unique/well-known cities first
-                                          for (const uniqueCity of uniqueCities) {
-                                            if (part.toLowerCase().includes(uniqueCity.toLowerCase())) {
-                                              // Find which state this city belongs to
-                                              for (const state of allStates) {
-                                                const stateCities = getCitiesForState(state);
-                                                if (stateCities.some(city => city.toLowerCase() === uniqueCity.toLowerCase())) {
-                                                  extractedCity = uniqueCity;
-                                                  extractedState = state;
-                                                  break;
-                                                }
-                                              }
-                                              if (extractedState) break;
+                                          const partLower = part.toLowerCase();
+                                          for (const [cityName, stateName] of Object.entries(distinctiveCities)) {
+                                            if (partLower.includes(cityName)) {
+                                              extractedCity = cityName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                                              extractedState = stateName;
+                                              break;
                                             }
                                           }
                                           if (extractedState) break;
