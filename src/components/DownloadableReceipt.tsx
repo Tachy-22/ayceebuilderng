@@ -181,8 +181,8 @@ const ReceiptDocument = ({ orderData }: { orderData: any }) => {
   // Calculate tax (7.5% of subtotal)
   const tax = subtotal * 0.075;
 
-  // Ensure transport fare is a number
-  const transportFare = orderData.transportFare || 0;
+  // Ensure transport fare is a number and capped at 7000
+  const transportFare = Math.min(orderData.transportFare || 0, 7000);
 
   return (
     <Document>
@@ -386,9 +386,9 @@ const DownloadableReceipt = ({ orderData, buttonProps }: DownloadableReceiptProp
       style={{ textDecoration: "none" }}
     >
       {({ blob, url, loading, error }) => (
-        <Button 
-          variant={buttonProps?.variant || "outline"} 
-          className={buttonProps?.className || "w-full"} 
+        <Button
+          variant={buttonProps?.variant || "outline"}
+          className={buttonProps?.className || "w-full"}
           disabled={loading}
         >
           {buttonProps?.children || (
