@@ -86,7 +86,7 @@ const Cart = () => {
       if (cartItem) {
         const oldQuantity = cartItem.quantity;
         const action = newQuantity > oldQuantity ? 'increase' : 'decrease';
-        
+
         // Track quantity change event
         analytics.trackQuantityChange(
           cartItem.product.id,
@@ -95,7 +95,7 @@ const Cart = () => {
           newQuantity
         );
       }
-      
+
       await updateQuantity(itemId, newQuantity);
     } catch (error) {
       console.error('Error updating quantity:', error);
@@ -107,10 +107,10 @@ const Cart = () => {
       // Find the cart item to track removal
       const cartItem = cartItems.find(item => item.id === itemId);
       if (cartItem) {
-        const price = (cartItem.variant && cartItem.variant.variant_price) 
-          ? cartItem.variant.variant_price 
+        const price = (cartItem.variant && cartItem.variant.variant_price)
+          ? cartItem.variant.variant_price
           : (cartItem.product.discountPrice || cartItem.product.price);
-        
+
         // Track remove from cart event
         analytics.trackRemoveFromCart(
           cartItem.product.id,
@@ -120,7 +120,7 @@ const Cart = () => {
           cartItem.quantity
         );
       }
-      
+
       await removeFromCart(itemId);
     } catch (error) {
       console.error('Error removing from cart:', error);
@@ -193,7 +193,7 @@ const Cart = () => {
   );
   // Add state to track if we're showing the address selection UI
   const [showAddressSelection, setShowAddressSelection] = useState(false);
-  
+
   // State for estimated billing agreement
   const [agreedToEstimatedBilling, setAgreedToEstimatedBilling] = useState(false);
   const [showEstimatedBillingForm, setShowEstimatedBillingForm] = useState(false);
@@ -405,16 +405,16 @@ const Cart = () => {
       } else {
         console.error('Missing coordinates:', { productCoords, userCoords });
         console.log('Geocoding failed, trying fallback distance calculation');
-        
+
         // Try fallback distance calculation using Nigerian states
         const fallbackDistance = calculateFallbackDistance(productLocation, selectedUser.address);
-        
+
         if (fallbackDistance) {
           console.log('Fallback distance calculated:', fallbackDistance);
           const roundedFallbackDistance = Math.round(fallbackDistance);
           setCalculatedDistance(roundedFallbackDistance);
           setDeliveryDistance(roundedFallbackDistance);
-          
+
           toast({
             title: "Distance estimated",
             description: `Using approximate distance: ${roundedFallbackDistance} km (based on state/city location).`,
@@ -428,7 +428,7 @@ const Cart = () => {
       }
     } catch (error) {
       console.error("Error calculating distance:", error);
-      
+
       // Try fallback even in error case
       try {
         if (selectedUser?.address) {
@@ -438,7 +438,7 @@ const Cart = () => {
             const roundedFallbackDistance = Math.round(fallbackDistance);
             setCalculatedDistance(roundedFallbackDistance);
             setDeliveryDistance(roundedFallbackDistance);
-            
+
             toast({
               title: "Distance estimated",
               description: `Using approximate distance: ${roundedFallbackDistance} km (Google Maps unavailable).`,
@@ -460,7 +460,7 @@ const Cart = () => {
           description:
             "Could not calculate the delivery distance. Using default estimate.",
         });
-        
+
         setCalculatedDistance(null);
         setDeliveryDistance(10); // Keep legacy deliveryDistance for backward compatibility
       }
@@ -521,7 +521,7 @@ const Cart = () => {
     const serviceFee = subtotalDeliveryCost * ((settings?.taxRate || 7.5) / 100);
 
     // Total delivery cost
-    const totalCost = subtotalDeliveryCost + serviceFee;
+    const totalCost = Math.min(subtotalDeliveryCost + serviceFee, 7000);
     console.log('Delivery cost calculated:', {
       baseFare,
       timeCost,
@@ -584,7 +584,7 @@ const Cart = () => {
       weightRate,
       subtotalDeliveryCost,
       serviceFee,
-      total: subtotalDeliveryCost + serviceFee,
+      total: Math.min(subtotalDeliveryCost + serviceFee, 7000),
     };
   };
 
@@ -603,7 +603,7 @@ const Cart = () => {
   // Calculate cart totals
   const subtotal = cartItems.reduce((sum, item) => {
     // Use variant price if available, otherwise use product price
-    let price =  item.product.price;
+    let price = item.product.price;
     if (item.variant && typeof item.variant.variant_price === 'number') {
       price = item.variant.variant_price;
     }
@@ -627,10 +627,10 @@ const Cart = () => {
       const discount = subtotal * 0.1; // 10% discount
       setDiscountAmount(discount);
       setPromoApplied(true);
-      
+
       // Track promo code application
       analytics.trackPromoCodeApply(promoCode.toUpperCase(), true, discount);
-      
+
       toast({
         title: "Promo code applied",
         description: "10% discount has been applied to your order",
@@ -638,10 +638,10 @@ const Cart = () => {
     } else {
       setPromoApplied(false);
       setDiscountAmount(0);
-      
+
       // Track failed promo code attempt
       analytics.trackPromoCodeApply(promoCode, false);
-      
+
       toast({
         variant: "destructive",
         title: "Invalid promo code",
@@ -653,15 +653,15 @@ const Cart = () => {
   const handlePaystackSuccess = async (reference: any) => {
     try {
       setIsProcessingPayment(true);
-      
+
       // Track begin checkout event when payment starts
       analytics.trackBeginCheckout(total, cartItems.length);
-      
+
       if (selectedAddress && user && userProfile) {
         const itemsForReceipt = cartItems.map((item) => ({
           productName: item.product.name,
-          unitPrice: (item.variant && typeof item.variant.variant_price === 'number') 
-            ? item.variant.variant_price 
+          unitPrice: (item.variant && typeof item.variant.variant_price === 'number')
+            ? item.variant.variant_price
             : (item.product.discountPrice || item.product.price),
           quantity: item.quantity,
           color: item.color,
@@ -673,8 +673,8 @@ const Cart = () => {
           productId: item.product.id,
           name: item.product.name,
           quantity: item.quantity,
-          price: (item.variant && typeof item.variant.variant_price === 'number') 
-            ? item.variant.variant_price 
+          price: (item.variant && typeof item.variant.variant_price === 'number')
+            ? item.variant.variant_price
             : (item.product.discountPrice || item.product.price),
           image: item.product.image,
           category: item.product.category,
@@ -702,7 +702,7 @@ const Cart = () => {
           console.log('📦 Selected address:', shippingAddress);
           console.log('🛍️ Order items:', orderItems);
           console.log('💰 Total amount:', total);
-          
+
           // Calculate estimated delivery date (3 weeks from now)
           const estimatedDeliveryDate = new Date();
           estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 21); // 3 weeks = 21 days
@@ -758,14 +758,14 @@ const Cart = () => {
         console.log({ res })
         if (res.ok) {
           console.log('Payment verification successful:', { res });
-          
+
           // Track successful purchase
           analytics.trackPurchaseCompleted(
             reference.reference,
             total,
             orderItems
           );
-          
+
           setOrderReference(reference.reference);
           setConfirmedItems(itemsForReceipt);
           setConfirmedTotal(total);
@@ -867,7 +867,7 @@ const Cart = () => {
     try {
       setIsCalculatingDistance(true);
       console.log('Starting distance calculation for:', addressStr);
-      
+
       // Use geocoding first, then calculate distance
       const originCoords = await geocodeAddress(productLocation);
       const destCoords = await geocodeAddress(addressStr);
@@ -885,11 +885,11 @@ const Cart = () => {
         console.log('Geocoding failed, trying fallback distance calculation');
         // Try fallback distance calculation using Nigerian states
         const fallbackDistance = calculateFallbackDistance(productLocation, addressStr);
-        
+
         if (fallbackDistance) {
           console.log('Fallback distance calculated:', fallbackDistance);
           setCalculatedDistance(fallbackDistance);
-          
+
           toast({
             title: "Distance estimated",
             description: `Using approximate distance: ${Math.round(fallbackDistance)} km (based on state/city location).`,
@@ -902,14 +902,14 @@ const Cart = () => {
       }
     } catch (error) {
       console.error('Error calculating distance:', error);
-      
+
       // Try fallback even in error case
       try {
         const fallbackDistance = calculateFallbackDistance(productLocation, addressStr);
         if (fallbackDistance) {
           console.log('Fallback distance calculated after error:', fallbackDistance);
           setCalculatedDistance(fallbackDistance);
-          
+
           toast({
             title: "Distance estimated",
             description: `Using approximate distance: ${Math.round(fallbackDistance)} km (Google Maps unavailable).`,
@@ -948,7 +948,7 @@ const Cart = () => {
       });
       return;
     }
-    
+
     // Check if we have city and state (should be extracted from GooglePlaces)
     // if (!quickAddressForm.city.trim() || !quickAddressForm.state.trim()) {
     //   toast({
@@ -972,7 +972,7 @@ const Cart = () => {
     // Validate state-city combination (skip if address is from Google Places)
     if (!quickAddressForm.isFromGooglePlaces && !validateStateCity(quickAddressForm.state, quickAddressForm.city)) {
       toast({
-        variant: "destructive", 
+        variant: "destructive",
         title: "Invalid location",
         description: `${quickAddressForm.city} is not a valid city in ${quickAddressForm.state} state.`,
       });
@@ -983,7 +983,7 @@ const Cart = () => {
     if (!quickAddressForm.isFromGooglePlaces && quickAddressForm.street.trim().length < 10) {
       toast({
         variant: "destructive",
-        title: "Invalid street address", 
+        title: "Invalid street address",
         description: "Please enter a complete street address (minimum 10 characters).",
       });
       return;
@@ -994,7 +994,7 @@ const Cart = () => {
       const existingAddresses = userProfile.addresses || [];
       const addressCount = existingAddresses.length + 1;
       const autoGeneratedName = `Address ${addressCount}`;
-      
+
       const newAddress = {
         id: Date.now().toString(),
         type: 'other' as const,
@@ -1068,25 +1068,25 @@ const Cart = () => {
     setAgreedToEstimatedBilling(true);
     setShowEstimatedBillingForm(true);
     setShowQuickAddressForm(false); // Close the quick address form
-    
+
     // Pre-fill the estimated billing form with the address user was typing
     if (prefilledAddress) {
       setEstimatedBillingForm(prev => ({
         ...prev,
         address: prefilledAddress
       }));
-      
+
       // Try to calculate distance with the prefilled address if we have coordinates
       if (productLocation) {
         calculateAddressDistance(prefilledAddress);
       }
     }
-    
+
     // If no prefilled address or distance calculation fails, keep null to use default shipping
     if (!prefilledAddress) {
       setCalculatedDistance(null);
     }
-    
+
     toast({
       title: "Using estimated delivery cost",
       description: "Complete address details for better estimates.",
@@ -1098,9 +1098,9 @@ const Cart = () => {
     if (!user || !userProfile) return;
 
     // Validate form
-    if (!estimatedBillingForm.address.trim() || !estimatedBillingForm.city.trim() || 
-        !estimatedBillingForm.state.trim() || !estimatedBillingForm.postalCode.trim() ||
-        !estimatedBillingForm.phone.trim()) {
+    if (!estimatedBillingForm.address.trim() || !estimatedBillingForm.city.trim() ||
+      !estimatedBillingForm.state.trim() || !estimatedBillingForm.postalCode.trim() ||
+      !estimatedBillingForm.phone.trim()) {
       toast({
         variant: "destructive",
         title: "Incomplete address",
@@ -1124,7 +1124,7 @@ const Cart = () => {
       const existingAddresses = userProfile.addresses || [];
       const addressCount = existingAddresses.length + 1;
       const autoGeneratedName = `Address ${addressCount}`;
-      
+
       const newAddress = {
         id: Date.now().toString(),
         type: 'other' as const,
@@ -1145,7 +1145,7 @@ const Cart = () => {
 
       setSelectedAddress(newAddress);
       setShowEstimatedBillingForm(false);
-      
+
       // Calculate distance with the new address
       if (newAddress.street && productLocation) {
         calculateAddressDistance(`${newAddress.street}, ${newAddress.city}, ${newAddress.state}, Nigeria`);
@@ -1366,8 +1366,8 @@ const Cart = () => {
                               //   productPrice: item.product.price,
                               //   productDiscountPrice: item.product.discountPrice
                               // });
-                              
-                                                              const displayPrice = item.product.price * 1.2;
+
+                              const displayPrice = item.product.price * 1.2;
 
                               if (item.variant && typeof item.variant.variant_price === 'number') {
                                 return (
@@ -1622,18 +1622,18 @@ const Cart = () => {
                                           });
                                           return;
                                         }
-                                        
+
                                         // Extract city and state from the address string
                                         const addressParts = addressStr.split(',').map(part => part.trim());
                                         let extractedCity = '';
                                         let extractedState = '';
-                                        
+
                                         // Smart city/state detection using multiple strategies
                                         const allStates = getAllStateNames();
-                                        
+
                                         // Strategy 1: Look for distinctive major cities that rarely conflict
                                         const distinctiveCities = {
-                                          'ikeja': 'Lagos', 'victoria island': 'Lagos', 'lagos island': 'Lagos', 
+                                          'ikeja': 'Lagos', 'victoria island': 'Lagos', 'lagos island': 'Lagos',
                                           'lekki': 'Lagos', 'ikoyi': 'Lagos', 'yaba': 'Lagos',
                                           'abuja': 'Federal Capital Territory', 'garki': 'Federal Capital Territory',
                                           'wuse': 'Federal Capital Territory', 'maitama': 'Federal Capital Territory',
@@ -1641,10 +1641,10 @@ const Cart = () => {
                                           'kaduna': 'Kaduna', 'jos': 'Plateau', 'maiduguri': 'Borno',
                                           'enugu': 'Enugu', 'abeokuta': 'Ogun', 'akure': 'Ondo'
                                         };
-                                        
+
                                         for (const part of addressParts) {
                                           if (part.toLowerCase().includes('nigeria')) continue;
-                                          
+
                                           const partLower = part.toLowerCase();
                                           for (const [cityName, stateName] of Object.entries(distinctiveCities)) {
                                             if (partLower.includes(cityName)) {
@@ -1655,13 +1655,13 @@ const Cart = () => {
                                           }
                                           if (extractedState) break;
                                         }
-                                        
+
                                         // If no city found, try state matching (but avoid Niger from Nigeria)
                                         if (!extractedState) {
                                           for (const part of addressParts) {
                                             if (part.toLowerCase().includes('nigeria')) continue;
-                                            
-                                            const matchingState = allStates.find(state => 
+
+                                            const matchingState = allStates.find(state =>
                                               part.toLowerCase() === state.toLowerCase() || // Exact match preferred
                                               (part.toLowerCase().includes(state.toLowerCase()) && !part.toLowerCase().includes('nigeria'))
                                             );
@@ -1671,7 +1671,7 @@ const Cart = () => {
                                             }
                                           }
                                         }
-                                        
+
                                         // If we found a state but no city yet, try to find a city in that state
                                         if (extractedState && !extractedCity) {
                                           const stateCities = getCitiesForState(extractedState);
@@ -1679,10 +1679,10 @@ const Cart = () => {
                                             const matchingCity = stateCities.find(city => {
                                               const partLower = part.toLowerCase();
                                               const cityLower = city.toLowerCase();
-                                              
+
                                               // Exact match
                                               if (partLower === cityLower) return true;
-                                              
+
                                               // Word boundary match - city name as whole word
                                               const wordBoundaryRegex = new RegExp(`\\b${cityLower}\\b`, 'i');
                                               return wordBoundaryRegex.test(partLower);
@@ -1694,8 +1694,8 @@ const Cart = () => {
                                           }
                                         }
 
-                                        setQuickAddressForm(prev => ({ 
-                                          ...prev, 
+                                        setQuickAddressForm(prev => ({
+                                          ...prev,
                                           street: addressStr,
                                           city: extractedCity,
                                           state: extractedState,
@@ -1812,7 +1812,7 @@ const Cart = () => {
                             onChange={(e) => setEstimatedBillingForm(prev => ({ ...prev, address: e.target.value }))}
                             className="text-sm"
                           />
-                          
+
                           <div className="grid grid-cols-2 gap-2">
                             <Input
                               placeholder="Postal code"
@@ -1838,7 +1838,7 @@ const Cart = () => {
                               </Select>
                             </div>
                           </div>
-                          
+
                           <div>
                             <Select
                               value={estimatedBillingForm.city}
@@ -2015,8 +2015,8 @@ const Cart = () => {
                               <span className="text-muted-foreground">Weight</span>
                               <span>{deliveryWeight} kg</span>
                             </div>
-                          
-                            
+
+
                           </div>
                         )}
                       </div>
@@ -2105,7 +2105,7 @@ const Cart = () => {
                         </div>
                       </div>
                     ) : (
-                      <div 
+                      <div
                         onClick={() => {
                           if (selectedAddress && calculatedDistance !== null) {
                             analytics.trackProceedToCheckout(
