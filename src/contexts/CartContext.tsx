@@ -99,19 +99,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const handleUserLogin = async () => {
       if (user) {
-        console.log('🔄 User logged in, checking for guest cart to merge...');
+       // console.log('🔄 User logged in, checking for guest cart to merge...');
         
         // Get guest cart from localStorage immediately
         const guestCartJson = localStorage.getItem("guestCart");
-        console.log('📦 Guest cart in localStorage:', guestCartJson);
+       // console.log('📦 Guest cart in localStorage:', guestCartJson);
         
         if (guestCartJson) {
           try {
             const guestCartItems = JSON.parse(guestCartJson);
-            console.log('🛒 Parsed guest cart items:', guestCartItems.length, 'items');
+           // console.log('🛒 Parsed guest cart items:', guestCartItems.length, 'items');
             
             if (guestCartItems.length > 0) {
-              console.log('✅ Starting cart merge process...');
+             // console.log('✅ Starting cart merge process...');
               setLoading(true);
               
               // Add a small delay to ensure Firebase subscription is ready
@@ -120,13 +120,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
               await mergeGuestCartWithUserCart(user.uid, guestCartItems);
               localStorage.removeItem("guestCart");
               
-              console.log('✅ Cart merge completed successfully');
+             // console.log('✅ Cart merge completed successfully');
               toast({
                 title: "Cart merged",
                 description: "Your guest cart has been merged with your account.",
               });
             } else {
-              console.log('ℹ️ Guest cart is empty, no merge needed');
+             // console.log('ℹ️ Guest cart is empty, no merge needed');
             }
           } catch (error) {
             console.error("❌ Error merging guest cart:", error);
@@ -134,7 +134,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
             setLoading(false);
           }
         } else {
-          console.log('ℹ️ No guest cart found in localStorage');
+         // console.log('ℹ️ No guest cart found in localStorage');
         }
       }
     };
@@ -212,7 +212,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
               variant: productVariant,
             };
             
-            console.log('Adding to cart (guest):', newCartItem);
+           // console.log('Adding to cart (guest):', newCartItem);
             
             return [
               ...prevItems,

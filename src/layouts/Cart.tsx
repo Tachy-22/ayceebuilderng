@@ -67,15 +67,15 @@ const Cart = () => {
   const { settings } = useSettings();
 
   // Debug logging
-  console.log('Cart items:', cartItems);
+  //console.log('Cart items:', cartItems);
   cartItems.forEach((item, index) => {
-    console.log(`Item ${index}:`, {
-      name: item.product.name,
-      variant: item.variant,
-      price: item.product.price,
-      discountPrice: item.product.discountPrice,
-      variantPrice: item.variant?.variant_price
-    });
+    //console.log(`Item ${index}:`, {
+    //   name: item.product.name,
+    //   variant: item.variant,
+    //   price: item.product.price,
+    //   discountPrice: item.product.discountPrice,
+    //   variantPrice: item.variant?.variant_price
+    // });
   });
 
   // Wrapper functions to handle async cart operations
@@ -320,7 +320,7 @@ const Cart = () => {
 
   // Handle Google Places selection
   const handlePlaceSelect = (place: PlaceCoordinates) => {
-    console.log('Place selected:', place);
+    //console.log('Place selected:', place);
     setAddressInput(place.address);
     setNewUserDetails({
       ...newUserDetails,
@@ -343,11 +343,11 @@ const Cart = () => {
 
   // Calculate the actual distance between product location and delivery address
   const calculateActualDistance = async () => {
-    console.log('calculateActualDistance called', {
-      selectedUser: selectedUser?.address,
-      productLocation,
-      selectedPlaceCoordinates
-    });
+    //console.log('calculateActualDistance called', {
+    //   selectedUser: selectedUser?.address,
+    //   productLocation,
+    //   selectedPlaceCoordinates
+    // });
 
     if (!selectedUser?.address) {
       toast({
@@ -364,19 +364,19 @@ const Cart = () => {
       // Use selected place coordinates if available, otherwise geocode the address
       let userCoords: PlaceCoordinates | null = selectedPlaceCoordinates;
 
-      console.log('User coordinates:', userCoords);
+      //console.log('User coordinates:', userCoords);
 
       if (!userCoords) {
-        console.log('No coordinates available, geocoding address:', selectedUser.address);
+        //console.log('No coordinates available, geocoding address:', selectedUser.address);
         // Fallback to geocoding if no coordinates available
         userCoords = await geocodeAddress(selectedUser.address);
-        console.log('Geocoded user coordinates:', userCoords);
+        //console.log('Geocoded user coordinates:', userCoords);
       }
 
       // Geocode the product location
-      console.log('Geocoding product location:', productLocation);
+      //console.log('Geocoding product location:', productLocation);
       const productCoords = await geocodeAddress(productLocation);
-      console.log('Product coordinates:', productCoords);
+      //console.log('Product coordinates:', productCoords);
 
       if (productCoords && userCoords) {
         // Calculate distance using Google Places coordinates
@@ -387,7 +387,7 @@ const Cart = () => {
           userCoords.lng
         );
 
-        console.log('Calculated distance:', distance);
+        //console.log('Calculated distance:', distance);
 
         // Round to nearest integer
         const roundedDistance = Math.round(distance);
@@ -396,7 +396,7 @@ const Cart = () => {
         // Update delivery distance for cost calculation
         setDeliveryDistance(roundedDistance);
 
-        console.log('Distance calculation complete:', roundedDistance);
+        //console.log('Distance calculation complete:', roundedDistance);
 
         toast({
           title: "Distance calculated",
@@ -404,13 +404,13 @@ const Cart = () => {
         });
       } else {
         console.error('Missing coordinates:', { productCoords, userCoords });
-        console.log('Geocoding failed, trying fallback distance calculation');
+        //console.log('Geocoding failed, trying fallback distance calculation');
 
         // Try fallback distance calculation using Nigerian states
         const fallbackDistance = calculateFallbackDistance(productLocation, selectedUser.address);
 
         if (fallbackDistance) {
-          console.log('Fallback distance calculated:', fallbackDistance);
+          //console.log('Fallback distance calculated:', fallbackDistance);
           const roundedFallbackDistance = Math.round(fallbackDistance);
           setCalculatedDistance(roundedFallbackDistance);
           setDeliveryDistance(roundedFallbackDistance);
@@ -421,7 +421,7 @@ const Cart = () => {
             duration: 5000,
           });
         } else {
-          console.log('Both geocoding and fallback failed, using default shipping');
+          //console.log('Both geocoding and fallback failed, using default shipping');
           setCalculatedDistance(null);
           setDeliveryDistance(10); // Keep legacy deliveryDistance for backward compatibility
         }
@@ -434,7 +434,7 @@ const Cart = () => {
         if (selectedUser?.address) {
           const fallbackDistance = calculateFallbackDistance(productLocation, selectedUser.address);
           if (fallbackDistance) {
-            console.log('Fallback distance calculated after error:', fallbackDistance);
+            //console.log('Fallback distance calculated after error:', fallbackDistance);
             const roundedFallbackDistance = Math.round(fallbackDistance);
             setCalculatedDistance(roundedFallbackDistance);
             setDeliveryDistance(roundedFallbackDistance);
@@ -471,14 +471,14 @@ const Cart = () => {
 
   // Calculate delivery cost based on the new pricing structure with fixed values
   const calculateDeliveryCost = () => {
-    console.log('calculateDeliveryCost called', {
-      selectedAddress: !!selectedAddress,
-      calculatedDistance,
-      deliveryWeight
-    });
+    //console.log('calculateDeliveryCost called', {
+    //   selectedAddress: !!selectedAddress,
+    //   calculatedDistance,
+    //   deliveryWeight
+    // });
 
     if (!selectedAddress || calculatedDistance === null) {
-      console.log('Delivery cost calculation skipped - using default shipping fee from settings');
+      //console.log('Delivery cost calculation skipped - using default shipping fee from settings');
       return settings?.shippingFee || 0; // Use default shipping fee from settings
     }
 
@@ -522,18 +522,18 @@ const Cart = () => {
 
     // Total delivery cost
     const totalCost = Math.min(subtotalDeliveryCost + serviceFee, 7000);
-    console.log('Delivery cost calculated:', {
-      baseFare,
-      timeCost,
-      distanceCost,
-      surgeCost,
-      tollsCost,
-      waitTimeCost,
-      weightCost,
-      subtotalDeliveryCost,
-      serviceFee,
-      totalCost
-    });
+    //console.log('Delivery cost calculated:', {
+    //   baseFare,
+    //   timeCost,
+    //   distanceCost,
+    //   surgeCost,
+    //   tollsCost,
+    //   waitTimeCost,
+    //   weightCost,
+    //   subtotalDeliveryCost,
+    //   serviceFee,
+    //   totalCost
+    // });
     return totalCost;
   };
 
@@ -594,7 +594,7 @@ const Cart = () => {
       (sum, item) => sum + item.quantity * (item.product.weight || 0),
       0
     );
-    console.log({ cartItems })
+    //console.log({ cartItems })
     // Use the calculated weight if it's greater than 0, otherwise use default 500kg
     setDeliveryWeight(calculatedWeight);
 
@@ -613,14 +613,14 @@ const Cart = () => {
   const deliveryCost = calculateDeliveryCost();
   const total = subtotal + deliveryCost - discountAmount;
 
-  console.log('Cart totals:', {
-    subtotal,
-    deliveryCost,
-    discountAmount,
-    total,
-    calculatedDistance,
-    selectedAddress: !!selectedAddress
-  });
+  //console.log('Cart totals:', {
+  //   subtotal,
+  //   deliveryCost,
+  //   discountAmount,
+  //   total,
+  //   calculatedDistance,
+  //   selectedAddress: !!selectedAddress
+  // });
 
   const applyPromoCode = () => {
     if (promoCode.toUpperCase() === "WELCOME10") {
@@ -698,10 +698,10 @@ const Cart = () => {
 
         // Create order in Firestore
         try {
-          console.log('🛒 Starting order creation for user:', user.uid);
-          console.log('📦 Selected address:', shippingAddress);
-          console.log('🛍️ Order items:', orderItems);
-          console.log('💰 Total amount:', total);
+          //console.log('🛒 Starting order creation for user:', user.uid);
+          //console.log('📦 Selected address:', shippingAddress);
+          //console.log('🛍️ Order items:', orderItems);
+          //console.log('💰 Total amount:', total);
 
           // Calculate estimated delivery date (3 weeks from now)
           const estimatedDeliveryDate = new Date();
@@ -718,11 +718,11 @@ const Cart = () => {
             notes: `Payment Reference: ${reference.reference}`,
           };
 
-          console.log('📋 Order data prepared:', JSON.stringify(orderData, null, 2));
+          //console.log('📋 Order data prepared:', JSON.stringify(orderData, null, 2));
 
           const order = await createOrder(orderData);
 
-          console.log('✅ Order created successfully:', order);
+          //console.log('✅ Order created successfully:', order);
         } catch (firestoreError) {
           console.error('❌ Error creating order in Firestore:', firestoreError);
           if (firestoreError instanceof Error) {
@@ -755,9 +755,9 @@ const Cart = () => {
             weight: deliveryWeight,
           }),
         });
-        console.log({ res })
+        //console.log({ res })
         if (res.ok) {
-          console.log('Payment verification successful:', { res });
+          //console.log('Payment verification successful:', { res });
 
           // Track successful purchase
           analytics.trackPurchaseCompleted(
@@ -850,14 +850,14 @@ const Cart = () => {
   // Effect to auto-calculate distance when a user is selected or coordinates change (legacy system)
   useEffect(() => {
     if (selectedUser && selectedUser.address && productLocation) {
-      console.log('Auto-calculating distance due to useEffect (legacy)');
+      //console.log('Auto-calculating distance due to useEffect (legacy)');
       calculateActualDistance();
     }
   }, [selectedUser, productLocation, selectedPlaceCoordinates]);
 
   // New address management functions
   const handleAddressSelect = (address: any) => {
-    console.log('Address selected:', address);
+    //console.log('Address selected:', address);
     setSelectedAddress(address);
     setCalculatedDistance(null);
     // Note: Distance calculation will be triggered by useEffect
@@ -866,7 +866,7 @@ const Cart = () => {
   const calculateAddressDistance = useCallback(async (addressStr: string) => {
     try {
       setIsCalculatingDistance(true);
-      console.log('Starting distance calculation for:', addressStr);
+      //console.log('Starting distance calculation for:', addressStr);
 
       // Use geocoding first, then calculate distance
       const originCoords = await geocodeAddress(productLocation);
@@ -879,15 +879,15 @@ const Cart = () => {
           destCoords.lat,
           destCoords.lng
         );
-        console.log('Google Maps distance calculated:', distance);
+        //console.log('Google Maps distance calculated:', distance);
         setCalculatedDistance(distance);
       } else {
-        console.log('Geocoding failed, trying fallback distance calculation');
+        //console.log('Geocoding failed, trying fallback distance calculation');
         // Try fallback distance calculation using Nigerian states
         const fallbackDistance = calculateFallbackDistance(productLocation, addressStr);
 
         if (fallbackDistance) {
-          console.log('Fallback distance calculated:', fallbackDistance);
+          //console.log('Fallback distance calculated:', fallbackDistance);
           setCalculatedDistance(fallbackDistance);
 
           toast({
@@ -896,7 +896,7 @@ const Cart = () => {
             duration: 5000,
           });
         } else {
-          console.log('Both geocoding and fallback failed, using default shipping');
+          //console.log('Both geocoding and fallback failed, using default shipping');
           setCalculatedDistance(null); // Use default shipping when all methods fail
         }
       }
@@ -907,7 +907,7 @@ const Cart = () => {
       try {
         const fallbackDistance = calculateFallbackDistance(productLocation, addressStr);
         if (fallbackDistance) {
-          console.log('Fallback distance calculated after error:', fallbackDistance);
+          //console.log('Fallback distance calculated after error:', fallbackDistance);
           setCalculatedDistance(fallbackDistance);
 
           toast({
@@ -930,7 +930,7 @@ const Cart = () => {
   // Effect to auto-calculate distance when address is selected (new system)
   useEffect(() => {
     if (selectedAddress && selectedAddress.street && productLocation) {
-      console.log('Auto-calculating distance for selected address:', selectedAddress);
+      //console.log('Auto-calculating distance for selected address:', selectedAddress);
       const fullAddress = `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}, Nigeria`;
       calculateAddressDistance(fullAddress);
     }
@@ -1040,7 +1040,7 @@ const Cart = () => {
   useEffect(() => {
     if (userProfile && userProfile.addresses && userProfile.addresses.length > 0 && !selectedAddress) {
       const defaultAddress = userProfile.addresses.find(addr => addr.isDefault) || userProfile.addresses[0];
-      console.log('Auto-selecting default address:', defaultAddress);
+      //console.log('Auto-selecting default address:', defaultAddress);
       handleAddressSelect(defaultAddress);
     }
   }, [userProfile]);
@@ -1358,7 +1358,7 @@ const Cart = () => {
                           <div className="col-span-2 text-center">
                             {/* Use variant price if available, otherwise use product price */}
                             {(() => {
-                              // console.log('Cart item for price display:', {
+                              // //console.log('Cart item for price display:', {
                               //   productName: item.product.name,
                               //   hasVariant: !!item.variant,
                               //   variantName: item.variant?.variant_name,
@@ -1443,7 +1443,7 @@ const Cart = () => {
                                 if (item.variant && item.variant.variant_price) {
                                   unitPrice = item.variant.variant_price;
                                 }
-                                console.log('Line total calculation:', { itemName: item.product.name, unitPrice, quantity: item.quantity, total: unitPrice * item.quantity });
+                                //console.log('Line total calculation:', { itemName: item.product.name, unitPrice, quantity: item.quantity, total: unitPrice * item.quantity });
                                 return (unitPrice * item.quantity).toLocaleString();
                               })()}
                             </div>

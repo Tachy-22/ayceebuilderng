@@ -303,7 +303,7 @@ export default function AdminOrdersPage() {
     );
   }
 
-  console.log({ orders })
+//  console.log({ orders })
 
   return (
     <div className="space-y-6">

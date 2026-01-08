@@ -212,7 +212,7 @@ const ProductsPage = ({
   // Map fetched products to the Product format
   useEffect(() => {
     const mapped = mapNewProductsToProducts(fetchedProducts);
-    console.log({ mapped });
+   // console.log({ mapped });
     setMappedProducts(mapped);
     setFilteredProducts(mapped);
     setIsLoaded(true);

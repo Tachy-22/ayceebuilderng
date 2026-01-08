@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
   const sheet = searchParams.get("sheet") || "tiles"; // Default to tiles for testing
   
   try {
-    console.log(`Testing sheet: ${sheet}`);
-    console.log(`URL: ${GOOGLE_SCRIPT_URL}?page=1&limit=5&sheet=${sheet}`);
+   // console.log(`Testing sheet: ${sheet}`);
+   // console.log(`URL: ${GOOGLE_SCRIPT_URL}?page=1&limit=5&sheet=${sheet}`);
     
     const response = await fetch(`${GOOGLE_SCRIPT_URL}?page=1&limit=5&sheet=${sheet}`, {
       method: "GET",
@@ -18,12 +18,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log(`Response status: ${response.status}`);
-    console.log(`Response headers:`, Object.fromEntries(response.headers.entries()));
+   // console.log(`Response status: ${response.status}`);
+   // console.log(`Response headers:`, Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.log(`Error response:`, errorText);
+     // console.log(`Error response:`, errorText);
       return NextResponse.json({
         success: false,
         error: `HTTP ${response.status}: ${errorText}`,
@@ -33,9 +33,9 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    console.log(`Response data type:`, typeof data);
-    console.log(`Response data length:`, Array.isArray(data) ? data.length : 'Not an array');
-    console.log(`Sample data (first 2 items):`, Array.isArray(data) ? data.slice(0, 2) : data);
+   // console.log(`Response data type:`, typeof data);
+   // console.log(`Response data length:`, Array.isArray(data) ? data.length : 'Not an array');
+   // console.log(`Sample data (first 2 items):`, Array.isArray(data) ? data.slice(0, 2) : data);
 
     return NextResponse.json({
       success: true,

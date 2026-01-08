@@ -19,7 +19,7 @@ export async function GET(
       );
     }
 
-    console.log(`Fetching product with ID: ${productId}`);
+   // console.log(`Fetching product with ID: ${productId}`);
 
     // Get the product document
     const productResult = await getDocument<Product>('products', productId);
@@ -53,7 +53,7 @@ export async function GET(
         .slice(0, 4); // Get only 4 related products
     }
 
-    console.log(`Found product: ${productData.name} with ${relatedProducts.length} related products`);
+   // console.log(`Found product: ${productData.name} with ${relatedProducts.length} related products`);
 
     return NextResponse.json({
       success: true,
@@ -96,7 +96,7 @@ export async function PUT(
     // For now, we'll just return the product data
     // In a full implementation, you'd update the document in Firebase
 
-    console.log(`Update request for product: ${productId}`, updates);
+   // console.log(`Update request for product: ${productId}`, updates);
 
     return NextResponse.json({
       success: true,

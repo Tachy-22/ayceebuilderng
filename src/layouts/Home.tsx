@@ -121,16 +121,16 @@ const Home = () => {
 
         // If no featured products found, get some regular products as fallback
         if (data.success && (!data.data || data.data.length === 0)) {
-          console.log('No featured products found, fetching recent products as fallback');
+         // console.log('No featured products found, fetching recent products as fallback');
           response = await fetch('/api/products?limit=6&sortBy=createdAt&sortDirection=desc');
           data = await response.json();
         }
 
         if (data.success && data.data && data.data.length > 0) {
           setFeaturedProducts(data.data);
-          console.log('Fetched products for slideshow:', data.data.length);
+         // console.log('Fetched products for slideshow:', data.data.length);
         } else {
-          console.log('No products found for slideshow');
+         // console.log('No products found for slideshow');
         }
       } catch (error) {
         console.error('Error fetching featured products:', error);

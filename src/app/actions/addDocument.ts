@@ -14,7 +14,7 @@ export async function addDocument<T extends Record<string, unknown>>(
   path: string
 ): Promise<{ id: string; success: true } | FirebaseError> {
   try {
-    console.log({ collectionName, data, path });
+    //console.log({ collectionName, data, path });
 
     if (!collectionName || !data) {
       throw new Error("Missing required parameters");

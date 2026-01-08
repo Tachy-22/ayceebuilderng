@@ -537,7 +537,7 @@ export const extractStateFromAddress = (address: string): string | null => {
     // Use regex with word boundaries to prevent partial matches
     const regex = new RegExp('\\b' + stateLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
     if (regex.test(addressLower)) {
-      console.log('State extracted via direct match:', { address, state, regex: regex.toString() });
+     // console.log('State extracted via direct match:', { address, state, regex: regex.toString() });
       return state;
     }
   }
@@ -571,7 +571,7 @@ export const extractStateFromAddress = (address: string): string | null => {
   for (const [alias, stateName] of Object.entries(stateAliases)) {
     const regex = new RegExp('\\b' + alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
     if (regex.test(addressLower)) {
-      console.log('State extracted via alias match:', { address, alias, stateName, regex: regex.toString() });
+     // console.log('State extracted via alias match:', { address, alias, stateName, regex: regex.toString() });
       return stateName;
     }
   }
@@ -584,13 +584,13 @@ export const extractStateFromAddress = (address: string): string | null => {
       // Use word boundaries for city matching too to avoid partial matches
       const regex = new RegExp('\\b' + cityLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
       if (regex.test(addressLower)) {
-        console.log('State extracted via city match:', { address, city, state: state.name, regex: regex.toString() });
+       // console.log('State extracted via city match:', { address, city, state: state.name, regex: regex.toString() });
         return state.name;
       }
     }
   }
   
-  console.log('No state could be extracted from address:', { address });
+ // console.log('No state could be extracted from address:', { address });
   return null;
 };
 
@@ -600,14 +600,14 @@ export const calculateFallbackDistance = (fromAddress: string, toAddress: string
   const fromState = extractStateFromAddress(fromAddress);
   const toState = extractStateFromAddress(toAddress);
   
-  console.log('Fallback distance calculation:', { 
-    fromAddress, 
-    toAddress, 
-    fromState, 
-    toState,
-    fromLagosDistance: fromState ? stateDistancesFromLagos[fromState] : null,
-    toLagosDistance: toState ? stateDistancesFromLagos[toState] : null
-  });
+ // console.log('Fallback distance calculation:', { 
+  //   fromAddress, 
+  //   toAddress, 
+  //   fromState, 
+  //   toState,
+  //   fromLagosDistance: fromState ? stateDistancesFromLagos[fromState] : null,
+  //   toLagosDistance: toState ? stateDistancesFromLagos[toState] : null
+  // });
   
   // If we can't determine states, return null
   if (!fromState && !toState) {
@@ -662,13 +662,13 @@ export const calculateFallbackDistance = (fromAddress: string, toAddress: string
   // If one address is in Lagos (our product location), use direct distance
   if (fromState === 'Lagos' && toState) {
     const distance = stateDistancesFromLagos[toState] || null;
-    console.log('Direct Lagos to state distance:', { toState, distance });
+   // console.log('Direct Lagos to state distance:', { toState, distance });
     return distance;
   }
   
   if (toState === 'Lagos' && fromState) {
     const distance = stateDistancesFromLagos[fromState] || null;
-    console.log('Direct state to Lagos distance:', { fromState, distance });
+   // console.log('Direct state to Lagos distance:', { fromState, distance });
     return distance;
   }
   
@@ -682,11 +682,11 @@ export const calculateFallbackDistance = (fromAddress: string, toAddress: string
     if (fromLagosDistance && toLagosDistance) {
       // Simple triangulation approximation (not perfectly accurate but reasonable)
       const triangulated = Math.abs(fromLagosDistance - toLagosDistance) * 0.8 + Math.min(fromLagosDistance, toLagosDistance) * 0.3;
-      console.log('Triangulation calculation:', { fromState, toState, fromLagosDistance, toLagosDistance, triangulated });
+     // console.log('Triangulation calculation:', { fromState, toState, fromLagosDistance, toLagosDistance, triangulated });
       return triangulated;
     }
   }
   
-  console.log('No distance calculation method matched, returning null');
+ // console.log('No distance calculation method matched, returning null');
   return null;
 };

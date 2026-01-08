@@ -134,7 +134,7 @@ export default function ClientMigration() {
         }
       }
 
-      console.log(`Starting client-side migration for category: ${categoryId}`);
+     // //console.log(`Starting client-side migration for category: ${categoryId}`);
 
       // Fetch all products from Google Sheets for this category
       let allProducts: ProductNew[] = [];
@@ -144,7 +144,7 @@ export default function ClientMigration() {
 
       while (hasMorePages) {
         const sheetUrl = `${GOOGLE_SCRIPT_URL}?page=${currentPage}&limit=${pageLimit}&sheet=${categoryId}`;
-        console.log(`Fetching ${categoryId} page ${currentPage}`);
+        //console.log(`Fetching ${categoryId} page ${currentPage}`);
 
         const sheetResponse = await fetch(sheetUrl);
         if (!sheetResponse.ok) {
@@ -177,7 +177,7 @@ export default function ClientMigration() {
       }
 
       migrationResult.totalProducts = allProducts.length;
-      console.log(`Found ${allProducts.length} products for ${categoryId}, starting Firebase migration...`);
+      //console.log(`Found ${allProducts.length} products for ${categoryId}, starting Firebase migration...`);
 
       // If force migration, delete existing products for this category
       if (force) {
@@ -186,7 +186,7 @@ export default function ClientMigration() {
         const existingProducts = await getDocs(categoryQuery);
 
         if (!existingProducts.empty) {
-          console.log(`Deleting ${existingProducts.size} existing products for ${categoryId}`);
+          //console.log(`Deleting ${existingProducts.size} existing products for ${categoryId}`);
           const deleteBatch = writeBatch(db);
           existingProducts.docs.forEach(docRef => {
             deleteBatch.delete(docRef.ref);
@@ -249,7 +249,7 @@ export default function ClientMigration() {
         // Commit the batch
         if (currentBatch.length > 0) {
           await batch.commit();
-          console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${categoryId}`);
+          //console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${categoryId}`);
         }
       }
 

@@ -74,7 +74,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
 
   const handleUploadComplete = (files: FileMetadata[]) => {
     const urls = files.map((file) => file.url);
-    console.log("Uploaded files:", files);
+   // console.log("Uploaded files:", files);
 
     setProductData((prev) => ({
       ...prev,

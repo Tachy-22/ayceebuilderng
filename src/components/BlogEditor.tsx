@@ -58,8 +58,8 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
     // Get Cloudinary URLs from uploaded files
     const urls = files.map((file) => file.url);
 
-    console.log("Uploaded files:", files);
-    console.log("Image URLs:", urls);
+   // console.log("Uploaded files:", files);
+   // console.log("Image URLs:", urls);
 
     // Update the blog data with the new image URLs
     setBlogData((prev) => ({
@@ -86,11 +86,11 @@ const BlogEditor: React.FC<BlogEditorProps> = ({
       });
     }
 
-    console.log("Images uploaded successfully:", urls);
-    console.log(
-      "Current thumbnail URL:",
-      thumbnailUrl || urls[0] || "None set"
-    );
+   // console.log("Images uploaded successfully:", urls);
+   // console.log(
+    //   "Current thumbnail URL:",
+    //   thumbnailUrl || urls[0] || "None set"
+    // );
   };
 
   useEffect(() => {

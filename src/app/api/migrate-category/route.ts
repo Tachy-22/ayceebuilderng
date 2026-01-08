@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       pages: [] as any[]
     };
 
-    console.log(`Starting migration for category: ${category}`);
+  //  console.log(`Starting migration for category: ${category}`);
     
     try {
       // Fetch all products from Google Sheets for this category
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       
       while (hasMorePages) {
         const sheetUrl = `${GOOGLE_SCRIPT_URL}?page=${currentPage}&limit=${pageLimit}&sheet=${category}`;
-        console.log(`Fetching ${category} page ${currentPage}: ${sheetUrl}`);
+      //  console.log(`Fetching ${category} page ${currentPage}: ${sheetUrl}`);
         
         const sheetResponse = await fetch(sheetUrl, {
           method: "GET",
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         };
         
         migrationResult.pages.push(pageInfo);
-        console.log(`${category} page ${currentPage} response:`, pageInfo);
+      //  console.log(`${category} page ${currentPage} response:`, pageInfo);
 
         // Check if the response has the expected structure
         if (!pageData.data || !Array.isArray(pageData.data)) {
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
       }
 
       migrationResult.totalProducts = allProducts.length;
-      console.log(`Found ${allProducts.length} products for ${category}, starting migration...`);
+    //  console.log(`Found ${allProducts.length} products for ${category}, starting migration...`);
 
       // If force migration, delete existing products for this category
       if (force) {
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
         });
         
         if (!isFirebaseError(existingResult) && existingResult.data.length > 0) {
-          console.log(`Deleting ${existingResult.data.length} existing products for ${category}`);
+        //  console.log(`Deleting ${existingResult.data.length} existing products for ${category}`);
           const deleteOperations = existingResult.data.map(product => ({
             type: 'delete' as const,
             collection: 'products',
@@ -202,12 +202,12 @@ export async function POST(request: NextRequest) {
           if (isFirebaseError(batchResult)) {
             migrationResult.errors.push(`Batch ${batchIndex + 1} failed: ${batchResult.error}`);
           } else {
-            console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${category} (${currentBatch.length} products)`);
+          //  console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${category} (${currentBatch.length} products)`);
           }
         }
       }
 
-      console.log(`Completed migration for ${category}: ${migrationResult.migratedProducts} products`);
+    //  console.log(`Completed migration for ${category}: ${migrationResult.migratedProducts} products`);
       
     } catch (categoryError) {
       const error = `Error migrating category ${category}: ${categoryError instanceof Error ? categoryError.message : 'Unknown error'}`;

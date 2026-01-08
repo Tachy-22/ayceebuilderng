@@ -49,8 +49,8 @@ const cleanObjectForFirestore = (obj: unknown): unknown => {
 // Order Management Functions
 export const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate' | 'updatedAt'>) => {
   try {
-    console.log('🚀 Starting order creation process...');
-    console.log('📦 Order data received:', JSON.stringify(orderData, null, 2));
+    //console.log('🚀 Starting order creation process...');
+    //console.log('📦 Order data received:', JSON.stringify(orderData, null, 2));
     
     // Check if db is initialized
     if (!db) {
@@ -58,10 +58,10 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate' | 'u
       throw new Error('Firestore database not initialized');
     }
     
-    console.log('✅ Firestore database is initialized');
+    //console.log('✅ Firestore database is initialized');
     
     const orderNumber = generateOrderNumber();
-    console.log('🔢 Generated order number:', orderNumber);
+    //console.log('🔢 Generated order number:', orderNumber);
     
     const order: Omit<Order, 'id'> = {
       ...orderData,
@@ -70,7 +70,7 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate' | 'u
       updatedAt: new Date(),
     };
 
-    console.log('📝 Prepared order object:', JSON.stringify(order, null, 2));
+    //console.log('📝 Prepared order object:', JSON.stringify(order, null, 2));
 
     // Clean the order data to remove undefined values
     const orderForFirestore = {
@@ -81,13 +81,13 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'orderDate' | 'u
     };
 
     const cleanedOrder = cleanObjectForFirestore(orderForFirestore);
-    console.log('🧹 Cleaned order object:', JSON.stringify(cleanedOrder, null, 2));
+    //console.log('🧹 Cleaned order object:', JSON.stringify(cleanedOrder, null, 2));
 
     const docRef = await addDoc(collection(db, 'orders'), cleanedOrder);
 
-    console.log('✅ Order successfully created with ID:', docRef.id);
+    //console.log('✅ Order successfully created with ID:', docRef.id);
     const result = { id: docRef.id, ...order };
-    console.log('🎉 Returning order result:', JSON.stringify(result, null, 2));
+    //console.log('🎉 Returning order result:', JSON.stringify(result, null, 2));
     
     return result;
   } catch (error) {

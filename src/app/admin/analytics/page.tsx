@@ -57,7 +57,7 @@ export default function AdminAnalyticsPage() {
       const daysBack = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
       const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
 
-      console.log('Fetching analytics data for range:', { timeRange, startDate, now });
+     // console.log('Fetching analytics data for range:', { timeRange, startDate, now });
 
       let orders: Order[] = [];
       let allOrders: Order[] = [];
@@ -82,12 +82,12 @@ export default function AdminAnalyticsPage() {
           };
         }) as Order[];
 
-        console.log('Fetched all orders:', allOrders.length);
+       // console.log('Fetched all orders:', allOrders.length);
 
         // Filter orders by date range in memory (more reliable than Firestore query)
         orders = allOrders.filter(order => toJSDate(order.orderDate) >= startDate);
 
-        console.log('Filtered orders for time range:', orders.length);
+       // console.log('Filtered orders for time range:', orders.length);
       } catch (ordersError) {
         console.error('Error fetching orders:', ordersError);
         // Continue with empty arrays
@@ -102,7 +102,7 @@ export default function AdminAnalyticsPage() {
         const usersRef = collection(db, 'users');
         const usersSnapshot = await getDocs(usersRef);
         totalUsers = usersSnapshot.size;
-        console.log('Fetched users:', totalUsers);
+       // console.log('Fetched users:', totalUsers);
       } catch (usersError) {
         console.error('Error fetching users:', usersError);
         // Continue with 0 users
@@ -180,17 +180,17 @@ export default function AdminAnalyticsPage() {
         date: toJSDate(order.orderDate),
       }));
 
-      console.log('Analytics data calculated:', {
-        totalRevenue,
-        totalOrders,
-        totalUsers,
-        averageOrderValue,
-        revenueGrowth,
-        ordersGrowth,
-        topCategoriesCount: topCategories.length,
-        monthlyDataCount: monthlyData.length,
-        recentActivityCount: recentActivity.length
-      });
+     // console.log('Analytics data calculated:', {
+      //   totalRevenue,
+      //   totalOrders,
+      //   totalUsers,
+      //   averageOrderValue,
+      //   revenueGrowth,
+      //   ordersGrowth,
+      //   topCategoriesCount: topCategories.length,
+      //   monthlyDataCount: monthlyData.length,
+      //   recentActivityCount: recentActivity.length
+      // });
 
       setAnalyticsData({
         totalRevenue,

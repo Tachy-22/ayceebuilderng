@@ -94,7 +94,7 @@ const page = async ({ searchParams }: PageProps) => {
   if (inStock) queryParams.append('inStock', inStock);
 
   const url = `${baseUrl}${apiPath}?${queryParams.toString()}`;
-  console.log('Fetching products from Firebase:', url);
+//console.log  ('Fetching products from Firebase:', url);
 
   try {
     const res = await fetch(url, { 
@@ -128,7 +128,7 @@ const page = async ({ searchParams }: PageProps) => {
       );
     }
 
-    console.log(`Loaded ${response.data.length} products from Firebase`);
+    //console.log(`Loaded ${response.data.length} products from Firebase`);
 
     return (
       <ProductsProvider products={response.data || []}>

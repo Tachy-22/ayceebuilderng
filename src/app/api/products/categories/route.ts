@@ -4,7 +4,7 @@ import { Product } from '@/data/products';
 
 export async function GET() {
   try {
-    console.log('Fetching product categories from Firebase...');
+    //console.log('Fetching product categories from Firebase...');
 
     // Get all products with category ordering
     const productsResult = await getCollection<Product>('products', {
@@ -25,13 +25,13 @@ export async function GET() {
       
       // Debug: log category info for first few products
       if (categoryMap.size < 5) {
-        console.log('Product category debug:', {
-          id: product.id,
-          name: product.name,
-          category: product.category,
-          Category: (product as any).Category,
-          sheetName: (product as any).sheetName
-        });
+        // console.log('Product category debug:', {
+        //   id: product.id,
+        //   name: product.name,
+        //   category: product.category,
+        //   Category: (product as any).Category,
+        //   sheetName: (product as any).sheetName
+        // });
       }
       
       if (category) {
@@ -62,8 +62,8 @@ export async function GET() {
       ...data
     })).sort((a, b) => b.count - a.count);
 
-    console.log(`Found ${categories.length} categories`);
-    console.log('All categories found:', categories.map(c => ({ id: c.id, name: c.name, count: c.count })));
+   // console.log(`Found ${categories.length} categories`);
+    //console.log('All categories found:', categories.map(c => ({ id: c.id, name: c.name, count: c.count })));
 
     return NextResponse.json({
       success: true,

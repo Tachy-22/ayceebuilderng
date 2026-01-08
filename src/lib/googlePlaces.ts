@@ -36,7 +36,7 @@ const validateAddressQuality = (result: any, originalAddress: string): boolean =
   
   // Reject if location type is too imprecise
   if (!acceptableLocationTypes.includes(locationType)) {
-    console.log('Address rejected: poor location accuracy -', locationType);
+   //console.log ('Address rejected: poor location accuracy -', locationType);
     return false;
   }
   
@@ -55,7 +55,7 @@ const validateAddressQuality = (result: any, originalAddress: string): boolean =
   );
   
   if (!hasLocality && !hasAdministrativeArea) {
-    console.log('Address rejected: insufficient location components');
+    //console.log('Address rejected: insufficient location components');
     return false;
   }
   
@@ -72,7 +72,7 @@ const validateAddressQuality = (result: any, originalAddress: string): boolean =
   ];
   
   if (suspiciousPatterns.some(pattern => pattern.test(originalLower))) {
-    console.log('Address rejected: matches suspicious pattern -', originalAddress);
+    //console.log('Address rejected: matches suspicious pattern -', originalAddress);
     return false;
   }
   
@@ -83,7 +83,7 @@ const validateAddressQuality = (result: any, originalAddress: string): boolean =
                      );
   
   if (!isInNigeria) {
-    console.log('Address rejected: not in Nigeria');
+    //console.log('Address rejected: not in Nigeria');
     return false;
   }
   
@@ -101,7 +101,7 @@ export const geocodeAddress = async (address: string): Promise<PlaceCoordinates 
 
   // Basic validation before even calling the API
   if (!address || address.trim().length < 3) {
-    console.log('Address rejected: too short');
+    //console.log('Address rejected: too short');
     return null;
   }
 
@@ -131,9 +131,9 @@ export const geocodeAddress = async (address: string): Promise<PlaceCoordinates 
         placeId: result.place_id,
       };
     } else if (data.status === 'ZERO_RESULTS') {
-      console.log('Address rejected: no results found for -', address);
+      //console.log('Address rejected: no results found for -', address);
     } else {
-      console.log('Geocoding failed with status:', data.status);
+      //console.log('Geocoding failed with status:', data.status);
     }
 
     return null;

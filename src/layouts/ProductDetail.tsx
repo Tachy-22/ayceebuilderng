@@ -147,12 +147,12 @@ interface ProductDetailProps {
 }
 
 const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
-  console.log({ rawProduct });
+  //console.log({ rawProduct });
   const fetchedMappedProduct = mapNewProductsToProducts([
     rawProduct as ProductNew,
   ])[0];
 
-  console.log({ rawProduct, fetchedMappedProduct });
+  //console.log({ rawProduct, fetchedMappedProduct });
 
   const { id } = useParams();
   const { product: storedProduct } = useAppSelector(
@@ -248,12 +248,12 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
     };
 
     // Debug logging
-    console.log('Adding to cart:', {
-      product: productToAdd.name,
-      selectedVariant,
-      quantity,
-      variantPrice: selectedVariant?.variant_price
-    });
+    //console.log('Adding to cart:', {
+    //   product: productToAdd.name,
+    //   selectedVariant,
+    //   quantity,
+    //   variantPrice: selectedVariant?.variant_price
+    // });
 
     // Add product to cart with variant
     addToCart(productToAdd, quantity, selectedVariant);
@@ -481,8 +481,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
               )}{" "}
               <div className="space-y-4">
                 {/* Color Palette for Paint Products */}{" "}
-                {product.category.toLowerCase() === "paint" &&
-                  product.colors && (
+                {product.category.toLowerCase() === "paint" && (
                     <div className="mt-8 border-t pt-6">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-medium">

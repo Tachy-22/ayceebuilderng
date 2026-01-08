@@ -59,7 +59,7 @@ const VendorsPage = async () => {
     }
     const response = await res.json();
 
-    console.log({ vendorsData })
+    //console.log({ vendorsData })
     vendorsData = response.success ? response.data : [];
   } catch (error) {
     console.error("Error fetching vendors data:", error);

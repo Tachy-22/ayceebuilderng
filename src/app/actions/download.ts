@@ -57,7 +57,7 @@ export const handleDownload = async (audioUrl?: string) => {
     const response = await fetch(audioUrl);
     const blob = await response.blob();
     const blobUrl = window.URL.createObjectURL(blob);
-    console.log({ audioUrl });
+   // console.log({ audioUrl });
     const link = document.createElement("a");
     link.style.display = "none";
     link.href = blobUrl;
@@ -72,7 +72,7 @@ export const handleDownload = async (audioUrl?: string) => {
       window.URL.revokeObjectURL(blobUrl);
     }, 100);
   } catch (error) {
-    console.log({ audioUrl });
+   // console.log({ audioUrl });
 
     console.error("Failed to download file", error);
   }

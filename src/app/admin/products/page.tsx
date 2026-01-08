@@ -113,7 +113,7 @@ export default function AdminProductsPage() {
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
-    console.log({ filtered })
+   // console.log({ filtered })
     setFilteredProducts(filtered);
   }, [products, searchTerm, categoryFilter, statusFilter]);
 

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Migrate products for each category
     for (const category of categories) {
       const categoryId = category.id;
-      console.log(`Migrating category: ${categoryId}`);
+      //console.log(`Migrating category: ${categoryId}`);
       
       migrationResults.categories[categoryId] = { count: 0, errors: [] };
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         
         while (hasMorePages) {
           const sheetUrl = `${GOOGLE_SCRIPT_URL}?page=${currentPage}&limit=${pageLimit}&sheet=${categoryId}`;
-          console.log(`Fetching ${categoryId} page ${currentPage}: ${sheetUrl}`);
+          //console.log(`Fetching ${categoryId} page ${currentPage}: ${sheetUrl}`);
           
           const sheetResponse = await fetch(sheetUrl, {
             method: "GET",
@@ -70,12 +70,12 @@ export async function POST(request: NextRequest) {
           }
 
           const pageData = await sheetResponse.json();
-          console.log(`${categoryId} page ${currentPage} response:`, {
-            hasData: pageData.data && Array.isArray(pageData.data),
-            dataLength: pageData.data ? pageData.data.length : 0,
-            totalPages: pageData.totalPages,
-            currentPage: pageData.page
-          });
+          //console.log(`${categoryId} page ${currentPage} response:`, {
+          //   hasData: pageData.data && Array.isArray(pageData.data),
+          //   dataLength: pageData.data ? pageData.data.length : 0,
+          //   totalPages: pageData.totalPages,
+          //   currentPage: pageData.page
+          // });
 
           // Check if the response has the expected structure
           if (!pageData.data || !Array.isArray(pageData.data)) {
@@ -175,13 +175,13 @@ export async function POST(request: NextRequest) {
             if (isFirebaseError(batchResult)) {
               migrationResults.errors.push(`Batch ${batchIndex + 1} for ${categoryId} failed: ${batchResult.error}`);
             } else {
-              console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${categoryId}`);
+              //console.log(`Committed batch ${batchIndex + 1}/${productBatches.length} for ${categoryId}`);
             }
           }
         }
 
         migrationResults.migratedCategories++;
-        console.log(`Completed migration for ${categoryId}: ${migrationResults.categories[categoryId].count} products`);
+        //console.log(`Completed migration for ${categoryId}: ${migrationResults.categories[categoryId].count} products`);
         
       } catch (categoryError) {
         const error = `Error migrating category ${categoryId}: ${categoryError instanceof Error ? categoryError.message : 'Unknown error'}`;

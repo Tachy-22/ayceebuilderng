@@ -29,13 +29,13 @@
         let autocompleteService;
 
         function initMap() {
-            console.log('Initializing Google Places...');
+           // console.log('Initializing Google Places...');
             
             if (window.google && window.google.maps && window.google.maps.places) {
                 autocompleteService = new google.maps.places.AutocompleteService();
                 
                 document.getElementById('results').innerHTML = '<div class="result success">Google Places API loaded successfully!</div>';
-                console.log('Google Places initialized successfully');
+             //   console.log('Google Places initialized successfully');
             } else {
                 document.getElementById('results').innerHTML = '<div class="result error">Failed to load Google Places API</div>';
                 console.error('Google Places API not available');
@@ -92,14 +92,14 @@
             let allResults = [];
 
             requests.forEach((request, index) => {
-                console.log(`Testing ${request.name}:`, request.config);
+             //   console.log(`Testing ${request.name}:`, request.config);
                 
                 autocompleteService.getPlacePredictions(
                     request.config,
                     (predictions, status) => {
                         completedRequests++;
                         
-                        console.log(`${request.name} result:`, { predictions, status, count: predictions?.length });
+                       // console.log(`${request.name} result:`, { predictions, status, count: predictions?.length });
                         
                         allResults.push({
                             name: request.name,

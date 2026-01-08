@@ -34,7 +34,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
   const fetchedMappedProduct = mapNewProductsToProducts([
     rawProduct as ProductNew,
   ])[0];
-  console.log({ rawProduct, fetchedMappedProduct });
+  ////console.log({ rawProduct, fetchedMappedProduct });
 
   const { id } = useParams();
   const { product: storedProduct } = useAppSelector(
@@ -43,10 +43,10 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
   const product = storedProduct ? storedProduct : fetchedMappedProduct;
 
   // Log the product to help with debugging color data
-  console.log("Product with colors:", {
-    productColors: product.colors,
-    specs: product.specifications,
-  });
+  ////console.log("Product with colors:", {
+  //   productColors: product.colors,
+  //   specs: product.specifications,
+  // });
 
   const [quantity, setQuantity] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -150,10 +150,10 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
   };
 
   const getProductColors = (): string[] => {
-    console.log("Getting product colors from:", {
-      productColors: product.colors,
-      specifications: product.specifications,
-    });
+    //console.log("Getting product colors from:", {
+    //   productColors: product.colors,
+    //   specifications: product.specifications,
+    // });
 
     // First, check if we have colors from the product model directly
     if (
@@ -161,7 +161,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
       Array.isArray(product.colors) &&
       product.colors.length > 0
     ) {
-      console.log("Using colors directly from product.colors");
+      //console.log("Using colors directly from product.colors");
       return product.colors;
     }
 
@@ -169,7 +169,7 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
     if (product.specifications) {
       for (const key of Object.keys(product.specifications)) {
         if (key.toLowerCase() === "colors" || key.toLowerCase() === "color") {
-          console.log(`Using colors from specifications.${key}`);
+          //console.log(`Using colors from specifications.${key}`);
           const colorsValue = product.specifications[key];
           return colorsValue.split(",").map((color) => color.trim());
         }
@@ -178,11 +178,11 @@ const ProductDetail = ({ mappedProducts, rawProduct }: ProductDetailProps) => {
 
     // Only return common colors for paint products
     if (product.category.toLowerCase() === "paint") {
-      console.log("Using default color for paint product");
+      //console.log("Using default color for paint product");
       return ["White"];
     }
 
-    console.log("No colors found for product");
+    //console.log("No colors found for product");
     return [];
   };
 

@@ -194,11 +194,11 @@ export async function deleteComment(
 
     const commentData = commentResult.data as any;
 
-    console.log("Server received request to delete comment:");
-    console.log("Comment ID:", commentId);
-    console.log("Provided visitorId:", visitorId);
-    console.log("Comment visitorId:", commentData.visitorId);
-    console.log("Comment userId:", commentData.userId);
+   // console.log("Server received request to delete comment:");
+   // console.log("Comment ID:", commentId);
+   // console.log("Provided visitorId:", visitorId);
+   // console.log("Comment visitorId:", commentData.visitorId);
+   // console.log("Comment userId:", commentData.userId);
 
     // Server-side check - compare both userId and visitorId
     const isAuthor =

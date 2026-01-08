@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const tradesmenData = tradesmenResult.data;
-    console.log({ tradesmenData })
+  //  console.log({ tradesmenData })
     
     // Filter approved tradesmen and sort by featured/rating
     const approvedTradesmen = tradesmenData

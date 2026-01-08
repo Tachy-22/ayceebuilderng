@@ -82,8 +82,8 @@ const CommentForm: React.FC<CommentFormProps> = ({
     setIsSubmitting(true);
     try {
       const visitorId = getVisitorId(); // Get the visitor ID using the shared function
-      console.log("Submitting comment with visitorId:", visitorId);
-      console.log("Submitting comment with userIdentifier:", userIdentifier);
+      //("Submitting comment with visitorId:", visitorId);
+      //console.log("Submitting comment with userIdentifier:", userIdentifier);
 
       const result = await addComment(
         blogId,

@@ -82,7 +82,7 @@ export function FileInput({
   className,
   initialFiles = [],
 }: FileInputProps) {
-  console.log({ maxSize });
+ // console.log({ maxSize });
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<FileWithProgress[]>(() =>
     initialFiles.map((url) => {
@@ -164,7 +164,7 @@ export function FileInput({
 
   const handleFiles = async (newFiles: FileList) => {
     // Debug: Logging incoming files for debugging
-    console.log("Debug: Starting upload process for files:", newFiles);
+   // console.log("Debug: Starting upload process for files:", newFiles);
     const filesToUpload = Array.from(newFiles).map((file) => ({
       file,
       progress: 0,
@@ -183,12 +183,12 @@ export function FileInput({
       }
       try {
         // Debug: Attempting file upload to Cloudinary
-        console.log(
-          "Debug: Attempting upload for file:",
-          fileData.file.name,
-          "Size:",
-          formatFileSize(fileData.file.size)
-        );
+       // console.log(
+        //   "Debug: Attempting upload for file:",
+        //   fileData.file.name,
+        //   "Size:",
+        //   formatFileSize(fileData.file.size)
+        // );
         // Initialize progress at 0
         let currentProgress = 0;
 
@@ -224,10 +224,10 @@ export function FileInput({
         // API endpoint for Cloudinary upload - note we're using 'auto' for automatic resource type detection
         const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
 
-        console.log(
-          "Debug: Starting upload with preset 'yq52t7yn' to:",
-          uploadUrl
-        );
+       // console.log(
+        //   "Debug: Starting upload with preset 'yq52t7yn' to:",
+        //   uploadUrl
+        // );
 
         const res = await fetch(uploadUrl, {
           method: "POST",
@@ -254,7 +254,7 @@ export function FileInput({
         }
 
         const data = await res.json();
-        console.log("Debug: Upload successful, response:", data);
+       // console.log("Debug: Upload successful, response:", data);
         clearInterval(progressInterval);
 
         // Set to 100% when complete

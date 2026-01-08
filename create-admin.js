@@ -24,17 +24,17 @@ async function createOrUpdateAdminUser() {
     
     try {
       // Try to create new user
-      console.log('Trying to create new admin user...');
+      //console.log('Trying to create new admin user...');
       const result = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
       user = result.user;
-      console.log('New admin user created with UID:', user.uid);
+      //console.log('New admin user created with UID:', user.uid);
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
         // User already exists, sign them in to get the UID
-        console.log('User already exists, signing in to get UID...');
+        //console.log('User already exists, signing in to get UID...');
         const result = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
         user = result.user;
-        console.log('Existing user signed in with UID:', user.uid);
+        //console.log('Existing user signed in with UID:', user.uid);
       } else {
         throw error;
       }
@@ -45,22 +45,22 @@ async function createOrUpdateAdminUser() {
     const userDoc = await getDoc(userDocRef);
     
     if (userDoc.exists()) {
-      console.log('User document already exists. Checking role...');
+      //console.log('User document already exists. Checking role...');
       const userData = userDoc.data();
       if (userData.role === 'admin') {
-        console.log('User is already an admin!');
+        //console.log('User is already an admin!');
       } else {
-        console.log('Updating user role to admin...');
+        //console.log('Updating user role to admin...');
         await setDoc(userDocRef, { 
           ...userData, 
           role: 'admin',
           updatedAt: new Date()
         });
-        console.log('User role updated to admin!');
+        //console.log('User role updated to admin!');
       }
     } else {
       // Create new user document with admin role
-      console.log('Creating admin user document in Firestore...');
+      //console.log('Creating admin user document in Firestore...');
       const adminUserDoc = {
         uid: user.uid,
         email: adminEmail,
@@ -72,14 +72,14 @@ async function createOrUpdateAdminUser() {
       };
       
       await setDoc(userDocRef, adminUserDoc);
-      console.log('Admin user document created successfully!');
+      //console.log('Admin user document created successfully!');
     }
     
-    console.log('\n=== ADMIN USER DETAILS ===');
-    console.log('Admin UID:', user.uid);
-    console.log('Admin Email:', adminEmail);
-    console.log('Password:', adminPassword);
-    console.log('\nDELETE THIS FILE AFTER USE FOR SECURITY!');
+    //console.log('\n=== ADMIN USER DETAILS ===');
+    //console.log('Admin UID:', user.uid);
+    //console.log('Admin Email:', adminEmail);
+    //console.log('Password:', adminPassword);
+    //console.log('\nDELETE THIS FILE AFTER USE FOR SECURITY!');
     
   } catch (error) {
     console.error('Error with admin user setup:', error);

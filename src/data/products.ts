@@ -97,7 +97,7 @@ function parseSpecifications(specString: string): Record<string, string> {
   const result: Record<string, string> = {};
   try {
     // Log the raw specification string for debugging
-    console.log("Raw specifications:", specString);
+    //console.log("Raw specifications:", specString);
 
     // Split by comma, then by colon
     const specs = specString.split(",");
@@ -123,7 +123,7 @@ function parseSpecifications(specString: string): Record<string, string> {
       }
     });
 
-    console.log("Parsed specifications:", result);
+    //console.log("Parsed specifications:", result);
     return result;
   } catch (error) {
     console.error("Error parsing specifications:", error);
@@ -156,7 +156,7 @@ function parseColors(colorsString: string): string[] {
   try {
     // Remove any quotes around the string
     const cleanString = colorsString.replace(/^['"]|['"]$/g, "");
-    console.log("Parsing colors from:", cleanString);
+    //console.log("Parsing colors from:", cleanString);
 
     // Split by comma or handle as single color
     return cleanString.includes(",")
@@ -226,13 +226,13 @@ export function mapNewProductToProduct(
     }
 
     // Log raw product data for debugging
-    console.log("Raw product data:", {
-      id: product.id || "unknown",
-      title: product.Title || "No Title",
-      colors: product.colors || "none",
-      Colors: product.Colors || "none",
-      specification: product.Specification || "none",
-    }); // Parse specifications - handle both object and string formats
+    //console.log("Raw product data:", {
+    //   id: product.id || "unknown",
+    //   title: product.Title || "No Title",
+    //   colors: product.colors || "none",
+    //   Colors: product.Colors || "none",
+    //   specification: product.Specification || "none",
+    // }); // Parse specifications - handle both object and string formats
     let specifications: Record<string, string> = {};
     if (product.specifications) {
       specifications = typeof product.specifications === 'object' ? product.specifications : parseSpecifications(product.specifications);
@@ -254,26 +254,26 @@ export function mapNewProductToProduct(
     // Check for direct colors field (from colors property in product data)
     if (product.colors) {
       colors = parseColors(product.colors);
-      console.log("Colors from product.colors:", colors);
+      //console.log("Colors from product.colors:", colors);
     }
     // Check for Colors property directly in the product (independent of specs)
     else if (product.Colors) {
       colors = parseColors(product.Colors);
-      console.log("Colors from product.Colors:", colors);
+      //console.log("Colors from product.Colors:", colors);
     }
     // Check in specifications with different capitalizations
     else if (specifications.Colors) {
       colors = parseColors(specifications.Colors);
-      console.log("Colors from specifications.Colors:", colors);
+      //console.log("Colors from specifications.Colors:", colors);
     } else if (specifications.colors) {
       colors = parseColors(specifications.colors);
-      console.log("Colors from specifications.colors:", colors);
+      //console.log("Colors from specifications.colors:", colors);
     } else if (specifications.Color) {
       colors = parseColors(specifications.Color);
-      console.log("Colors from specifications.Color:", colors);
+      //console.log("Colors from specifications.Color:", colors);
     } else if (specifications.color) {
       colors = parseColors(specifications.color);
-      console.log("Colors from specifications.color:", colors);
+      //console.log("Colors from specifications.color:", colors);
     }
 
     // Look for specific "Colors" property that may not be in specifications
@@ -284,16 +284,16 @@ export function mapNewProductToProduct(
       );
       if (colorsMatch && colorsMatch[1]) {
         colors = parseColors(colorsMatch[1]);
-        console.log("Colors extracted from spec string:", colors);
+        //console.log("Colors extracted from spec string:", colors);
       }
     }
 
     // Log the extracted colors
-    console.log("Extracted colors:", {
-      productId: product.id,
-      productTitle: product.Title,
-      colors: colors,
-    });
+    //console.log("Extracted colors:", {
+    //   productId: product.id,
+    //   productTitle: product.Title,
+    //   colors: colors,
+    // });
 
     // For paint products, ensure at least one color is available
     if (product.sheetName?.toLowerCase() === "paint" && colors.length === 0) {
@@ -315,11 +315,11 @@ export function mapNewProductToProduct(
     }
 
     // Log extracted variants
-    console.log("Extracted variants:", {
-      productId: product.id,
-      productTitle: product.Title,
-      variants: variants,
-    });
+    //console.log("Extracted variants:", {
+    //   productId: product.id,
+    //   productTitle: product.Title,
+    //   variants: variants,
+    // });
 
     // Handle image arrays and different image formats
     let imageUrl = "https://placehold.co/600x400?text=No+Image";
@@ -448,19 +448,19 @@ export function mapNewProductsToProducts(products: ProductNew[]): Product[] {
   // Log the first product to see its structure
   if (products && products.length > 0 && products[0]) {
     try {
-      console.log("First product structure:", {
-        keys: Object.keys(products[0] || {}),
-        hasColors: products[0] && "Colors" in products[0],
-        hasLowerColors: products[0] && "colors" in products[0],
-        colorValue: products[0]?.Colors || "none",
-        specification: products[0]?.Specification,
-      });
+      //console.log("First product structure:", {
+      //   keys: Object.keys(products[0] || {}),
+      //   hasColors: products[0] && "Colors" in products[0],
+      //   hasLowerColors: products[0] && "colors" in products[0],
+      //   colorValue: products[0]?.Colors || "none",
+      //   specification: products[0]?.Specification,
+      // });
     } catch (error) {
-      console.log("Error logging product structure:", error);
+      //console.log("Error logging product structure:", error);
     }
   }
 
-  console.log({ seeNow: products });
+  //console.log({ seeNow: products });
 
   return products.map((product, index) => {
     try {

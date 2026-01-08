@@ -15,17 +15,17 @@ export async function GET(request: NextRequest) {
     const sortDirection = searchParams.get('sortDirection') || 'desc';
     const inStock = searchParams.get('inStock') === 'true';
 
-    console.log('Advanced products search with params:', {
-      page,
-      limit: limitParam,
-      category,
-      searchTerm,
-      minPrice,
-      maxPrice,
-      sortBy,
-      sortDirection,
-      inStock
-    });
+   // console.log('Advanced products search with params:', {
+    //   page,
+    //   limit: limitParam,
+    //   category,
+    //   searchTerm,
+    //   minPrice,
+    //   maxPrice,
+    //   sortBy,
+    //   sortDirection,
+    //   inStock
+    // });
 
     // Build filters for Firebase utilities
     const filters: QueryFilter[] = [];
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
     
     const products = productsResult.data.slice(startIndex, endIndex);
 
-    console.log(`Found ${products.length} products for page ${page}`);
+    //console.log(`Found ${products.length} products for page ${page}`);
 
     return NextResponse.json({
       success: true,

@@ -49,8 +49,8 @@ export function getVisitorId(): string {
   }
 
   // Log the IDs for debugging
-  console.log("Current visitorId:", visitorId);
-  console.log("Current ip_based_id:", localStorage.getItem("ip_based_id"));
+ // console.log("Current visitorId:", visitorId);
+ // console.log("Current ip_based_id:", localStorage.getItem("ip_based_id"));
 
   return visitorId;
 }

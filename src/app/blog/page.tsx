@@ -82,7 +82,7 @@ const BlogPage = async ({
     )
     : blogs; // Extract unique categories from all published blogs for the
 
-  console.log({ filteredBlogs, blogs });
+ // console.log({ filteredBlogs, blogs });
   const allBlogs = await fetchCollection<BlogT>("blogs", {
     filters: [{ field: "isPublished", operator: "==", value: true }],
   });

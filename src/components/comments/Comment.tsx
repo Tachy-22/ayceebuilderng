@@ -119,11 +119,11 @@ const Comment: React.FC<CommentProps> = ({
       }
 
       // Log the IDs for debugging
-      console.log("Deleting comment with following IDs:");
-      console.log("Comment visitorId:", comment.visitorId);
-      console.log("Comment userId:", comment.userId);
-      console.log("Current visitorId:", visitorId);
-      console.log("Current userIdentifier:", userIdentifier);
+     // console.log("Deleting comment with following IDs:");
+     // console.log("Comment visitorId:", comment.visitorId);
+     // console.log("Comment userId:", comment.userId);
+     // console.log("Current visitorId:", visitorId);
+     // console.log("Current userIdentifier:", userIdentifier);
 
       // Try to delete using both IDs
       const result = await deleteComment(comment.id, visitorId);

@@ -73,7 +73,7 @@ export default function ProductMigration() {
       });
       
       const data = await response.json();
-      console.log('Debug sheets result:', data);
+     // console.log('Debug sheets result:', data);
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Debug failed');

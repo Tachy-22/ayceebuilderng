@@ -110,7 +110,7 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
       setSessionToken(new window.google.maps.places.AutocompleteSessionToken());
       setIsGoogleLoaded(true);
 
-      console.log('Google Places initialized with AutocompleteService');
+     // console.log('Google Places initialized with AutocompleteService');
     }
   }, []);
 
@@ -118,8 +118,8 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
-    console.log('Google Places API Key available:', !!apiKey);
-    console.log('API Key prefix:', apiKey?.substring(0, 10) + '...');
+   // console.log('Google Places API Key available:', !!apiKey);
+   // console.log('API Key prefix:', apiKey?.substring(0, 10) + '...');
 
     if (!apiKey) {
       console.error('Google Places API key not found in environment variables');
@@ -184,12 +184,12 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
         language: 'en',
       };
 
-      console.log('Google Places primary request:', primaryRequest);
+     // console.log('Google Places primary request:', primaryRequest);
 
       autocompleteService.current.getPlacePredictions(
         primaryRequest,
         (predictions: any, status: any) => {
-          console.log('Primary response:', { predictions, status, count: predictions?.length });
+         // console.log('Primary response:', { predictions, status, count: predictions?.length });
 
           if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions && predictions.length > 0) {
             setIsLoading(false);
@@ -197,7 +197,7 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
             setShowSuggestions(true);
           } else {
             // Fallback search without type restrictions
-            console.log('Trying fallback search without type restrictions');
+           // console.log('Trying fallback search without type restrictions');
 
             const fallbackRequest = {
               input: query,
@@ -211,17 +211,17 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
               (fallbackPredictions: any, fallbackStatus: any) => {
                 setIsLoading(false);
 
-                console.log('Fallback response:', {
-                  fallbackPredictions,
-                  fallbackStatus,
-                  count: fallbackPredictions?.length
-                });
+               // console.log('Fallback response:', {
+                //   fallbackPredictions,
+                //   fallbackStatus,
+                //   count: fallbackPredictions?.length
+                // });
 
                 if (fallbackStatus === window.google.maps.places.PlacesServiceStatus.OK && fallbackPredictions) {
                   setPredictions(fallbackPredictions);
                   setShowSuggestions(true);
                 } else {
-                  console.log('Both searches failed. Status:', fallbackStatus);
+                 // console.log('Both searches failed. Status:', fallbackStatus);
                   setPredictions([]);
                   setShowSuggestions(true); // Keep suggestions open to show "No results" message
                 }

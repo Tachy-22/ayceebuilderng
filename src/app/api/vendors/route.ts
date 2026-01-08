@@ -12,8 +12,8 @@ export async function GET() {
     }
 
     const vendorsData = vendorsResult.data;
-    console.log("here")
-    console.log({ vendorsData, "ner": "here" })
+   // console.log("here")
+    //console.log({ vendorsData, "ner": "here" })
     
     //Filter approved vendors and sort by featured/rating
     const approvedVendors = vendorsData
