@@ -94,39 +94,39 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       setLoading(false);
     }
   }, [user]);
-//product.dis
+  //product.dis
   // Handle user login - merge guest cart with user cart
   useEffect(() => {
     const handleUserLogin = async () => {
       if (user) {
-       // console.log('🔄 User logged in, checking for guest cart to merge...');
-        
+        // console.log('🔄 User logged in, checking for guest cart to merge...');
+
         // Get guest cart from localStorage immediately
         const guestCartJson = localStorage.getItem("guestCart");
-       // console.log('📦 Guest cart in localStorage:', guestCartJson);
-        
+        // console.log('📦 Guest cart in localStorage:', guestCartJson);
+
         if (guestCartJson) {
           try {
             const guestCartItems = JSON.parse(guestCartJson);
-           // console.log('🛒 Parsed guest cart items:', guestCartItems.length, 'items');
-            
+            // console.log('🛒 Parsed guest cart items:', guestCartItems.length, 'items');
+
             if (guestCartItems.length > 0) {
-             // console.log('✅ Starting cart merge process...');
+              // console.log('✅ Starting cart merge process...');
               setLoading(true);
-              
+
               // Add a small delay to ensure Firebase subscription is ready
               await new Promise(resolve => setTimeout(resolve, 500));
-              
+
               await mergeGuestCartWithUserCart(user.uid, guestCartItems);
               localStorage.removeItem("guestCart");
-              
-             // console.log('✅ Cart merge completed successfully');
+
+              // console.log('✅ Cart merge completed successfully');
               toast({
                 title: "Cart merged",
                 description: "Your guest cart has been merged with your account.",
               });
             } else {
-             // console.log('ℹ️ Guest cart is empty, no merge needed');
+              // console.log('ℹ️ Guest cart is empty, no merge needed');
             }
           } catch (error) {
             console.error("❌ Error merging guest cart:", error);
@@ -134,7 +134,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
             setLoading(false);
           }
         } else {
-         // console.log('ℹ️ No guest cart found in localStorage');
+          // console.log('ℹ️ No guest cart found in localStorage');
         }
       }
     };
@@ -162,10 +162,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       if (user) {
         // User is authenticated - add to Firebase
         await addToFirebaseCart(user.uid, product, quantity, productColor, productVariant);
-        
+
         const variantText = productVariant ? ` (${productVariant.variant_name})` : "";
         const colorText = productColor ? ` (${productColor})` : "";
-        
+
         toast({
           title: "Added to cart",
           description: `${product.name}${variantText}${colorText} has been added to your cart`,
@@ -198,7 +198,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           } else {
             const variantText = productVariant ? ` (${productVariant.variant_name})` : "";
             const colorText = productColor ? ` (${productColor})` : "";
-            
+
             toast({
               title: "Added to cart",
               description: `${product.name}${variantText}${colorText} has been added to your cart`,
@@ -211,9 +211,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
               color: productColor,
               variant: productVariant,
             };
-            
-           // console.log('Adding to cart (guest):', newCartItem);
-            
+
+            // console.log('Adding to cart (guest):', newCartItem);
+
             return [
               ...prevItems,
               newCartItem,
@@ -313,7 +313,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
       // Use variant price if available, otherwise use regular product price (not discount price)
-      let price = item.product.price;
+      let price = item.product.discountPrice || item.product.price;
       if (item.variant && typeof item.variant.variant_price === 'number') {
         price = item.variant.variant_price;
       }

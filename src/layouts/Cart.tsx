@@ -603,7 +603,7 @@ const Cart = () => {
   // Calculate cart totals
   const subtotal = cartItems.reduce((sum, item) => {
     // Use variant price if available, otherwise use product price
-    let price = item.product.price;
+    let price = item.product.discountPrice || item.product.price;
     if (item.variant && typeof item.variant.variant_price === 'number') {
       price = item.variant.variant_price;
     }
@@ -1396,7 +1396,7 @@ const Cart = () => {
                               }
                             })()}
                           </div>
-
+                          {/* total */}
                           <div className="col-span-2 flex justify-center">
                             <div className="flex items-center border rounded-md">
                               <Button
