@@ -134,7 +134,7 @@ const About = () => {
             >
               <div className="rounded-lg overflow-hidden shadow-xl">
                 <Image
-                  src="https://media.istockphoto.com/id/1178452628/photo/attractive-black-businessman-being-encouraged-by-diverse-multi-ethnic-group-of-coworkers.jpg?s=612x612&w=0&k=20&c=0CseKVV2CEx7jCgdfwpFwcNbnVfPpsF32EKVsyAB-ik="
+                  src="/ayceebuilder-staff2.avif"
                   alt="Aycee Builder Team"
                   width={600}
                   height={400}
@@ -802,7 +802,7 @@ const About = () => {
           </motion.div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/20" />
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-10" />
+        <div className="absolute inset-0 bg-[url('/ayceebuilder-staff1.avif')] bg-cover bg-center opacity-10" />
       </section>
     </div>
   );

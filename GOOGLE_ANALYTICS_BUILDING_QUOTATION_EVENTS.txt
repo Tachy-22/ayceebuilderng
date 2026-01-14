@@ -1,0 +1,73 @@
+GOOGLE ANALYTICS EVENTS - BUILDING QUOTATION TOOL
+=====================================================
+
+New Event Actions Added:
+------------------------
+1. building_quotation_tool_view - When users visit the page
+2. material_calculation - When users calculate materials
+3. template_applied - When users apply project templates
+4. browse_materials_from_quotation - When users click to browse products after calculation
+5. recalculate_materials - When users recalculate estimates
+6. shop_construction_materials - When users click shop button in tips section
+
+Event Categories:
+-----------------
+- Button Interaction (All quotation tool events use this category)
+
+Custom Parameters/Dimensions:
+-----------------------------
+- project_type (house, commercial, room, renovation)
+- building_style (basic, standard, premium)
+- total_area (calculated total area in m²)
+- floor_area (calculated floor area in m²)
+- wall_area (calculated wall area in m²)
+- roof_area (calculated roof area in m²)
+- dimensions_length (building length in meters)
+- dimensions_width (building width in meters)
+- dimensions_height (building height in meters)
+- floors (number of floors)
+- rooms (number of rooms)
+- bathrooms (number of bathrooms)
+- roof_type (flat, gable, hip)
+- wall_material (standard, hollow, face, concrete)
+- floor_type (ceramic, porcelain, concrete, marble, wood)
+- tile_size (small, medium, large)
+- template_id (bungalow, duplex, shop)
+- template_title (e.g., "2-Bedroom Bungalow")
+- template_dimensions (e.g., "10m × 8m × 3m")
+- has_calculation (boolean - whether user has calculated materials)
+- previous_calculation_exists (boolean - for recalculation tracking)
+- tool_type: "quotation_calculator"
+- page_title: "Building Material Estimator"
+- section (for tracking different areas of the tool)
+
+Where to Find in Google Analytics 4:
+------------------------------------
+1. Events → Look for the event names listed above
+2. Custom Dimensions → The parameters will appear as custom dimensions
+3. Conversions → Mark important events (like material_calculation) as conversions
+4. Audience → Custom Audiences based on quotation tool usage
+
+Key Metrics to Track:
+--------------------
+- Total quotation tool page views
+- Number of material calculations performed
+- Most popular project types and building styles
+- Template usage rates
+- Conversion rate from quotation to product browsing
+- User engagement with different tool features
+- Average session duration on quotation tool
+- Bounce rate vs. calculation completion rate
+
+Business Insights Available:
+---------------------------
+- Which building projects are most in demand
+- User preferences for materials and styles
+- Effectiveness of templates in engaging users
+- Conversion funnel from quotation to product purchase
+- Seasonal trends in construction planning
+- Regional preferences (if location data is available)
+
+Implementation Date: January 14, 2026
+File Location: /Users/admin/Desktop/ayceebuilderng/src/layouts/BuildingQuotation.tsx
+Analytics Library: /Users/admin/Desktop/ayceebuilderng/src/lib/analytics.ts

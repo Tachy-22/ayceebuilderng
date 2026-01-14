@@ -36,6 +36,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import { toast } from "@/hooks/use-toast";
+import { analytics } from "@/lib/analytics";
 import Link from "next/link";
 
 // Define project types with their descriptions
@@ -271,6 +272,16 @@ const BuildingQuotation = () => {
 
   useEffect(() => {
     setIsLoaded(true);
+    
+    // Track page view for building quotation tool
+    analytics.trackButtonClick(
+      "building_quotation_tool_view",
+      "Building Quotation Page",
+      {
+        page_title: "Building Material Estimator",
+        tool_type: "quotation_calculator"
+      }
+    );
   }, []);
 
   // Calculate building materials based on dimensions and selections
@@ -633,6 +644,30 @@ const BuildingQuotation = () => {
 
     setCalculatedResults(results);
 
+    // Track material calculation event
+    analytics.trackButtonClick(
+      "material_calculation",
+      "Building Quotation Tool",
+      {
+        project_type: projectType,
+        building_style: buildingStyle,
+        total_area: results.areas.totalArea,
+        floor_area: results.areas.floorArea,
+        wall_area: results.areas.wallArea,
+        roof_area: results.areas.roofArea,
+        dimensions_length: dimensions.length,
+        dimensions_width: dimensions.width,
+        dimensions_height: dimensions.height,
+        floors: dimensions.floors,
+        rooms: dimensions.rooms,
+        bathrooms: dimensions.bathrooms,
+        roof_type: roofType,
+        wall_material: wallMaterial,
+        floor_type: floorType,
+        tile_size: tileSize
+      }
+    );
+
     toast({
       title: "Material Estimation Complete",
       description: "Your building materials estimation has been calculated.",
@@ -664,6 +699,19 @@ const BuildingQuotation = () => {
     // Scroll to top of the page to show the form with the applied template
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
+    // Track template application
+    analytics.trackButtonClick(
+      "template_applied",
+      "Building Quotation Tool",
+      {
+        template_id: templateId,
+        template_title: template.title,
+        project_type: template.config.projectType,
+        building_style: template.config.buildingStyle,
+        template_dimensions: template.dimensions
+      }
+    );
+
     // Calculate materials after a short delay to ensure state has updated
     setTimeout(() => {
       calculateMaterials();
@@ -1081,13 +1129,42 @@ const BuildingQuotation = () => {
 
                         <div className="pt-4">
                           <div className="flex flex-col md:flex-row gap-4">
-                            <Button onClick={calculateMaterials} variant="outline" className="flex-1">
+                            <Button 
+                              onClick={() => {
+                                analytics.trackButtonClick(
+                                  "recalculate_materials",
+                                  "Building Quotation Tool",
+                                  {
+                                    previous_calculation_exists: !!calculatedResults,
+                                    project_type: projectType,
+                                    building_style: buildingStyle
+                                  }
+                                );
+                                calculateMaterials();
+                              }} 
+                              variant="outline" 
+                              className="flex-1"
+                            >
                               <Calculator size={16} className="mr-2" />
                               Recalculate
                             </Button>
                             
                             <Link href="/products" className="flex-1">
-                              <Button className="w-full">
+                              <Button 
+                                className="w-full"
+                                onClick={() => {
+                                  analytics.trackButtonClick(
+                                    "browse_materials_from_quotation",
+                                    "Building Quotation Tool",
+                                    {
+                                      has_calculation: !!calculatedResults,
+                                      total_area: calculatedResults?.areas.totalArea || 0,
+                                      project_type: projectType,
+                                      building_style: buildingStyle
+                                    }
+                                  );
+                                }}
+                              >
                                 <ShoppingBag size={16} className="mr-2" />
                                 Browse Building Materials
                               </Button>
@@ -1269,7 +1346,19 @@ const BuildingQuotation = () => {
               
               <div className="mt-8 flex justify-center">
                 <Link href="/products">
-                  <Button size="lg">
+                  <Button 
+                    size="lg"
+                    onClick={() => {
+                      analytics.trackButtonClick(
+                        "shop_construction_materials",
+                        "Building Quotation Tool - Tips Section",
+                        {
+                          section: "construction_tips",
+                          has_calculation: !!calculatedResults
+                        }
+                      );
+                    }}
+                  >
                     <ShoppingBag className="mr-2" />
                     Shop for Construction Materials
                   </Button>
