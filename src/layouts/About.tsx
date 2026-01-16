@@ -134,7 +134,7 @@ const About = () => {
             >
               <div className="rounded-lg overflow-hidden shadow-xl">
                 <Image
-                  src="/ayceebuilder-staff2.avif"
+                  src="/ayceebuilder-staff2.jpg"
                   alt="Aycee Builder Team"
                   width={600}
                   height={400}
